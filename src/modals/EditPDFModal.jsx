@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fi';
 import '../styles/editpdfmodal.css';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
+import { API_URL } from '../shared/constants';
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -43,7 +44,7 @@ export default function EditPDFModal({ show, onClose, file, onSave }) {
 
     if (!show || !file) return null;
 
-    const baseUrl = "https://archeio_api.test/storage";
+    const baseUrl = `${API_URL}/storage`;
     const userFolder = `user_${file.user || '1'}`;
 
     // Correctly normalize the subPath[cite: 7]

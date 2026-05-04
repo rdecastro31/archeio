@@ -6,6 +6,7 @@ import {
     FiUpload
 } from "react-icons/fi";
 import Swal from "sweetalert2";
+import { API_URL } from "../shared/constants";
 
 import "../styles/categories.css";
 import "../styles/storage.css";
@@ -15,7 +16,6 @@ import FileViewerModal from "../modals/ViewFileModal";
 import EditPDFModal from "../modals/EditPDFModal";
 import { FileEdit } from "lucide-react";
 
-const API_URL = "https://archeio_api.test/filestorage.php";
 const USER_ID = "1";
 
 export default function Storage() {
@@ -46,7 +46,7 @@ export default function Storage() {
     // --- API Helper ---
     const callApi = async (formData) => {
         try {
-            const response = await fetch(API_URL, {
+            const response = await fetch(`${API_URL}/filestorage.php`, {
                 method: "POST",
                 body: formData,
             });

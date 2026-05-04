@@ -1,9 +1,10 @@
 import { FiX, FiDownload, FiExternalLink } from 'react-icons/fi';
 import '../styles/viewfilemodal.css';
+import { API_URL } from '../shared/constants';
 export default function FileViewerModal({ show, onClose, file }) {
     if (!show || !file) return null;
 
-    const baseUrl = "https://archeio_api.test/storage";
+    const baseUrl = `${API_URL}/storage`;
 
     // 1. Determine the user folder
     const userFolder = `user_${file.user || '1'}`;
