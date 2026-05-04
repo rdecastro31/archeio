@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FiMail, FiLock, FiEye, FiEyeOff, FiLogIn } from "react-icons/fi";
-import "../styles/Login.css";
+import "../styles/login.css";
+import logoUrl from '../assets/archeiologo.png';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -37,8 +38,10 @@ export default function Login() {
     <div className="login-page">
       <div className="login-wrapper">
         <div className="login-brand-panel">
-          <div className="brand-overlay"></div>
+          <div className="brand-overlay">
+          </div>
           <div className="brand-content">
+            <img src={logoUrl} alt="ArcheIO Logo" style={{ width: '100% ', height: 'auto' }} />
             <div className="brand-badge">ArcheIO Smart Document Control</div>
             <h1>Welcome Back</h1>
             <p>

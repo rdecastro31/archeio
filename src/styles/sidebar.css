@@ -32,9 +32,21 @@
   flex-direction: column;
   padding: 20px 16px;
   background:
-    linear-gradient(180deg, rgba(252, 252, 252, 0.96), rgba(224, 221, 213, 0.44)),
-    radial-gradient(circle at top left, rgba(130, 13, 13, 0.08), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(101, 101, 101, 0.06), transparent 28%);
+    linear-gradient(
+      180deg,
+      rgba(252, 252, 252, 0.96),
+      rgba(224, 221, 213, 0.44)
+    ),
+    radial-gradient(
+      circle at top left,
+      rgba(130, 13, 13, 0.08),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(101, 101, 101, 0.06),
+      transparent 28%
+    );
   border-right: 1px solid var(--border-soft);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -58,7 +70,7 @@
   position: relative;
 }
 
-.brand-logo {
+/* .brand-logo {
   width: 44px;
   height: 44px;
   border-radius: 16px;
@@ -70,7 +82,7 @@
   background: linear-gradient(135deg, #820d0d, #5f0909);
   box-shadow: 0 10px 22px rgba(130, 13, 13, 0.22);
   flex-shrink: 0;
-}
+} */
 
 .brand-text {
   min-width: 0;
@@ -286,6 +298,54 @@
 .nav-subitem.active {
   background: rgba(130, 13, 13, 0.08);
   color: var(--accent-maroon);
+}
+
+/* New container that spans the width of the sidebar */
+.brand-box-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 10px; /* Increased vertical padding for a taller logo area */
+  min-height: 80px;
+  background: rgba(252, 252, 252, 0.78);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-soft-2);
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+/* The actual logo image */
+.brand-logo-large {
+  width: 100%;
+  height: auto;
+  max-height: 60px; /* Limits height so it doesn't push nav items too far down */
+  object-fit: cover; /* Ensures the wide 'ARCHEIO' logo isn't cropped */
+  transition: all 0.3s ease;
+}
+
+/* Fallback 'D' icon if no logo is uploaded */
+.brand-logo-fallback {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #820d0d, #5f0909);
+  color: #fcfcfc;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* Ensure the close button stays on top and to the right on mobile */
+@media (max-width: 991px) {
+  .sidebar-close-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+  }
 }
 
 @media (max-width: 991px) {

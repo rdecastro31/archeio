@@ -8,7 +8,6 @@ import {
 import Swal from "sweetalert2";
 import { API_URL } from "../shared/constants";
 
-import "../styles/categories.css";
 import "../styles/storage.css";
 import CreateFolderModal from "../modals/CreateFolderModal";
 import ContextMenu from './../components/ContextMenu';
@@ -375,7 +374,7 @@ export default function Storage() {
     };
 
     return (
-        <div className="categories-page">
+        <div className="storage-page">
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Storage</h1>

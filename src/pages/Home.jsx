@@ -1,16 +1,19 @@
 import { Link } from "react-router-dom";
 import "../styles/home.css";
 
+import logoUrl from '../assets/archeiologo.png';
+
 export default function Home() {
   return (
     <div className="landing-page">
       <header className="landing-header">
         <div className="brand">
-          <div className="brand-icon">DMS</div>
+          <img src={logoUrl} alt="ArcheIO Logo" style={{ width: '100%', height: '50px' }} />
+          {/* <div className="brand-icon">DMS</div>
           <div>
             <h1>ArcheIO</h1>
             <span>Document Management System</span>
-          </div>
+          </div> */}
         </div>
 
         <Link to="/login" className="login-btn">
@@ -22,14 +25,14 @@ export default function Home() {
         <div className="hero-content">
           <div className="hero-badge">Secure • Organized • OCR Ready</div>
 
-        <h2>
-  Efficient Document Management with Archiving and OCR
-</h2>
+          <h2>
+            Efficient Document Management with Archiving and OCR
+          </h2>
 
-<p>
-  A streamlined platform designed to manage document filing, routing,
-  approvals, archiving, and OCR-based search in a secure and organized environment.
-</p>
+          <p>
+            A streamlined platform designed to manage document filing, routing,
+            approvals, archiving, and OCR-based search in a secure and organized environment.
+          </p>
 
           <div className="hero-actions">
             <Link to="/login" className="primary-btn">

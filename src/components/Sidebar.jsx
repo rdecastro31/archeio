@@ -19,6 +19,7 @@ import {
   FiBriefcase
 } from 'react-icons/fi'
 import '../styles/sidebar.css'
+import logoUrl from '../assets/archeiologo.png';
 
 export default function Sidebar({ isOpen, onClose }) {
   const [masterOpen, setMasterOpen] = useState(false)
@@ -32,18 +33,16 @@ export default function Sidebar({ isOpen, onClose }) {
   return (
     <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
       <div className="sidebar-top">
-        <div className="brand-box">
-          <div className="brand-logo">D</div>
-
-          <div className="brand-text">
-            <h2>DMS Portal</h2>
-            <p>Document Management</p>
-          </div>
-
+        {logoUrl ? (
+          <img src={logoUrl} alt="Company Logo" className="brand-logo-large" />
+        ) : (
+          <div className="brand-logo-fallback">D</div>
+        )}
+        {/* <div className="brand-box">
           <button className="sidebar-close-btn" onClick={onClose}>
             <FiX />
           </button>
-        </div>
+        </div> */}
       </div>
 
       <div className="sidebar-divider" />
@@ -63,7 +62,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <FiServer />
           <span>Workspace</span>
         </NavLink>
-        
+
         <NavLink to="/storage" className="nav-item" onClick={onClose}>
           <FiFolder />
           <span>Storage</span>

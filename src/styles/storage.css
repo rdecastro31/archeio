@@ -1,3 +1,181 @@
+/* Page Wrapper */
+.storage-page {
+  padding: 4px 2px;
+}
+
+/* Header Section */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #2f2f2f;
+}
+
+/* BUTTONS */
+.primary-btn,
+.secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  padding: 9px 16px;
+  font-size: 0.87rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.primary-btn {
+  border: 1px solid #820d0d !important;
+  background: #820d0d !important;
+  color: #fcfcfc !important;
+}
+
+.primary-btn:hover {
+  background: #650909 !important;
+  border-color: #650909 !important;
+  transform: translateY(-1px);
+}
+
+.secondary-btn {
+  border: 1px solid #d4d0c7 !important;
+  background: #fcfcfc !important;
+  color: #656565 !important;
+}
+
+.secondary-btn:hover {
+  background: #e0ddd5 !important;
+  border-color: #c7c2b8 !important;
+  color: #2f2f2f !important;
+  transform: translateY(-1px);
+}
+
+/* TABLE CARD & TOOLBAR */
+.table-card {
+  background: #fcfcfc;
+  border: 1px solid rgba(137, 133, 128, 0.22);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(101, 101, 101, 0.07);
+  overflow: hidden;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(137, 133, 128, 0.2);
+  background: rgba(224, 221, 213, 0.18);
+  flex-wrap: wrap;
+}
+
+/* SEARCH BOX */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(380px, 100%);
+  background: #fcfcfc;
+  border: 1px solid rgba(137, 133, 128, 0.28);
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: all 0.2s ease;
+}
+
+.search-box:focus-within {
+  border-color: rgba(130, 13, 13, 0.45);
+  box-shadow: 0 0 0 4px rgba(130, 13, 13, 0.08);
+}
+
+.search-box input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 0.9rem;
+  color: #2f2f2f;
+}
+
+/* TABLE STYLES */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  background: #e0ddd5;
+  color: #2f2f2f;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 13px 16px;
+  text-align: left;
+  border-bottom: 1px solid rgba(137, 133, 128, 0.28);
+}
+
+.data-table td {
+  padding: 14px 16px;
+  font-size: 0.9rem;
+  color: #656565;
+  border-bottom: 1px solid rgba(137, 133, 128, 0.14);
+}
+
+.data-table tr:hover {
+  background: rgba(224, 221, 213, 0.25);
+}
+
+.fw-semibold {
+  font-weight: 600;
+  color: #2f2f2f;
+}
+
+/* ACTIONS */
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(137, 133, 128, 0.24);
+  border-radius: 10px;
+  background: #fcfcfc;
+  color: #656565;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: #e0ddd5;
+  border-color: #898580;
+  color: #2f2f2f;
+}
+
+/* ==========================================================================
+   STORAGE SPECIFIC STYLES (GRID, BREADCRUMBS, SEARCH RESULTS)
+   ========================================================================== */
+
 /* Breadcrumbs Styling */
 .breadcrumb-trail {
   display: flex;
@@ -8,7 +186,7 @@
 }
 
 .breadcrumb-link {
-  color: #2563eb;
+  color: #820d0d; /* Changed from Blue to match Primary Color */
   cursor: pointer;
   font-weight: 500;
 }
@@ -22,398 +200,7 @@
   font-size: 0.8rem;
 }
 
-/* Double click affordance */
-.data-table tr {
-  cursor: default;
-  user-select: none;
-}
-
-.data-table tr:active {
-  background: #f1f5f9;
-}
-
-/* Tooltip or specific file icons */
-.file-icon {
-  font-size: 1.2rem;
-}
-
 /* View Mode Toggle */
-.view-mode-toggle {
-  display: flex;
-  background: #f3f4f6;
-  padding: 4px;
-  border-radius: 12px;
-  margin-right: 8px;
-}
-
-.view-mode-toggle .icon-btn {
-  border: none;
-  background: transparent;
-}
-
-.view-mode-toggle .icon-btn.active {
-  background: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  color: #2563eb;
-}
-
-/* Thumbnail Grid */
-.thumbnail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 20px;
-  padding: 24px;
-}
-
-.thumbnail-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 16px;
-  text-align: center;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  background: #ffffff;
-}
-
-.thumbnail-card:hover {
-  border-color: #bfdbfe;
-  background: #f8fafc;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-}
-
-.thumbnail-icon {
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.folder-large {
-  font-size: 3rem;
-  color: #2563eb;
-}
-
-.file-large {
-  font-size: 2.8rem;
-  color: #9ca3af;
-}
-
-.thumbnail-name {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #374151;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 8px;
-}
-
-.flex-align-gap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.text-blue {
-  color: #2563eb;
-}
-
-.mini-btn {
-  background: transparent;
-  border: none;
-  color: #9ca3af;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.mini-btn:hover {
-  color: #dc2626;
-}
-
-/* Context Menu */
-.context-menu {
-  position: fixed;
-  z-index: 10000;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
-  padding: 6px;
-  min-width: 160px;
-  animation: modalFadeIn 0.1s ease; /* Reusing your animation */
-}
-
-.context-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #374151;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.context-menu-item:hover {
-  background: #f3f4f6;
-  color: #111827;
-}
-
-.context-menu-item svg {
-  font-size: 1rem;
-  color: #6b7280;
-}
-
-.context-menu-item.text-danger {
-  color: #dc2626;
-}
-
-.context-menu-item.text-danger:hover {
-  background: #fef2f2;
-}
-
-.context-menu-divider {
-  height: 1px;
-  background: #e5e7eb;
-  margin: 6px 0;
-}
-
-/* Ensure row highlighting on context menu target */
-tr:contextmenu {
-  background: #f8fafc;
-}
-
-/* Ensure the action container takes full width of the cell to allow alignment */
-.data-table td.text-end {
-  text-align: right !important;
-}
-
-/* This class from your original categories.css handles the alignment */
-.action-buttons {
-  display: flex;
-  justify-content: flex-end; /* This pushes the content to the right */
-  gap: 8px;
-}
-
-/* Specific fix for the More button to ensure it doesn't look 'sunken' */
-.icon-btn svg {
-  display: block; /* Removes baseline spacing */
-}
-
-.secondary-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #ffffff;
-  color: #374151;
-  border: 1px solid #e5e7eb;
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.secondary-btn:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-}
-
-.secondary-btn svg {
-  font-size: 1.1rem;
-}
-
-.search-box {
-  position: relative;
-  display: flex;
-  align-items: center;
-  background: #f1f5f9; /* Match your input background */
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
-}
-
-.search-box:focus-within {
-  border-color: #2563eb;
-  background: #ffffff;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-}
-
-.exit-search-btn {
-  background: #fee2e2; /* Light red/pink tint */
-  color: #dc2626; /* Deep red text */
-  border: none;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  cursor: pointer;
-  white-space: nowrap;
-  margin-left: 8px;
-  transition: background 0.2s;
-}
-
-.exit-search-btn:hover {
-  background: #fecaca;
-  color: #b91c1c;
-}
-
-/* Optional: If you want it to look like a blue "Reset" button instead */
-
-.exit-search-btn {
-  background: #dbeafe;
-  color: #2563eb;
-}
-.exit-search-btn:hover {
-  background: #bfdbfe;
-}
-
-.search-highlight {
-  background-color: #dbeafe; /* Very light blue background */
-  color: #1e40af; /* Deep brand blue text */
-  padding: 0 2px;
-  border-radius: 2px;
-  font-weight: 700;
-  /* Optional: adds a very subtle border to make it crisper */
-  border-bottom: 1.5px solid #3b82f6;
-}
-.search-metadata {
-  margin-top: 6px;
-  background: #f8fafc;
-  border-left: 3px solid #3b82f6;
-  padding: 6px 10px;
-  border-radius: 0 6px 6px 0;
-}
-
-.search-location {
-  display: block;
-  color: #64748b;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-
-.search-snippet {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #334155;
-  font-style: italic;
-  line-height: 1.4;
-}
-
-/* Styling for the card when it's a search result */
-.thumbnail-card.expanded-card {
-  width: 180px; /* Slightly wider than standard to accommodate text */
-  height: auto;
-  min-height: 160px;
-  padding-bottom: 12px;
-}
-
-.thumbnail-info {
-  width: 100%;
-  text-align: center;
-  padding: 0 10px;
-}
-
-.thumbnail-search-meta {
-  margin-top: 8px;
-  text-align: left;
-  background: #f0f7ff; /* Archeio Blue light tint */
-  border-radius: 6px;
-  padding: 6px;
-  border: 1px solid #dbeafe;
-}
-
-.badge-page {
-  font-size: 10px;
-  font-weight: 800;
-  color: #2563eb;
-  text-transform: uppercase;
-  display: block;
-  margin-bottom: 3px;
-}
-
-.snippet-text {
-  font-size: 11px;
-  color: #475569;
-  margin: 0;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 3; /* Limits snippet to 3 lines in grid view */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  font-style: italic;
-}
-
-/* Ensure the blue highlight works here too */
-.snippet-text .search-highlight {
-  background-color: #bfdbfe;
-  color: #1e3a8a;
-  padding: 0 1px;
-}
-
-.file-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
-
-.grid-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid #eee;
-  transition: background 0.2s;
-  cursor: pointer;
-  position: relative;
-}
-
-.grid-item:hover {
-  background: #f8f9fa;
-}
-
-.grid-icon-wrapper {
-  margin-bottom: 10px;
-}
-
-.grid-info {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  justify-content: space-between;
-}
-
-.grid-name {
-  font-size: 0.9rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 80%;
-}
-
-/* Container for the search bar and buttons */
-.table-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  padding: 10px 15px;
-  background: #fff;
-  border-bottom: 1px solid #eee;
-}
-
-/* The Switcher Group */
 .view-switcher {
   display: flex;
   background: #f1f3f5;
@@ -422,7 +209,6 @@ tr:contextmenu {
   border: 1px solid #e9ecef;
 }
 
-/* Individual Buttons */
 .view-btn {
   display: flex;
   align-items: center;
@@ -437,22 +223,62 @@ tr:contextmenu {
   transition: all 0.2s ease;
 }
 
-.view-btn:hover {
-  color: #333;
-  background: #e9ecef;
-}
-
-/* Active State Styles */
 .view-btn.active {
   background: #ffffff;
-  color: #007bff;
+  color: #820d0d; /* Match Theme */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.view-btn svg {
-  font-size: 1.1rem;
+/* Grid View Styles */
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
+  padding: 24px;
 }
 
+.grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 140px;
+}
+
+.grid-item:hover {
+  border-color: #820d0d55;
+  background: #fcfcfc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.text-blue {
+  color: #820d0d; /* Unified to your primary brand color */
+}
+
+/* Search Highlighting */
+.search-highlight {
+  background-color: rgba(130, 13, 13, 0.12);
+  color: #820d0d;
+  padding: 0 2px;
+  border-radius: 2px;
+  font-weight: 700;
+}
+
+.search-metadata {
+  margin-top: 6px;
+  background: #f8fafc;
+  border-left: 3px solid #820d0d;
+  padding: 6px 10px;
+  border-radius: 0 6px 6px 0;
+}
+
+/* Empty State */
 .empty-state-container {
   display: flex;
   align-items: center;
@@ -460,7 +286,6 @@ tr:contextmenu {
   min-height: 400px;
   width: 100%;
   background: #fff;
-  border-radius: 8px;
 }
 
 .empty-state-content {
@@ -479,78 +304,4 @@ tr:contextmenu {
   margin: 0 auto 20px;
   color: #adb5bd;
   border: 2px dashed #dee2e6;
-}
-
-.empty-state-content h3 {
-  margin-bottom: 8px;
-  color: #343a40;
-  font-size: 1.25rem;
-}
-
-.empty-state-content p {
-  color: #6c757d;
-  margin-bottom: 24px;
-  font-size: 0.95rem;
-}
-
-.empty-state-content .primary-btn {
-  margin: 0 auto;
-}
-
-.swal2-container {
-  z-index: 9999 !important;
-}
-
-/* Ensure grid items can grow if they have search content */
-.grid-item {
-  height: auto;
-  min-height: 140px;
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
-}
-
-.grid-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;
-  margin-top: 10px;
-}
-
-.grid-text-content {
-  overflow: hidden;
-  flex: 1;
-}
-
-.grid-search-metadata {
-  margin-top: 8px;
-  border-top: 1px solid #eee;
-  padding-top: 5px;
-  text-align: left;
-}
-
-.badge-page {
-  background: #e7f1ff;
-  color: #007bff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 0.7rem;
-}
-
-.grid-snippet {
-  font-size: 0.75rem;
-  color: #666;
-  margin: 4px 0 0 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* Limits snippet to 2 lines in grid */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.3;
-}
-
-.search-result-card {
-  border: 1px solid #007bff4d;
-  background: #f8fbff;
 }
