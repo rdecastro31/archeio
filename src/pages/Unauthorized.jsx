@@ -1,6 +1,6 @@
-export default function Unauthorized(){
+export default function Unauthorized() {
 
-    return(
+    return (
         <div></div>
     )
 }

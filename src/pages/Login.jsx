@@ -1,10 +1,16 @@
 import React, { useState } from "react";
-import { FiMail, FiLock, FiEye, FiEyeOff, FiLogIn } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { FiMail, FiLock, FiEye, FiEyeOff, FiLogIn, FiAlertCircle } from "react-icons/fi"; // Added Alert Icon
 import "../styles/login.css";
-import logoUrl from '../assets/archeiologo.png';
+import archeioLogo from '../assets/archeiologo.png';
+import { API_URL } from "../shared/constants";
 
-export default function Login() {
+export default function Login({ logo }) {
+  const navigate = useNavigate();
+  const currentLogo = logo || archeioLogo;
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(""); // Track error messages
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -13,41 +19,68 @@ export default function Login() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    // Clear error when user starts typing again
+    if (error) setError("");
+
     setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(""); // Reset error on new attempt
 
-    console.log("Login Data:", form);
-
-    // Sample only
-    // Replace this with your API call
     if (!form.email || !form.password) {
-      alert("Please enter your email and password.");
+      setError("Please enter both email and password.");
       return;
     }
 
-    alert("Login submitted!");
+    setLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("tag", "login");
+      formData.append("email", form.email);
+      formData.append("password", form.password);
+
+      const response = await fetch(`${API_URL}/users.php`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success === 1) {
+        localStorage.setItem("token", result.data.email);
+        localStorage.setItem("user", JSON.stringify(result.data));
+        navigate("/dashboard");
+      } else {
+        // Use the message from your PHP backend
+        setError(result.message || "Invalid email or password.");
+      }
+    } catch (err) {
+      console.error("Login Error:", err);
+      setError("Unable to connect to the server. Please check your connection.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="login-page">
       <div className="login-wrapper">
         <div className="login-brand-panel">
-          <div className="brand-overlay">
-          </div>
+          <div className="brand-overlay"></div>
           <div className="brand-content">
-            <img src={logoUrl} alt="ArcheIO Logo" style={{ width: '100% ', height: 'auto' }} />
+            <img src={currentLogo} alt="ArcheIO Logo" style={{ width: '100%', height: 'auto' }} />
             <div className="brand-badge">ArcheIO Smart Document Control</div>
             <h1>Welcome Back</h1>
             <p>
               Manage, organize, and retrieve your documents with ease.
               Leverage OCR technology to digitize files and streamline
-              your document workflows in one centralized platform.
+              your document workflows.
             </p>
 
             <div className="brand-features">
@@ -61,7 +94,7 @@ export default function Login() {
               </div>
               <div className="feature-item">
                 <span className="feature-dot"></span>
-                Efficient workflow and approval tracking
+                Efficient workflow tracking
               </div>
             </div>
           </div>
@@ -74,10 +107,18 @@ export default function Login() {
               <p>Please enter your credentials to continue</p>
             </div>
 
+            {/* ERROR MESSAGE COMPONENT */}
+            {error && (
+              <div className="error-message-box">
+                <FiAlertCircle className="error-icon" />
+                <span>{error}</span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="login-form">
               <div className="input-group">
                 <label>Email Address</label>
-                <div className="input-wrapper">
+                <div className={`input-wrapper ${error ? 'input-error' : ''}`}>
                   <FiMail className="input-icon" />
                   <input
                     type="email"
@@ -85,13 +126,14 @@ export default function Login() {
                     placeholder="you@example.com"
                     value={form.email}
                     onChange={handleChange}
+                    required
                   />
                 </div>
               </div>
 
               <div className="input-group">
                 <label>Password</label>
-                <div className="input-wrapper">
+                <div className={`input-wrapper ${error ? 'input-error' : ''}`}>
                   <FiLock className="input-icon" />
                   <input
                     type={showPassword ? "text" : "password"}
@@ -99,6 +141,7 @@ export default function Login() {
                     placeholder="Enter your password"
                     value={form.password}
                     onChange={handleChange}
+                    required
                   />
                   <button
                     type="button"
@@ -120,22 +163,21 @@ export default function Login() {
                   />
                   <span>Remember me</span>
                 </label>
-
-                <button type="button" className="forgot-btn">
-                  Forgot password?
-                </button>
+                <button type="button" className="forgot-btn">Forgot password?</button>
               </div>
 
-              <button type="submit" className="login-btn">
-                <FiLogIn />
-                <span>Sign In</span>
+              <button type="submit" className="login-btn" disabled={loading}>
+                {loading ? "Verifying..." : (
+                  <>
+                    <FiLogIn />
+                    <span>Sign In</span>
+                  </>
+                )}
               </button>
             </form>
 
             <div className="login-footer">
-              <p>
-                Protected system access. Authorized users only.
-              </p>
+              <p>Protected system access. Authorized users only.</p>
             </div>
           </div>
         </div>

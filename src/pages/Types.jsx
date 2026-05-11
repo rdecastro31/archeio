@@ -17,7 +17,7 @@ export default function Types() {
 
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedId, setSelectedId] = useState(null)
-  
+
 
   const [formData, setFormData] = useState({
     type_name: "",
@@ -35,71 +35,71 @@ export default function Types() {
 
 
   const handleEdit = (type) => {
-  setSelectedId(type.id)
+    setSelectedId(type.id)
 
-  setFormData({
-    id: type.id,
-    type_name: type.type_name || "",
-    short_name: type.short_name || "",
-    description: type.description || "",
-    retention_period: type.retention_period || "",
-    retention_unit: type.retention_unit || "Year",
-    classification_id: type.classification_id || "",
-    status: type.status || "Active",
-  })
+    setFormData({
+      id: type.id,
+      type_name: type.type_name || "",
+      short_name: type.short_name || "",
+      description: type.description || "",
+      retention_period: type.retention_period || "",
+      retention_unit: type.retention_unit || "Year",
+      classification_id: type.classification_id || "",
+      status: type.status || "Active",
+    })
 
-  setShowEditModal(true)
-}
+    setShowEditModal(true)
+  }
 
-const handleUpdateType = async (e) => {
-  e.preventDefault()
+  const handleUpdateType = async (e) => {
+    e.preventDefault()
 
-  try {
-    const fd = new FormData()
-    fd.append("tag", "update")
-    fd.append("id", formData.id)
-    fd.append("type_name", formData.type_name)
-    fd.append("short_name", formData.short_name)
-    fd.append("description", formData.description)
-    fd.append("retention_period", formData.retention_period)
-    fd.append("retention_unit", formData.retention_unit)
-    fd.append("classification_id", formData.classification_id)
-    fd.append("status", formData.status)
+    try {
+      const fd = new FormData()
+      fd.append("tag", "update")
+      fd.append("id", formData.id)
+      fd.append("type_name", formData.type_name)
+      fd.append("short_name", formData.short_name)
+      fd.append("description", formData.description)
+      fd.append("retention_period", formData.retention_period)
+      fd.append("retention_unit", formData.retention_unit)
+      fd.append("classification_id", formData.classification_id)
+      fd.append("status", formData.status)
 
-    const response = await axios.post(`${API_URL}/doctype.php`, fd)
+      const response = await axios.post(`${API_URL}/doctype.php`, fd)
 
-    if (Number(response.data.success) === 1) {
-      await getAllTypes()
-      closeEditModal()
+      if (Number(response.data.success) === 1) {
+        await getAllTypes()
+        closeEditModal()
 
-      Swal.fire({
-        icon: "success",
-        title: "Updated!",
-        text: "Document type has been updated.",
-        timer: 1500,
-        showConfirmButton: false,
-      })
-    } else {
+        Swal.fire({
+          icon: "success",
+          title: "Updated!",
+          text: "Document type has been updated.",
+          timer: 1500,
+          showConfirmButton: false,
+        })
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: response.data.message || "Update failed.",
+        })
+      }
+    } catch (error) {
+      console.error(error)
+
       Swal.fire({
         icon: "error",
-        title: "Failed",
-        text: response.data.message || "Update failed.",
+        title: "Error",
+        text: "Something went wrong.",
       })
     }
-  } catch (error) {
-    console.error(error)
-
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "Something went wrong.",
-    })
   }
-}
 
-const closeEditModal = () => {
-  setShowEditModal(false)
-}
+  const closeEditModal = () => {
+    setShowEditModal(false)
+  }
 
 
   const getAllTypes = async () => {
@@ -412,11 +412,10 @@ const closeEditModal = () => {
 
                     <td>
                       <span
-                        className={`status-badge ${
-                          type.status === "Active"
+                        className={`status-badge ${type.status === "Active"
                             ? "status-active"
                             : "status-inactive"
-                        }`}
+                          }`}
                       >
                         {type.status || "Inactive"}
                       </span>
@@ -427,9 +426,9 @@ const closeEditModal = () => {
                     <td>
                       <div className="action-buttons">
                         <button
-                            className="icon-btn edit-btn"
-                            onClick={() => handleEdit(type)}
-                          >
+                          className="icon-btn edit-btn"
+                          onClick={() => handleEdit(type)}
+                        >
                           <FiEdit2 />
                         </button>
 

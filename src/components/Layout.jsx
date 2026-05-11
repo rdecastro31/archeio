@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useOutletContext } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import Footer from './Footer'
 import '../styles/layout.css'
 
-export default function Layout() {
+export default function Layout({ logo }) {
+  const { user } = useOutletContext();
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const toggleSidebar = () => {
@@ -18,15 +19,15 @@ export default function Layout() {
 
   return (
     <div className="app-shell">
-      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} logo={logo} />
 
       {sidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar}></div>}
 
       <div className="main-section">
-        <Header onToggleSidebar={toggleSidebar} />
+        <Header onToggleSidebar={toggleSidebar} user={user} />
 
         <main className="page-content">
-          <Outlet />
+          <Outlet context={{ user }} />
         </main>
 
         <Footer />

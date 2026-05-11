@@ -1,0 +1,164 @@
+/* settings.css */
+
+.settings-page {
+  padding: 4px 2px;
+}
+
+.settings-container {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* Sidebar Styling */
+.settings-sidebar {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  color: #656565;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.sidebar-item:hover {
+  background: rgba(224, 221, 213, 0.4);
+  color: #2f2f2f;
+}
+
+.sidebar-item.active {
+  background: rgba(130, 13, 13, 0.08);
+  color: #820d0d;
+  font-weight: 600;
+}
+
+/* Content Area */
+.settings-content {
+  flex: 1;
+  padding: 24px;
+  min-height: 500px;
+}
+
+.section-header-simple {
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(137, 133, 128, 0.1);
+  padding-bottom: 16px;
+}
+
+.text-muted {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+/* Branding Specifics */
+.settings-group {
+  margin-bottom: 24px;
+}
+
+.settings-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #2f2f2f;
+  margin-bottom: 12px;
+}
+
+.logo-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logo-preview {
+  width: 120px;
+  height: 60px;
+  border-radius: 8px;
+  border: 2px dashed rgba(137, 133, 128, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.logo-preview img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.logo-placeholder {
+  font-weight: 800;
+  color: #adb5bd;
+  font-size: 1rem;
+}
+
+/* Color Palette */
+.color-grid {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.color-option {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+}
+
+.color-option.selected {
+  border-color: #2f2f2f;
+  box-shadow: 0 0 0 2px #fff inset;
+}
+
+.custom-color-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.custom-color-picker input {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(137, 133, 128, 0.3);
+  width: 100px;
+}
+
+/* Forms */
+.form-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(137, 133, 128, 0.3);
+  font-size: 0.9rem;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #820d0d;
+}

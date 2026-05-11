@@ -19,11 +19,11 @@ import {
   FiBriefcase
 } from 'react-icons/fi'
 import '../styles/sidebar.css'
-import logoUrl from '../assets/archeiologo.png';
+import archeioLogo from '../assets/archeiologo.png';
 
-export default function Sidebar({ isOpen, onClose }) {
+export default function Sidebar({ isOpen, onClose, logo }) {
   const [masterOpen, setMasterOpen] = useState(false)
-
+  const currentLogo = logo || archeioLogo;
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -33,8 +33,8 @@ export default function Sidebar({ isOpen, onClose }) {
   return (
     <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
       <div className="sidebar-top">
-        {logoUrl ? (
-          <img src={logoUrl} alt="Company Logo" className="brand-logo-large" />
+        {currentLogo ? (
+          <img src={currentLogo} alt="Company Logo" className="brand-logo-large" />
         ) : (
           <div className="brand-logo-fallback">D</div>
         )}
@@ -120,6 +120,15 @@ export default function Sidebar({ isOpen, onClose }) {
               >
                 < FiBriefcase />
                 <span>Departments</span>
+              </NavLink>
+              
+              <NavLink
+                to="/instructions"
+                className="nav-subitem"
+                onClick={onClose}
+              >
+                < FiBriefcase />
+                <span>Instructions</span>
               </NavLink>
             </div>
           )}

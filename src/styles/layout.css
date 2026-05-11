@@ -1,6 +1,7 @@
 :root {
   --layout-bg: #f5f7fb;
   --text-primary: #162330;
+  --primary-color: #820d0d; /* Default color */
 }
 
 html,
@@ -12,8 +13,16 @@ body,
 
 body {
   background:
-    radial-gradient(circle at top left, rgba(79, 141, 255, 0.08), transparent 24%),
-    radial-gradient(circle at bottom right, rgba(71, 195, 167, 0.08), transparent 24%),
+    radial-gradient(
+      circle at top left,
+      rgba(79, 141, 255, 0.08),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(71, 195, 167, 0.08),
+      transparent 24%
+    ),
     var(--layout-bg);
   color: var(--text-primary);
   font-family: "Inter", "Segoe UI", sans-serif;

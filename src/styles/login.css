@@ -330,3 +330,41 @@ body {
     height: 50px;
   }
 }
+
+/* Error Message Styles */
+.error-message-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(130, 13, 13, 0.05); /* Very soft brand red */
+  border: 1px solid rgba(130, 13, 13, 0.2);
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  color: #820d0d;
+  font-size: 13.5px;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+}
+
+.error-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Optional: Subtle border error for inputs */
+.input-wrapper.input-error input {
+  border-color: rgba(130, 13, 13, 0.4);
+  background: rgba(130, 13, 13, 0.01);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,14 +1,15 @@
 import { Link } from "react-router-dom";
 import "../styles/home.css";
 
-import logoUrl from '../assets/archeiologo.png';
+import archeioLogo from '../assets/archeiologo.png';
 
-export default function Home() {
+export default function Home({ logo }) {
+  const currentLogo = logo || archeioLogo
   return (
     <div className="landing-page">
       <header className="landing-header">
         <div className="brand">
-          <img src={logoUrl} alt="ArcheIO Logo" style={{ width: '100%', height: '50px' }} />
+          <img src={currentLogo} alt="ArcheIO Logo" style={{ width: '100%', height: '50px' }} />
           {/* <div className="brand-icon">DMS</div>
           <div>
             <h1>ArcheIO</h1>

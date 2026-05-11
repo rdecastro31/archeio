@@ -1,8 +1,9 @@
 import { FiMenu, FiSearch, FiBell, FiUser } from 'react-icons/fi'
 import '../styles/header.css'
 
-export default function Header({ onToggleSidebar }) {
-  const username = 'Administrator'
+export default function Header({ onToggleSidebar, user }) {
+  const username = user?.fullname
+  const userlevel = user?.userlevel
 
   return (
     <header className="top-header">
@@ -33,7 +34,7 @@ export default function Header({ onToggleSidebar }) {
           </div>
           <div className="profile-text">
             <strong>{username}</strong>
-            <span>System User</span>
+            <span>{userlevel}</span>
           </div>
         </div>
       </div>
