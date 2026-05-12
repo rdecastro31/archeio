@@ -18,6 +18,8 @@ import logoImage from './assets/archeiologo.png';
 import { useEffect, useState } from 'react'
 import { API_URL } from './shared/constants'
 import Instructions from './pages/Instructions'
+import Documents from './pages/Documents'
+import Transactions from './pages/Transactions'
 
 function App() {
   const [systemSettings, setSystemSettings] = useState({
@@ -56,6 +58,8 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout logo={systemSettings.logo} />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/documents" element={<Documents />} />
+            <Route path="/transactions" element={<Transactions />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/instructions" element={<Instructions />} />
             <Route path="/workspace" element={<Workspace />} />

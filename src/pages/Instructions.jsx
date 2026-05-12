@@ -1,14 +1,50 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FiPlus, FiSettings, FiCheckSquare, FiSquare, FiInfo, FiTrash2, FiEdit2 } from "react-icons/fi";
+import {
+    FiPlus, FiSettings, FiActivity, FiTrash2,
+    FiEdit2, FiChevronRight, FiInfo,
+    FiCheckSquare,
+    FiSquare,
+    FiPlay,
+    FiXCircle,
+    FiPauseCircle,
+    FiCornerUpLeft,
+    FiCheckCircle
+} from "react-icons/fi";
 import Swal from "sweetalert2";
 import { API_URL } from "../shared/constants";
+import CreateActionModal from "../modals/CreateActionModal";
+import InstructionFormModal from "../modals/InstructionFormModal"; // New Modal
 import "../styles/instructions.css";
+import "../styles/actionsmanager.css";
 
 export default function Instructions() {
     const [instructionTypes, setInstructionTypes] = useState([]);
     const [availableActions, setAvailableActions] = useState([]);
-    const [selectedId, setSelectedId] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [instructionMap, setInstructionMap] = useState([]);
+    const [selectedInstId, setSelectedInstId] = useState(null);
+    const [activeTab, setActiveTab] = useState('routing');
+
+    // Modals State
+    const [showActionModal, setShowActionModal] = useState(false);
+    const [showInstModal, setShowInstModal] = useState(false);
+    const [selectedInst, setSelectedInst] = useState(null); // For Editing
+    const [actionFormData, setActionFormData] = useState({
+        action_name: '',
+        action_result: 'Proceed', // Default to 'Proceed' instead of ''
+        outcome: '',
+        description: ''
+    });
+
+    const getActionIcon = (actionName) => {
+        switch (actionName) {
+            case 'Proceed': return <FiPlay />;
+            case 'Terminate': return <FiXCircle />;
+            case 'Hold': return <FiPauseCircle />;
+            case 'Return': return <FiCornerUpLeft />;
+            case 'Complete': return <FiCheckCircle />;
+            default: return <FiActivity />;
+        }
+    };
 
     const callApi = async (url, formData) => {
         try {
@@ -20,142 +56,291 @@ export default function Instructions() {
     };
 
     const fetchData = useCallback(async () => {
-        setLoading(true);
-        // Fetch Instruction Types
-        const instFd = new FormData();
-        instFd.append("tag", "getall");
-        const instRes = await callApi(`${API_URL}/instructiontypes.php`, instFd);
+        const instFd = new FormData(); instFd.append("tag", "getall");
+        const actFd = new FormData(); actFd.append("tag", "getall");
+        const mapFd = new FormData(); mapFd.append("tag", "get_all_mappings");
 
-        // Fetch Actions
-        const actionFd = new FormData();
-        actionFd.append("tag", "getall");
-        const actionRes = await callApi(`${API_URL}/actions.php`, actionFd);
+        const [instRes, actRes, mapRes] = await Promise.all([
+            callApi(`${API_URL}/instructiontypes.php`, instFd),
+            callApi(`${API_URL}/actions.php`, actFd),
+            callApi(`${API_URL}/instructionmap.php`, mapFd)
+        ]);
 
-        if (instRes.success) setInstructionTypes(instRes.data);
-        if (actionRes.success) setAvailableActions(actionRes.data);
-
-        if (instRes.data?.length > 0 && !selectedId) {
-            setSelectedId(instRes.data[0].id);
+        if (instRes.success) {
+            setInstructionTypes(instRes.data);
+            if (instRes.data.length > 0 && !selectedInstId) {
+                setSelectedInstId(instRes.data[0].id);
+            }
         }
-        setLoading(false);
-    }, [selectedId]);
+        if (actRes.success) setAvailableActions(actRes.data);
+        if (mapRes.success) setInstructionMap(mapRes.data);
+    }, [selectedInstId]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
-    const handleAddInstruction = async () => {
-        const { value: formValues } = await Swal.fire({
-            title: 'New Instruction Type',
-            html:
-                '<input id="swal-input1" class="swal2-input" placeholder="Instruction Name">' +
-                '<textarea id="swal-input2" class="swal2-textarea" placeholder="Description"></textarea>',
-            focusConfirm: false,
+    // --- INSTRUCTION CRUD ---
+    const handleEditInstruction = (inst) => {
+        setSelectedInst(inst);
+        setShowInstModal(true);
+    };
+
+    const handleDeleteInstruction = async (id, e) => {
+        e.stopPropagation(); // Prevent changing selection when clicking delete
+        const result = await Swal.fire({
+            title: 'Delete Instruction Type?',
+            text: "This will remove all associated mappings.",
+            icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#820d0d',
-            preConfirm: () => [
-                document.getElementById('swal-input1').value,
-                document.getElementById('swal-input2').value
-            ]
+            confirmButtonColor: '#820d0d'
         });
 
-        if (formValues && formValues[0]) {
+        if (result.isConfirmed) {
             const fd = new FormData();
-            fd.append("tag", "insert");
-            fd.append("instruction_name", formValues[0]);
-            fd.append("description", formValues[1]);
+            fd.append("tag", "delete");
+            fd.append("id", id);
             const res = await callApi(`${API_URL}/instructiontypes.php`, fd);
             if (res.success) fetchData();
         }
     };
 
-    const toggleActionMapping = async (actionId, isLinked) => {
-        const fd = new FormData();
-        // Note: Your InstructionMap.php currently only has 'insert'. 
-        // You might need a 'delete' tag in your entry point later for unmapping.
-        fd.append("tag", isLinked ? "delete_map" : "insert");
-        fd.append("instruction_type_id", selectedId);
-        fd.append("action_id", actionId);
+    // --- ACTION HANDLES ---
 
-        const res = await callApi(`${API_URL}/instructionmap.php`, fd);
+    const handleCreateAction = async (e) => {
+        e.preventDefault();
+        const fd = new FormData();
+        Object.keys(actionFormData).forEach(key => fd.append(key, actionFormData[key]));
+        fd.append("tag", "insert");
+
+        const res = await callApi(`${API_URL}/actions.php`, fd);
         if (res.success) {
-            fetchData(); // Refresh to update visual state
+            setShowActionModal(false);
+            setActionFormData({ action_name: '', action_result: '', outcome: '', description: '' });
+            fetchData();
+            Swal.fire({ icon: 'success', title: 'Action Created', timer: 1500, showConfirmButton: false });
         }
     };
 
-    const currentInstruction = instructionTypes.find(i => i.id === selectedId);
+    const handleDeleteAction = async (id) => {
+        const result = await Swal.fire({
+            title: 'Delete Action?',
+            text: "This may affect instructions currently mapped to this action.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#820d0d',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            const fd = new FormData();
+            fd.append("tag", "delete");
+            fd.append("id", id);
+
+            const res = await callApi(`${API_URL}/actions.php`, fd);
+
+            if (res.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: 'The action has been removed.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                fetchData(); // Refresh both actions and mappings
+            } else {
+                Swal.fire('Error', res.message || 'Failed to delete action', 'error');
+            }
+        }
+    };
+
+    // --- MAPPING LOGIC ---
+    const toggleMapping = async (actionId, isMapped) => {
+        const fd = new FormData();
+        fd.append("tag", isMapped ? "delete" : "insert");
+        fd.append("instruction_type_id", selectedInstId);
+        fd.append("action_id", actionId);
+        const res = await callApi(`${API_URL}/instructionmap.php`, fd);
+        if (res.success) fetchData();
+    };
+
+    const currentInstruction = instructionTypes.find(i => i.id === selectedInstId);
 
     return (
         <div className="instructions-container">
-            <div className="table-toolbar">
-                <div className="toolbar-left">
-                    <h1 className="page-title">Instruction Routing</h1>
-                    <p className="page-subtitle">Configure available actions per routing instruction</p>
-                </div>
-                <button className="primary-btn" onClick={handleAddInstruction}>
-                    <FiPlus /> <span>Add Instruction Type</span>
-                </button>
-            </div>
-
-            <div className="instruction-grid">
-                {/* Panel 1: Instruction Types */}
-                <div className="table-card list-panel">
-                    <div className="panel-header">
-                        <FiSettings /> <span>Instruction Types</span>
-                    </div>
-                    <div className="instruction-list">
-                        {instructionTypes.map((type) => (
-                            <div
-                                key={type.id}
-                                className={`instruction-item ${selectedId === type.id ? 'active' : ''}`}
-                                onClick={() => setSelectedId(type.id)}
-                            >
-                                <div className="inst-content">
-                                    <span className="inst-name">{type.instruction_name}</span>
-                                    <span className="inst-desc">{type.description}</span>
-                                </div>
-                            </div>
-                        ))}
+            <div className="table-toolbar" style={{ borderBottom: 'none' }}>
+                <div>
+                    <h1 className="page-title">Instruction Routing Config</h1>
+                    <div className="tab-switcher">
+                        <button className={`tab-btn ${activeTab === 'routing' ? 'active' : ''}`} onClick={() => setActiveTab('routing')}>
+                            Routing Setup
+                        </button>
+                        <button className={`tab-btn ${activeTab === 'actions' ? 'active' : ''}`} onClick={() => setActiveTab('actions')}>
+                            Manage Actions
+                        </button>
                     </div>
                 </div>
-
-                {/* Panel 2: Dynamic Mapping */}
-                <div className="table-card mapping-panel">
-                    {currentInstruction ? (
-                        <>
-                            <div className="panel-header border-b">
-                                <h3>Actions for: {currentInstruction.instruction_name}</h3>
-                            </div>
-                            <div className="actions-grid">
-                                {availableActions.map(action => {
-                                    // Logic to check if mapped (requires API to return mapped IDs)
-                                    const isLinked = false; // Placeholder: compare with mapped data from API
-                                    return (
-                                        <div
-                                            key={action.id}
-                                            className={`action-selector-card ${isLinked ? 'linked' : ''}`}
-                                            onClick={() => toggleActionMapping(action.id, isLinked)}
-                                        >
-                                            <div className="check-icon">
-                                                {isLinked ? <FiCheckSquare color="#820d0d" /> : <FiSquare />}
-                                            </div>
-                                            <div className="action-info">
-                                                <span className="action-label">{action.action_name}</span>
-                                                <span className={`outcome-pill ${action.outcome.toLowerCase()}`}>
-                                                    {action.outcome}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </>
-                    ) : (
-                        <div className="empty-state">
-                            <FiInfo size={40} />
-                            <p>Select an instruction type to manage its actions</p>
-                        </div>
+                <div className="toolbar-actions">
+                    {activeTab === 'routing' && (
+                        <button className="secondary-btn" style={{ marginRight: '10px' }} onClick={() => { setSelectedInst(null); setShowInstModal(true); }}>
+                            <FiPlus /> <span>New Instruction</span>
+                        </button>
+                    )}
+                    {activeTab === 'actions' && (
+                        <button className="primary-btn" onClick={() => setShowActionModal(true)}>
+                            <FiPlus /> <span>New Action</span>
+                        </button>
                     )}
                 </div>
             </div>
+
+            {activeTab === 'routing' ? (
+                <div className="instruction-grid">
+                    {/* Left Panel: Instruction List with Edit/Delete */}
+                    <div className="table-card">
+                        <div className="panel-header">
+                            <FiSettings /> <span>Instruction Types</span>
+                        </div>
+                        <div className="instruction-list">
+                            {instructionTypes.map(type => (
+                                <div
+                                    key={type.id}
+                                    className={`d-flex justify-content-between align-items-center instruction-item ${selectedInstId === type.id ? 'active' : ''}`}
+                                    onClick={() => setSelectedInstId(type.id)}
+                                >
+                                    <div className="inst-details">
+                                        <span className="inst-name">{type.instruction_name}</span>
+                                        <span className="inst-desc">{type.description}</span>
+                                    </div>
+                                    <FiChevronRight className="chevron-icon" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Right Panel: Action Mapping */}
+                    <div className="table-card">
+                        <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div className="header-details">
+                                <h3 style={{ marginBottom: '4px' }}>
+                                    Configuring: {currentInstruction?.instruction_name || 'Select Instruction'}
+                                </h3>
+                                <p className="text-muted" style={{ fontSize: '0.85rem' }}>
+                                    {currentInstruction?.description || 'No description provided.'}
+                                </p>
+                            </div>
+
+                            {/* Management Controls moved here */}
+                            {currentInstruction && (
+                                <div className="header-management-actions">
+                                    <button
+                                        className="secondary-btn"
+                                        style={{ padding: '6px 12px', fontSize: '0.8rem', marginRight: '8px' }}
+                                        onClick={() => handleEditInstruction(currentInstruction)}
+                                    >
+                                        <FiEdit2 style={{ marginRight: '6px' }} /> Edit Details
+                                    </button>
+                                    <button
+                                        className="icon-btn delete"
+                                        title="Delete Instruction Type"
+                                        onClick={(e) => handleDeleteInstruction(currentInstruction.id, e)}
+                                    >
+                                        <FiTrash2 />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mapping-section-label" style={{ padding: '16px 20px 0', fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            Mapped Actions
+                        </div>
+
+                        <div className="actions-grid">
+                            {availableActions.map(action => {
+                                // Logic to check if this action is currently mapped to the selected instruction
+                                const isMapped = instructionMap.some(m =>
+                                    parseInt(m.instruction_type_id) === parseInt(selectedInstId) &&
+                                    parseInt(m.action_id) === parseInt(action.id)
+                                );
+
+                                return (
+                                    <div
+                                        key={action.id}
+                                        className={`action-selector-card ${isMapped ? 'selected' : ''}`}
+                                        onClick={() => toggleMapping(action.id, isMapped)}
+                                    >
+                                        <div className="selection-indicator">
+                                            {isMapped ? <FiCheckSquare /> : <FiSquare />}
+                                        </div>
+                                        <div className="card-info">
+                                            <span className="action-label">{action.action_name}</span>
+                                            <span className={`status-pill ${action.action_result?.toLowerCase()}`}>
+                                                {action.action_result}
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                /* SECTION 2: GLOBAL ACTION POOL MANAGEMENT */
+                <div className="table-card">
+                    <div className="panel-header">
+                        <FiActivity /> <span>Global Action Management</span>
+                    </div>
+                    <div className="table-responsive">
+                        <table className="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Action Name</th>
+                                    <th>Result Label</th>
+                                    <th>Description</th>
+                                    <th className="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {availableActions.map(action => (
+                                    <tr key={action.id}>
+                                        <td>
+                                            <div className="action-info-cell">
+                                                <div className="action-icon-box">{getActionIcon(action.action_result)}</div>
+                                                <span style={{ fontWeight: 600 }}>{action.action_name}</span>
+                                            </div>
+                                        </td>
+                                        <td>{action.action_result}</td>
+                                        <td className="text-muted">{action.description}</td>
+                                        <td className="d-flex justify-content-end">
+                                            <button
+                                                className="icon-btn delete"
+                                                onClick={() => handleDeleteAction(action.id)}
+                                            >
+                                                <FiTrash2 />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Modals */}
+            <InstructionFormModal
+                show={showInstModal}
+                onClose={() => setShowInstModal(false)}
+                instruction={selectedInst}
+                onSuccess={fetchData}
+            />
+
+            <CreateActionModal
+                show={showActionModal}
+                onClose={() => setShowActionModal(false)}
+                formData={actionFormData}
+                setFormData={setActionFormData}
+                onSubmit={handleCreateAction}
+            />
         </div>
     );
 }

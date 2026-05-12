@@ -1,0 +1,256 @@
+.transactions-page {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.trans-header {
+  margin-bottom: 30px;
+}
+
+.header-title h1 {
+  font-size: 1.75rem;
+  color: #1e293b;
+  margin: 0 0 6px 0;
+  font-weight: 700;
+}
+
+.header-title p {
+  color: #64748b;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Row-based Layout */
+.trans-grid {
+  display: flex;
+  flex-direction: column; /* Stack sections vertically */
+  gap: 40px; /* Space between the two tables */
+}
+
+/* Section Styling */
+.trans-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.title-icon.in {
+  background: #dcfce7;
+  color: #166534;
+  box-shadow: 0 4px 10px rgba(22, 101, 52, 0.1);
+}
+
+.title-icon.out {
+  background: #e0f2fe;
+  color: #075985;
+  box-shadow: 0 4px 10px rgba(7, 89, 133, 0.1);
+}
+
+.title-text h2 {
+  font-size: 1.2rem;
+  margin: 0;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.title-text span {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.count-badge {
+  background: #820d0d;
+  color: white;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* Table Card Base */
+.table-card {
+  background: #ffffff;
+  border: 1px solid rgba(137, 133, 128, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.trans-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.trans-table th {
+  background: #f8fafc;
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.trans-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f8fafc;
+  font-size: 0.9rem;
+}
+
+/* Document Column Styles */
+.doc-cell {
+  max-width: 300px;
+  transition: background-color 0.2s ease;
+}
+
+.doc-cell:hover {
+  background-color: #f8fafc;
+}
+
+.doc-cell:hover .doc-title {
+  color: #820d0d;
+  text-decoration: underline;
+}
+
+.doc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.doc-no {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #820d0d;
+  letter-spacing: 0.5px;
+}
+
+.doc-title {
+  font-size: 0.95rem;
+  color: #1e293b;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* User Identity Styles */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+}
+
+/* Instruction Tags */
+.instruction-tag {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* Dynamic Action Buttons Group */
+.action-buttons-group {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.dynamic-action-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #820d0d; /* Default fallback color */
+}
+
+.dynamic-action-btn:hover {
+  filter: brightness(0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Status Pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+.status-inprogress {
+  background: #e0f2fe;
+  color: #075985;
+}
+.status-completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* Utility */
+.date-text {
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px !important;
+  color: #cbd5e1;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.modal-overlay {
+  z-index: 1000;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

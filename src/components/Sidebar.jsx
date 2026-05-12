@@ -58,19 +58,9 @@ export default function Sidebar({ isOpen, onClose, logo }) {
           <span>Dashboard</span>
         </NavLink>
 
-        <NavLink to="/transactions" className="nav-item" onClick={onClose}>
-          <FiPaperclip />
-          <span>Transactions</span>
-        </NavLink>
-
         <NavLink to="/workspace" className="nav-item" onClick={onClose}>
           <FiServer />
           <span>Workspace</span>
-        </NavLink>
-
-        <NavLink to="/storage" className="nav-item" onClick={onClose}>
-          <FiFolder />
-          <span>Storage</span>
         </NavLink>
 
         <NavLink to="/documents" className="nav-item" onClick={onClose}>
@@ -78,48 +68,56 @@ export default function Sidebar({ isOpen, onClose, logo }) {
           <span>Documents</span>
         </NavLink>
 
-        {canAccessMasterData && (
-          <div className="nav-group">
-            <button
-              type="button"
-              className={`nav-item nav-parent ${masterOpen ? 'nav-parent-open' : ''}`}
-              onClick={() => setMasterOpen((prev) => !prev)}
-            >
-              <FiDatabase />
-              <span>Master Data</span>
-              <FiChevronDown className="nav-chevron" />
-            </button>
+        <NavLink to="/transactions" className="nav-item" onClick={onClose}>
+          <FiPaperclip />
+          <span>Transactions</span>
+        </NavLink>
 
-            {masterOpen && (
-              <div className="nav-submenu">
-                <NavLink to="/categories" className="nav-subitem" onClick={onClose}>
-                  <FiFolder />
-                  <span>Categories</span>
-                </NavLink>
+        <NavLink to="/storage" className="nav-item" onClick={onClose}>
+          <FiFolder />
+          <span>Storage</span>
+        </NavLink>
 
-                <NavLink to="/types" className="nav-subitem" onClick={onClose}>
-                  <FiTag />
-                  <span>Types</span>
-                </NavLink>
+        <div className="nav-group">
+          <button
+            type="button"
+            className={`nav-item nav-parent ${masterOpen ? 'nav-parent-open' : ''}`}
+            onClick={() => setMasterOpen((prev) => !prev)}
+          >
+            <FiDatabase />
+            <span>Master Data</span>
+            <FiChevronDown className="nav-chevron" />
+          </button>
 
-                <NavLink to="/classification" className="nav-subitem" onClick={onClose}>
-                  <FiLayers />
-                  <span>Classification</span>
-                </NavLink>
+          {masterOpen && (
+            <div className="nav-submenu">
+              <NavLink to="/categories" className="nav-subitem" onClick={onClose}>
+                <FiFolder />
+                <span>Categories</span>
+              </NavLink>
 
-                <NavLink to="/departments" className="nav-subitem" onClick={onClose}>
-                  <FiBriefcase />
-                  <span>Departments</span>
-                </NavLink>
+              <NavLink to="/types" className="nav-subitem" onClick={onClose}>
+                <FiTag />
+                <span>Types</span>
+              </NavLink>
 
-                <NavLink to="/instructions" className="nav-subitem" onClick={onClose}>
-                  <FiBriefcase />
-                  <span>Instructions</span>
-                </NavLink>
-              </div>
-            )}
-          </div>
-        )}
+              <NavLink to="/classification" className="nav-subitem" onClick={onClose}>
+                <FiLayers />
+                <span>Classification</span>
+              </NavLink>
+
+              <NavLink to="/departments" className="nav-subitem" onClick={onClose}>
+                <FiBriefcase />
+                <span>Departments</span>
+              </NavLink>
+
+              <NavLink to="/instructions" className="nav-subitem" onClick={onClose}>
+                <FiBriefcase />
+                <span>Instructions</span>
+              </NavLink>
+            </div>
+          )}
+        </div>
 
         {canAccessUsers && (
           <NavLink to="/users" className="nav-item" onClick={onClose}>

@@ -1,0 +1,67 @@
+.docs-container {
+  padding: 4px 2px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+.doc-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.doc-icon-square {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #820d0d;
+}
+.doc-no {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+  display: block;
+}
+.doc-title-text {
+  font-weight: 600;
+  color: #1e293b;
+}
+.meta-cell {
+  display: flex;
+  flex-direction: column;
+}
+.type-text {
+  font-size: 0.88rem;
+  color: #334155;
+  font-weight: 500;
+}
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.status-draft {
+  background: #f1f5f9;
+  color: #475569;
+}
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+.status-inprogress {
+  background: #e0f2fe; /* Light blue background */
+  color: #075985; /* Dark blue text */
+}
+.status-completed {
+  background: #dcfce7;
+  color: #166534;
+}
+.date-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #64748b;
+}

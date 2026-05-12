@@ -1,0 +1,133 @@
+.doc-modal-card-horizontal {
+  background: #fcfcfc;
+  border: 1px solid rgba(137, 133, 128, 0.24);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(47, 47, 47, 0.2);
+  overflow: hidden;
+  animation: modalFadeIn 0.2s ease;
+
+  /* Your required width for the horizontal layout */
+  width: min(920px, 98%);
+}
+
+.doc-form-horizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.form-row .form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.flex-2 {
+  flex: 2 !important;
+}
+.flex-1 {
+  flex: 1 !important;
+}
+
+.textarea-fixed {
+  height: 100px;
+  resize: none;
+}
+
+/* Compact File Zone */
+.file-upload-area-compact {
+  height: 100px;
+}
+
+.file-drop-zone-compact {
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  align-items: center; /* Center horizontally */
+  justify-content: center; /* Center vertically */
+  text-align: center;
+  height: 100%;
+  border: 2px dashed #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 10px; /* Add some padding so text doesn't hit edges */
+}
+
+.file-drop-zone-compact:hover {
+  border-color: #820d0d;
+  background: #fff1f1;
+}
+
+.file-drop-zone-compact.has-file {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.file-placeholder-compact {
+  display: flex;
+  flex-direction: column; /* Stack icon and text */
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.file-placeholder-compact svg {
+  font-size: 1.4rem; /* Adjust icon size */
+  margin-bottom: 2px;
+}
+
+/* Fix for the Selected File alignment */
+.file-selected-info {
+  display: flex;
+  flex-direction: column; /* Better for compact horizontal modals */
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #166534;
+  font-weight: 500;
+  width: 100%;
+}
+
+.file-name-truncate {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+  display: block; /* Ensure it respects text-align */
+}
+
+.modal-actions-horizontal {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.icon-success {
+  font-size: 1.5rem;
+  color: #10b981;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+  }
+  .doc-modal-card-horizontal {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
