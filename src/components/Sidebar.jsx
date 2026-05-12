@@ -8,7 +8,6 @@ import {
   FiFileText,
   FiShield,
   FiLogOut,
-  FiX,
   FiServer,
   FiPaperclip,
   FiDatabase,
@@ -19,11 +18,22 @@ import {
   FiBriefcase
 } from 'react-icons/fi'
 import '../styles/sidebar.css'
-import archeioLogo from '../assets/archeiologo.png';
+import archeioLogo from '../assets/archeiologo.png'
 
 export default function Sidebar({ isOpen, onClose, logo }) {
   const [masterOpen, setMasterOpen] = useState(false)
-  const currentLogo = logo || archeioLogo;
+  const currentLogo = logo || archeioLogo
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const userlevel = user?.userlevel
+
+  const canAccessMasterData =
+    userlevel === 'Super Admin' ||
+    userlevel === 'Administrator' ||
+    userlevel === 'Admin'
+
+  const canAccessUsers = userlevel === 'Super Admin'
+
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -38,11 +48,6 @@ export default function Sidebar({ isOpen, onClose, logo }) {
         ) : (
           <div className="brand-logo-fallback">D</div>
         )}
-        {/* <div className="brand-box">
-          <button className="sidebar-close-btn" onClick={onClose}>
-            <FiX />
-          </button>
-        </div> */}
       </div>
 
       <div className="sidebar-divider" />
@@ -73,71 +78,55 @@ export default function Sidebar({ isOpen, onClose, logo }) {
           <span>Documents</span>
         </NavLink>
 
-        <div className="nav-group">
-          <button
-            type="button"
-            className={`nav-item nav-parent ${masterOpen ? 'nav-parent-open' : ''}`}
-            onClick={() => setMasterOpen((prev) => !prev)}
-          >
-            <FiDatabase />
-            <span>Master Data</span>
-            <FiChevronDown className="nav-chevron" />
-          </button>
+        {canAccessMasterData && (
+          <div className="nav-group">
+            <button
+              type="button"
+              className={`nav-item nav-parent ${masterOpen ? 'nav-parent-open' : ''}`}
+              onClick={() => setMasterOpen((prev) => !prev)}
+            >
+              <FiDatabase />
+              <span>Master Data</span>
+              <FiChevronDown className="nav-chevron" />
+            </button>
 
-          {masterOpen && (
-            <div className="nav-submenu">
-              <NavLink
-                to="/categories"
-                className="nav-subitem"
-                onClick={onClose}
-              >
-                <FiFolder />
-                <span>Categories</span>
-              </NavLink>
+            {masterOpen && (
+              <div className="nav-submenu">
+                <NavLink to="/categories" className="nav-subitem" onClick={onClose}>
+                  <FiFolder />
+                  <span>Categories</span>
+                </NavLink>
 
-              <NavLink
-                to="/types"
-                className="nav-subitem"
-                onClick={onClose}
-              >
-                <FiTag />
-                <span>Types</span>
-              </NavLink>
+                <NavLink to="/types" className="nav-subitem" onClick={onClose}>
+                  <FiTag />
+                  <span>Types</span>
+                </NavLink>
 
-              <NavLink
-                to="/classification"
-                className="nav-subitem"
-                onClick={onClose}
-              >
-                <FiLayers />
-                <span>Classification</span>
-              </NavLink>
+                <NavLink to="/classification" className="nav-subitem" onClick={onClose}>
+                  <FiLayers />
+                  <span>Classification</span>
+                </NavLink>
 
-              <NavLink
-                to="/departments"
-                className="nav-subitem"
-                onClick={onClose}
-              >
-                < FiBriefcase />
-                <span>Departments</span>
-              </NavLink>
-              
-              <NavLink
-                to="/instructions"
-                className="nav-subitem"
-                onClick={onClose}
-              >
-                < FiBriefcase />
-                <span>Instructions</span>
-              </NavLink>
-            </div>
-          )}
-        </div>
+                <NavLink to="/departments" className="nav-subitem" onClick={onClose}>
+                  <FiBriefcase />
+                  <span>Departments</span>
+                </NavLink>
 
-        <NavLink to="/users" className="nav-item" onClick={onClose}>
-          <FiUsers />
-          <span>Users</span>
-        </NavLink>
+                <NavLink to="/instructions" className="nav-subitem" onClick={onClose}>
+                  <FiBriefcase />
+                  <span>Instructions</span>
+                </NavLink>
+              </div>
+            )}
+          </div>
+        )}
+
+        {canAccessUsers && (
+          <NavLink to="/users" className="nav-item" onClick={onClose}>
+            <FiUsers />
+            <span>Users</span>
+          </NavLink>
+        )}
 
         <NavLink to="/reports" className="nav-item" onClick={onClose}>
           <FiBarChart2 />

@@ -85,6 +85,8 @@ export default function Categories() {
     try {
       setLoading(true)
 
+   
+
       const fd = new FormData()
       fd.append("tag", "getall")
 
@@ -139,8 +141,11 @@ export default function Categories() {
     }
 
     try {
+
+      const user = JSON.parse(localStorage.getItem("user"));
       const fd = new FormData()
       fd.append("tag", "insert")
+      fd.append("userid", user.id)
       fd.append("category_name", categoryName)
       fd.append("description", description)
       fd.append("status", status)
@@ -203,8 +208,10 @@ export default function Categories() {
 
     try {
       const fd = new FormData()
+      const user = JSON.parse(localStorage.getItem("user"));
       fd.append("tag", "update")
       fd.append("id", selectedId)
+      fd.append("userid", user.id)
       fd.append("category_name", categoryName)
       fd.append("description", description)
       fd.append("status", status)
@@ -257,8 +264,10 @@ export default function Categories() {
 
     try {
       const fd = new FormData()
+      const user = JSON.parse(localStorage.getItem("user"));
       fd.append("tag", "delete")
       fd.append("id", id)
+      fd.append("userid", user.id)
 
       const response = await axios.post(`${API_URL}/category.php`, fd)
 

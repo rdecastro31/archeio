@@ -51,6 +51,7 @@ export default function Login({ logo }) {
       });
 
       const result = await response.json();
+      console.log(JSON.stringify(result.data));
 
       if (result.success === 1) {
         localStorage.setItem("token", result.data.email);

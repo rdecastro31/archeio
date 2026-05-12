@@ -105,12 +105,14 @@ const handleCreateClassification = async (e) => {
   }
 
   try {
+     const user = JSON.parse(localStorage.getItem("user"));
     const data = new FormData()
     data.append("tag", "insert")
     data.append("classification_name", formData.classification_name)
     data.append("short_name", formData.short_name)
     data.append("description", formData.description)
     data.append("category_id", formData.category_id)
+    data.append("userid", user.id)
 
     const response = await axios.post(
       `${API_URL}/classification.php`,
@@ -171,6 +173,7 @@ const handleUpdateClassification = async (e) => {
   }
 
   try {
+     const user = JSON.parse(localStorage.getItem("user"));
     const data = new FormData()
     data.append("tag", "update")
     data.append("id", formData.id)
@@ -179,6 +182,7 @@ const handleUpdateClassification = async (e) => {
     data.append("description", formData.description.trim())
     data.append("category_id", formData.category_id)
     data.append("status", formData.status)
+    data.append("userid", user.id)
 
     const response = await axios.post(
       `${API_URL}/classification.php`,
@@ -247,8 +251,10 @@ const fetchCategories = async () => {
 
   try {
     const data = new FormData()
+    const user = JSON.parse(localStorage.getItem("user"));
     data.append("tag", "delete")
     data.append("id", id)
+    data.append("userid", user.id)
 
     const response = await axios.post(
       `${API_URL}/classification.php`,

@@ -55,6 +55,7 @@ export default function Types() {
     e.preventDefault()
 
     try {
+       const user = JSON.parse(localStorage.getItem("user"));
       const fd = new FormData()
       fd.append("tag", "update")
       fd.append("id", formData.id)
@@ -65,6 +66,7 @@ export default function Types() {
       fd.append("retention_unit", formData.retention_unit)
       fd.append("classification_id", formData.classification_id)
       fd.append("status", formData.status)
+      fd.append("userid", user.id)
 
       const response = await axios.post(`${API_URL}/doctype.php`, fd)
 
@@ -241,6 +243,7 @@ export default function Types() {
     }
 
     try {
+       const user = JSON.parse(localStorage.getItem("user"));
       const fd = new FormData()
       fd.append("tag", "insert")
       fd.append("type_name", typeName)
@@ -249,6 +252,7 @@ export default function Types() {
       fd.append("retention_period", retentionPeriod)
       fd.append("retention_unit", retentionUnit)
       fd.append("classification_id", classificationId)
+      fd.append("userid", user.id)
 
       const response = await axios.post(`${API_URL}/doctype.php`, fd)
 
@@ -297,9 +301,11 @@ export default function Types() {
     if (!result.isConfirmed) return
 
     try {
+       const user = JSON.parse(localStorage.getItem("user"));
       const fd = new FormData()
       fd.append("tag", "delete")
       fd.append("id", id)
+      fd.append("userid", user.id)
 
       const response = await axios.post(`${API_URL}/doctype.php`, fd)
 

@@ -139,10 +139,13 @@ export default function Departments() {
 
     try {
       const fd = new FormData()
+      const user = JSON.parse(localStorage.getItem("user"));
       fd.append("tag", "insert")
       fd.append("department_name", departmentName)
       fd.append("description", description)
       fd.append("status", status)
+      fd.append("userid", user.id)
+      
 
       const response = await axios.post(`${API_URL}/department.php`, fd)
 
@@ -201,9 +204,11 @@ export default function Departments() {
     }
 
     try {
+      const user = JSON.parse(localStorage.getItem("user"));
       const fd = new FormData()
       fd.append("tag", "update")
       fd.append("id", selectedId)
+      fd.append("userid", user.id)
       fd.append("department_name", departmentName)
       fd.append("description", description)
       fd.append("status", status)
@@ -255,10 +260,11 @@ export default function Departments() {
     if (!result.isConfirmed) return
 
     try {
+      const user = JSON.parse(localStorage.getItem("user"));
       const fd = new FormData()
       fd.append("tag", "delete")
       fd.append("id", id)
-
+      fd.append("userid", user.id)
       const response = await axios.post(`${API_URL}/department.php`, fd)
 
       if (Number(response.data.success) === 1) {
