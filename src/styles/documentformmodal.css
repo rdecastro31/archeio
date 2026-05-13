@@ -111,10 +111,9 @@
 .modal-actions-horizontal {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 12px;
-  margin-top: 8px;
-  padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
+  margin-top: 22px;
 }
 
 .icon-success {
@@ -122,6 +121,27 @@
   color: #10b981;
 }
 
+.modal-actions-horizontal {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.modal-actions-horizontal .cancel-route-btn {
+  flex: 0 0 auto !important;
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+  padding: 10px 14px !important;
+}
+
+.modal-actions-horizontal .route-submit-btn {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 185px !important;
+  padding: 10px 20px !important;
+}
 @media (max-width: 768px) {
   .form-row {
     flex-direction: column;
