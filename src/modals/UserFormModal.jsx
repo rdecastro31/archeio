@@ -9,7 +9,7 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
-    mobile_no: "",
+    mobile_number: "",
     password: "",
     userlevel: "Staff",
     department_id: "",
@@ -21,14 +21,14 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
     if (user) {
       setFormData({
         ...user,
-        mobile_no: user.mobile_no || "",
+        mobile_number: user.mobile_number || "",
         password: "",
       });
     } else {
       setFormData({
         fullname: "",
         email: "",
-        mobile_no: "",
+        mobile_number: "",
         password: "",
         userlevel: "Staff",
         department_id: departments[0]?.id || "",
@@ -62,7 +62,7 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
 
     setFormData((prev) => ({
       ...prev,
-      mobile_no: cleaned,
+      mobile_number: cleaned,
     }));
   };
 
@@ -186,7 +186,7 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
                 type="text"
                 required
                 placeholder="e.g. 09171234567"
-                value={formData.mobile_no}
+                value={formData.mobile_number}
                 onChange={(e) => handleMobileChange(e.target.value)}
               />
             </div>
