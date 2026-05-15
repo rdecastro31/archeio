@@ -101,6 +101,11 @@ export default function Sidebar({ isOpen, onClose, logo }) {
                 <span>Types</span>
               </NavLink>
 
+              <NavLink to="/document_statuses" className="nav-subitem" onClick={onClose}>
+                <FiTag />
+                <span>Statuses</span>
+              </NavLink>
+
               <NavLink to="/classification" className="nav-subitem" onClick={onClose}>
                 <FiLayers />
                 <span>Classification</span>

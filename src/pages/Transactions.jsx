@@ -4,32 +4,59 @@ import {
     FiArrowUpRight,
     FiUser,
     FiActivity,
-    FiPlay,
-    FiXCircle,
-    FiPauseCircle,
-    FiCornerUpLeft,
-    FiCheckCircle,
-    FiFileText
+    FiFileText,
+    FiChevronDown,
+    FiChevronUp,
+    FiClock,
+    FiAlertCircle,
+    FiCheckCircle
 } from "react-icons/fi";
 import { API_URL } from "../shared/constants";
 import { useOutletContext } from "react-router-dom";
 import Swal from "sweetalert2";
 import "../styles/transactions.css";
 import FileViewerModal from './../modals/ViewFileModal';
+import RouteDocumentModal from "../modals/RouteDocumentModal";
 
 export default function Transactions() {
     const { user: currentUser } = useOutletContext();
-    const [incoming, setIncoming] = useState([]);
-    const [outgoing, setOutgoing] = useState([]);
-    const [actionsMap, setActionsMap] = useState({}); // Stores which instructions map to which action IDs
-    const [allActions, setAllActions] = useState({}); // Stores action details keyed by ID
+    const [groupedTransactions, setGroupedTransactions] = useState([]);
+    const [expandedDocs, setExpandedDocs] = useState({});
+    const [actionsMap, setActionsMap] = useState({});
+    const [allActions, setAllActions] = useState({});
     const [showViewModal, setShowViewModal] = useState(false);
     const [viewingFile, setViewingFile] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Routing Modal State
+    const [showRouteModal, setShowRouteModal] = useState(false);
+    const [selectedDocForRouting, setSelectedDocForRouting] = useState(null);
+
+    /**
+     * Logic: Calculate days until due_date
+     */
+    const calculateDaysRemaining = (dueDate) => {
+        if (!dueDate) return null;
+        const now = new Date();
+        const due = new Date(dueDate);
+        const diffTime = due - now;
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    };
+
+    const renderTimeRemaining = (dueDate, status) => {
+        if (status === 'Completed') return <span className="time-pill done"><FiCheckCircle /> Finished</span>;
+        const days = calculateDaysRemaining(dueDate);
+        if (days === null) return <span className="time-pill none">No Deadline</span>;
+        if (days < 0) return <span className="time-pill overdue"><FiAlertCircle /> {Math.abs(days)}d Overdue</span>;
+        if (days === 0) return <span className="time-pill warning">Due Today</span>;
+        return <span className="time-pill active">{days}d remaining</span>;
+    };
+
+    /**
+     * Data Fetching
+     */
     const fetchData = useCallback(async () => {
         setLoading(true);
-
         const transFd = new FormData(); transFd.append("tag", "getall");
         const mapFd = new FormData(); mapFd.append("tag", "get_all_mappings");
         const actFd = new FormData(); actFd.append("tag", "getall");
@@ -41,14 +68,12 @@ export default function Transactions() {
                 fetch(`${API_URL}/actions.php`, { method: "POST", body: actFd }).then(r => r.json())
             ]);
 
-            // 1. Process Actions into a lookup table
             if (actRes.success) {
-                const actionLookup = {};
-                actRes.data.forEach(a => { actionLookup[a.id] = a; });
-                setAllActions(actionLookup);
+                const lookup = {};
+                actRes.data.forEach(a => { lookup[a.id] = a; });
+                setAllActions(lookup);
             }
 
-            // 2. Process Mappings (Group action IDs by instruction_type_id)
             if (mapRes.success) {
                 const groupedMap = {};
                 mapRes.data.forEach(m => {
@@ -58,15 +83,28 @@ export default function Transactions() {
                 setActionsMap(groupedMap);
             }
 
-            // 3. Process Transactions
             if (transRes.success) {
-                setIncoming(transRes.data.filter(t =>
-                    parseInt(t.to_user_id) === parseInt(currentUser.id) &&
-                    t.transaction_status === 'Pending'
-                ));
-                setOutgoing(transRes.data.filter(t =>
-                    parseInt(t.from_user_id) === parseInt(currentUser.id)
-                ));
+                const groups = {};
+                transRes.data.forEach(t => {
+                    if (!groups[t.document_id]) groups[t.document_id] = [];
+                    groups[t.document_id].push(t);
+                });
+
+                const visibleGroups = Object.values(groups).filter(history => {
+                    const latest = history.sort((a, b) => parseInt(b.id) - parseInt(a.id))[0];
+                    return parseInt(latest.to_user_id) === parseInt(currentUser.id) ||
+                        parseInt(latest.from_user_id) === parseInt(currentUser.id);
+                }).map(history => {
+                    const sortedHistory = history.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+                    const latest = sortedHistory[0];
+                    return {
+                        ...latest,
+                        history: sortedHistory,
+                        direction: parseInt(latest.to_user_id) === parseInt(currentUser.id) ? 'incoming' : 'outgoing'
+                    };
+                });
+
+                setGroupedTransactions(visibleGroups.sort((a, b) => b.id - a.id));
             }
         } catch (error) {
             console.error("Fetch error:", error);
@@ -75,252 +113,193 @@ export default function Transactions() {
         }
     }, [currentUser.id]);
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+    useEffect(() => { fetchData(); }, [fetchData]);
+
+    /**
+     * Handlers
+     */
+    const toggleAccordion = (docId) => {
+        setExpandedDocs(prev => ({ ...prev, [docId]: !prev[docId] }));
+    };
+
+    const handleReceive = async (transaction) => {
+        const fd = new FormData();
+        fd.append("tag", "insert");
+        fd.append("document_id", transaction.document_id);
+        fd.append("from_user_id", transaction.from_user_id);
+        fd.append("to_user_id", currentUser.id);
+        fd.append("from_department_id", transaction.from_department_id);
+        fd.append("to_department_id", currentUser.department_id);
+        fd.append("instruction_type_id", transaction.instruction_type_id);
+        fd.append("due_date", transaction.due_date);
+        fd.append("transaction_status", "Received");
+        fd.append("remarks", "Document physically received.");
+
+        const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
+        if (res.success) {
+            Swal.fire({ title: "Received", icon: "success", timer: 800, showConfirmButton: false });
+            fetchData();
+        }
+    };
 
     const handleActionClick = (transaction, action) => {
-        Swal.fire({
-            title: `Confirm ${action.action_name}?`,
-            text: `Document: ${transaction.document_no} - ${transaction.title}`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, proceed',
-            confirmButtonColor: '#820d0d'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                // Check if the result is 'Complete'
-                if (action.action_result === 'Complete') {
-
-                    // 1. Prepare data for document_transaction.php
-                    // We update the transaction record to show it was acted upon
-                    const transFd = new FormData();
-                    transFd.append("tag", "updatestatus"); // Assuming your backend has a status update tag
-                    transFd.append("id", transaction.id);
-                    transFd.append("transaction_status", "Completed");
-
-                    // 2. Prepare data for document.php
-                    // We update the master document status to 'Completed'
-                    const docFd = new FormData();
-                    docFd.append("tag", "update_status");
-                    docFd.append("id", transaction.document_id);
-                    docFd.append("document_status", "Completed");
-
-                    try {
-                        const [resTrans, resDoc] = await Promise.all([
-                            fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: transFd }).then(r => r.json()),
-                            fetch(`${API_URL}/document.php`, { method: "POST", body: docFd }).then(r => r.json())
-                        ]);
-
-                        if (resTrans.success && resDoc.success) {
-                            Swal.fire({
-                                title: "Completed",
-                                text: "The document and transaction have been marked as completed.",
-                                icon: "success",
-                                confirmButtonColor: "#820d0d"
-                            });
-                            fetchData(); // Refresh the tables
-                        } else {
-                            Swal.fire("Error", "Failed to update record status.", "error");
-                        }
-                    } catch (error) {
-                        console.error("Completion error:", error);
-                        Swal.fire("Error", "Network error occurred.", "error");
-                    }
-                } else {
-                    // Handle other results (Proceed, Terminate, etc.) here
-                    console.log("Other action triggered:", action.action_result);
-                }
-            }
-        });
-    };
-
-    const getActionIcon = (actionName) => {
-        switch (actionName) {
-            case 'Proceed': return <FiPlay />;
-            case 'Terminate': return <FiXCircle />;
-            case 'Hold': return <FiPauseCircle />;
-            case 'Return': return <FiCornerUpLeft />;
-            case 'Complete': return <FiCheckCircle />;
-            default: return <FiActivity />;
-        }
-    };
-
-    const renderActionButtons = (transaction) => {
-        // 1. If the transaction is already completed, show a status message instead of buttons
-        if (transaction.transaction_status === 'Completed') {
-            return (
-                <div className="action-buttons-group">
-                    <span className="status-pill status-completed" style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                        <FiCheckCircle style={{ marginRight: '4px' }} /> Completed
-                    </span>
-                </div>
-            );
-        }
-
-        const instructionId = transaction.instruction_type_id;
-        const mappedActionIds = actionsMap[instructionId] || [];
-
-        return (
-            <div className="action-buttons-group">
-                {mappedActionIds.length > 0 ? (
-                    mappedActionIds.map((actionId) => {
-                        const action = allActions[actionId];
-                        if (!action) return null;
-
-                        const btnStyle = action.action_result?.startsWith('#')
-                            ? { backgroundColor: action.action_result }
-                            : {};
-
-                        return (
-                            <button
-                                key={actionId}
-                                className={`dynamic-action-btn ${!btnStyle.backgroundColor ? 'btn-primary' : ''}`}
-                                style={btnStyle}
-                                onClick={() => handleActionClick(transaction, action)}
-                            >
-                                {getActionIcon(action.action_result)}
-                                <span>{action.action_name}</span>
-                            </button>
-                        );
-                    })
-                ) : (
-                    /* 2. Message when the transaction is Pending but no map exists */
-                    <span className="text-muted" style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>
-                        No actions available
-                    </span>
-                )}
-            </div>
-        );
-    };
-
-    const handleViewDocument = (t) => {
-        if (!t.storage_file_name) {
-            Swal.fire("Info", "No attachment available for this document.", "info");
+        // If Action is 'Proceed', open the RouteDocumentModal
+        if (action.action_result === 'Proceed') {
+            setSelectedDocForRouting(transaction);
+            setShowRouteModal(true);
             return;
         }
 
-        // Mapping transaction data to the structure ViewFileModal expects
-        const fileData = {
-            name: t.storage_file_name,
-            path: t.storage_file_path || "/",
-            user: t.originating_user_id || "1", // Use the owner of the file
-        };
+        // Otherwise (Return or Complete), handle with simple confirmation
+        Swal.fire({
+            title: `Confirm ${action.action_name}?`,
+            text: `This will mark the document as ${action.action_result}`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#820d0d'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const fd = new FormData();
+                fd.append("tag", "insert");
+                fd.append("document_id", transaction.document_id);
+                fd.append("from_user_id", currentUser.id);
+                fd.append("from_department_id", currentUser.department_id);
 
-        setViewingFile(fileData);
-        setShowViewModal(true);
+                // Route back to original sender for Returns, or Creator for Completes
+                fd.append("to_user_id", transaction.from_user_id);
+                fd.append("to_department_id", transaction.from_department_id);
+
+                fd.append("instruction_type_id", transaction.instruction_type_id);
+                fd.append("action_id", action.id);
+                fd.append("due_date", transaction.due_date);
+                fd.append("transaction_status", action.action_result === 'Complete' ? 'Completed' : 'Pending');
+                fd.append("remarks", `Action: ${action.action_name}`);
+
+                const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
+
+                // Also update the master document status if completing
+                if (action.action_result === 'Complete') {
+                    const docFd = new FormData();
+                    docFd.append("tag", "update_status");
+                    docFd.append("id", transaction.document_id);
+                    docFd.append("document_status", 4);
+                    await fetch(`${API_URL}/document.php`, { method: "POST", body: docFd });
+                }
+
+                if (res.success) {
+                    Swal.fire("Success", "Action processed.", "success");
+                    fetchData();
+                }
+            }
+        });
     };
 
     return (
         <div className="transactions-page">
             <div className="trans-header">
                 <div className="header-title">
-                    <h1>Document Transactions</h1>
-                    <p>Manage your incoming tasks and track sent items.</p>
+                    <h1>Document Tracking</h1>
+                    <p>Manage your document workflow and activity history.</p>
                 </div>
             </div>
 
-            <div className="trans-grid">
-                {/* INCOMING SECTION (Full Width Row) */}
-                <section className="trans-section">
-                    <div className="section-title">
-                        <div className="title-icon in"><FiArrowDownLeft /></div>
-                        <div className="title-text">
-                            <h2>Incoming Document</h2>
-                            <span>Items waiting for your action</span>
-                        </div>
-                        <div className="count-badge">{incoming.length}</div>
-                    </div>
-
-                    <div className="table-card">
-                        <table className="trans-table">
-                            <thead>
-                                <tr>
-                                    <th>Document</th>
-                                    <th>From</th>
-                                    <th>Instruction</th>
-                                    <th className="text-end">Available Actions</th>
+            <div className="table-card">
+                <table className="trans-table">
+                    <thead>
+                        <tr>
+                            <th style={{ width: '50px' }}></th>
+                            <th>Direction</th>
+                            <th>Document</th>
+                            <th>Time Left</th>
+                            <th>Participant</th>
+                            <th>Current Task</th>
+                            <th className="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {groupedTransactions.map(t => (
+                            <React.Fragment key={t.id}>
+                                <tr className={`row-direction-${t.direction}`}>
+                                    <td>
+                                        <button className="btn-icon-only" onClick={() => toggleAccordion(t.document_id)}>
+                                            {expandedDocs[t.document_id] ? <FiChevronUp /> : <FiChevronDown />}
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <div className={`dir-indicator ${t.direction}`}>
+                                            {t.direction === 'incoming' ? <FiArrowDownLeft /> : <FiArrowUpRight />}
+                                            <span>{t.direction.toUpperCase()}</span>
+                                        </div>
+                                    </td>
+                                    <td className="doc-cell" onClick={() => { setViewingFile({ name: t.storage_file_name, path: t.storage_file_path }); setShowViewModal(true); }}>
+                                        <div className="doc-info">
+                                            <span className="doc-no">{t.document_no}</span>
+                                            <span className="doc-title">{t.title}</span>
+                                        </div>
+                                    </td>
+                                    <td>{renderTimeRemaining(t.due_date, t.transaction_status)}</td>
+                                    <td>
+                                        <div className="user-info">
+                                            <FiUser /> <span>{t.direction === 'incoming' ? t.from_user_fullname : t.to_user_fullname}</span>
+                                        </div>
+                                    </td>
+                                    <td><span className="instruction-tag">{t.transaction_status === 'Pending' ? "For Receiving" : t.instruction_name}</span></td>
+                                    <td className="text-end">
+                                        {t.direction === 'incoming' && t.transaction_status === 'Pending' ? (
+                                            <button className="dynamic-action-btn receive-btn" onClick={() => handleReceive(t)}>Receive</button>
+                                        ) : t.direction === 'incoming' && t.transaction_status === 'Received' ? (
+                                            <div className="action-buttons-group">
+                                                {(actionsMap[t.instruction_type_id] || []).map(id => (
+                                                    <button key={id} className="dynamic-action-btn" onClick={() => handleActionClick(t, allActions[id])}>
+                                                        {allActions[id]?.action_name}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className={`status-pill status-${t.transaction_status.toLowerCase()}`}>{t.transaction_status}</span>
+                                        )}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {incoming.map(t => (
-                                    <tr key={t.id}>
-                                        <td className="doc-cell" onClick={() => handleViewDocument(t)} style={{ cursor: 'pointer' }}>
-                                            <div className="doc-info">
-                                                <span className="doc-no">{t.document_no}</span>
-                                                <span className="doc-title">{t.title} <FiFileText style={{ marginLeft: '4px', opacity: 0.5 }} /></span>
+
+                                {expandedDocs[t.document_id] && (
+                                    <tr className="history-row">
+                                        <td colSpan="7">
+                                            <div className="history-container">
+                                                <div className="history-header"><FiClock /> Activity Trail</div>
+                                                {t.history.map((hist) => (
+                                                    <div key={hist.id} className="history-item">
+                                                        <div className="hist-line"></div>
+                                                        <div className="hist-dot"></div>
+                                                        <div className="hist-content">
+                                                            <div className="hist-meta">
+                                                                <span className="hist-status">{hist.transaction_status}</span>
+                                                                <span className="hist-date">{new Date(hist.date_created).toLocaleString()}</span>
+                                                            </div>
+                                                            <div className="hist-details">
+                                                                <strong>{hist.from_user_fullname}</strong>
+                                                                {hist.action_name ? ` → ${hist.action_name}` : " processed the document"}
+                                                            </div>
+                                                            {hist.remarks && <div className="hist-remarks">{hist.remarks}</div>}
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
-                                        </td>
-                                        <td>
-                                            <div className="user-info">
-                                                <FiUser /> <span>{t.from_user_fullname}</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span className="instruction-tag">{t.instruction_name}</span>
-                                        </td>
-                                        <td className="text-end">
-                                            {renderActionButtons(t)}
                                         </td>
                                     </tr>
-                                ))}
-                                {incoming.length === 0 && (
-                                    <tr><td colSpan="4" className="empty-state">No pending incoming documents.</td></tr>
                                 )}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                {/* OUTGOING SECTION (Full Width Row) */}
-                <section className="trans-section">
-                    <div className="section-title">
-                        <div className="title-icon out"><FiArrowUpRight /></div>
-                        <div className="title-text">
-                            <h2>Outgoing History</h2>
-                            <span>Documents you have forwarded</span>
-                        </div>
-                    </div>
-
-                    <div className="table-card">
-                        <table className="trans-table">
-                            <thead>
-                                <tr>
-                                    <th>Document</th>
-                                    <th>Sent To</th>
-                                    <th>Status</th>
-                                    <th className="text-end">Date Sent</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {outgoing.map(t => (
-                                    <tr key={t.id}>
-                                        <td className="doc-cell" onClick={() => handleViewDocument(t)} style={{ cursor: 'pointer' }}>
-                                            <div className="doc-info">
-                                                <span className="doc-no">{t.document_no}</span>
-                                                <span className="doc-title">{t.title} <FiFileText style={{ marginLeft: '4px', opacity: 0.5 }} /></span>
-                                            </div>
-                                        </td>
-                                        <td>{t.to_user_fullname}</td>
-                                        <td>
-                                            <span className={`status-pill status-${t.transaction_status.toLowerCase()}`}>
-                                                {t.transaction_status}
-                                            </span>
-                                        </td>
-                                        <td className="text-end date-text">
-                                            {new Date(t.date_created).toLocaleDateString()}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+                            </React.Fragment>
+                        ))}
+                    </tbody>
+                </table>
             </div>
-            <FileViewerModal
-                show={showViewModal}
-                onClose={() => setShowViewModal(false)}
-                file={viewingFile}
+
+            <FileViewerModal show={showViewModal} onClose={() => setShowViewModal(false)} file={viewingFile} />
+
+            <RouteDocumentModal
+                show={showRouteModal}
+                onClose={() => setShowRouteModal(false)}
+                document={selectedDocForRouting}
+                onSuccess={fetchData}
             />
         </div>
     );

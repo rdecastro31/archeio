@@ -65,3 +65,7 @@
   font-size: 0.85rem;
   color: #64748b;
 }
+
+.swal2-container {
+  z-index: 2000 !important;
+}

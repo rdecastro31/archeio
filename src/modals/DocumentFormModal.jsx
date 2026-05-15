@@ -16,7 +16,7 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
         description: "",
         document_type_id: "",
         transaction_type_id: "",
-        document_status: "Draft",
+        document_status: 1,
         originating_department_id: ""
     });
 
@@ -34,7 +34,7 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
                     description: "",
                     document_type_id: docTypes[0]?.id || "",
                     transaction_type_id: transTypes[0]?.id || "",
-                    document_status: "Draft",
+                    document_status: 1,
                     originating_department_id: currentUser?.department_id || ""
                 });
             }
@@ -73,6 +73,12 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
             if (document) docFd.append("id", document.id);
             Object.keys(formData).forEach(key => docFd.append(key, formData[key]));
             docFd.append("storage_file_id", fileId || "");
+            // Assuming selectedTransTypeId is the ID you are currently working with
+            const selectedType = transTypes.find(type => parseInt(type.id) === parseInt(formData.transaction_type_id));
+
+            // Access the duration
+            const duration = setDueDate(selectedType ? selectedType.processing_duration : 0);
+            docFd.append("due_date", duration)
             if (!document) {
                 docFd.append("current_holder_id", currentUser?.id);
                 docFd.append("created_by", currentUser?.id);
@@ -94,6 +100,15 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
             setIsProcessing(false);
         }
     };
+
+    const setDueDate = (daysForDue) => {
+        const todayDate = new Date();
+        todayDate.setDate(todayDate.getDate() + daysForDue);
+
+        // Format to YYYY-MM-DD
+
+        return todayDate.toISOString().slice(0, 19).replace('T', ' ');
+    }
 
     return (
         <div className="modal-overlay">

@@ -20,6 +20,7 @@ import { API_URL } from './shared/constants'
 import Instructions from './pages/Instructions'
 import Documents from './pages/Documents'
 import Transactions from './pages/Transactions'
+import DocumentStatuses from './pages/DocumentStatuses'
 
 function App() {
   const [systemSettings, setSystemSettings] = useState({
@@ -67,6 +68,7 @@ function App() {
             <Route path="/classification" element={<Classification />} />
             <Route path="/departments" element={<Departments />} />
             <Route path="/types" element={<Types />} />
+            <Route path="/document_statuses" element={<DocumentStatuses />} />
             <Route path="/users" element={<Users />} />
             <Route path="/settings" element={<Settings />} />
           </Route>

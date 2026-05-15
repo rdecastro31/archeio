@@ -11,7 +11,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { API_URL } from "../shared/constants";
 import { useOutletContext } from "react-router-dom";
-import "../styles/documentformmodal.css";
+import "../styles/routedocumentmodal.css";
 
 export default function RouteDocumentModal({
   show,
@@ -33,10 +33,21 @@ export default function RouteDocumentModal({
     to_user_id: "",
     instruction_type_id: "",
     remarks: "",
-    due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0],
+    due_date: "",
   });
+
+  const resetModal = () => {
+    setFormData({
+      department_id: "",
+      to_user_id: "",
+      instruction_type_id: "",
+      remarks: "",
+      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+    });
+    setUsers([]);
+  };
 
   useEffect(() => {
     if (show) {
@@ -45,130 +56,67 @@ export default function RouteDocumentModal({
     }
   }, [show]);
 
-  const resetModal = () => {
-    setUsers([]);
-
-    setFormData((prev) => ({
-      ...prev,
-      department_id: "",
-      to_user_id: "",
-      remarks: "",
-      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-    }));
-  };
-
   const fetchInitialData = async () => {
-    const deptFd = new FormData();
-    deptFd.append("tag", "getall");
-
-    const insFd = new FormData();
-    insFd.append("tag", "getall");
-
     try {
-      const [deptRes, insRes] = await Promise.all([
-        axios.post("https://archeio.layon.ph/api/department.php", deptFd),
-        axios.post(`${API_URL}/instructiontypes.php`, insFd),
+      const deptFd = new FormData();
+      deptFd.append("tag", "getall");
+      const instFd = new FormData();
+      instFd.append("tag", "getall");
+
+      const [deptRes, instRes] = await Promise.all([
+        axios.post(`${API_URL}/department.php`, deptFd),
+        axios.post(`${API_URL}/instructiontypes.php`, instFd),
       ]);
 
-      const deptData = deptRes.data;
-      const insData = insRes.data;
-
-      if (deptData.success === 1 || deptData.success === true) {
-        setDepartments(deptData.data || []);
-      } else {
-        setDepartments([]);
-      }
-
-      if (insData.success === 1 || insData.success === true) {
-        setInstructions(insData.data || []);
-
-        if (insData.data?.length > 0) {
-          setFormData((prev) => ({
-            ...prev,
-            instruction_type_id: insData.data[0].id,
-          }));
-        }
-      } else {
-        setInstructions([]);
-      }
+      if (deptRes.data.success) setDepartments(deptRes.data.data);
+      if (instRes.data.success) setInstructions(instRes.data.data);
     } catch (error) {
-      console.error("Error loading modal data:", error);
-
-      Swal.fire({
-        title: "Error",
-        text: "Unable to load departments or instruction types.",
-        icon: "error",
-        confirmButtonColor: "#820d0d",
-      });
+      console.error("Error fetching modal data:", error);
     }
   };
 
-  const fetchUsersByDepartment = async (departmentId) => {
-  if (!departmentId) {
-    setUsers([]);
-    return;
-  }
+  useEffect(() => {
+    if (formData.department_id) {
+      const fetchUsers = async () => {
+        setIsLoadingUsers(true);
+        const fd = new FormData();
+        fd.append("tag", "getbydept");
+        fd.append("department_id", formData.department_id);
 
-  setIsLoadingUsers(true);
-  setUsers([]);
-
-  const fd = new FormData();
-  fd.append("tag", "getbydept");
-  fd.append("deptid", departmentId);
-
-  try {
-    const response = await axios.post(
-      "https://archeio.layon.ph/api/users.php",
-      fd
-    );
-
-    const data = response.data;
-
-    console.log("GET USERS BY DEPARTMENT:", data);
-
-    if (data.success === 1 || data.success === true) {
-      setUsers(data.data || []);
+        try {
+          const res = await axios.post(`${API_URL}/users.php`, fd);
+          if (res.data.success) {
+            // Prevent routing to self
+            setUsers(res.data.data.filter(u => parseInt(u.id) !== parseInt(currentUser.id)));
+          }
+        } catch (error) {
+          console.error("Error fetching users:", error);
+        } finally {
+          setIsLoadingUsers(false);
+        }
+      };
+      fetchUsers();
     } else {
       setUsers([]);
     }
-  } catch (error) {
-    console.error("Error fetching users by department:", error);
-    setUsers([]);
-  } finally {
-    setIsLoadingUsers(false);
-  }
-};
-
-  const handleDepartmentChange = (departmentId) => {
-    setFormData((prev) => ({
-      ...prev,
-      department_id: departmentId,
-      to_user_id: "",
-    }));
-
-    fetchUsersByDepartment(departmentId);
-  };
+  }, [formData.department_id, currentUser.id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!formData.department_id || !formData.to_user_id) {
-      Swal.fire({
-        title: "Missing Required Fields",
-        text: "Please select a department and recipient.",
-        icon: "warning",
-        confirmButtonColor: "#820d0d",
-      });
+    if (!formData.to_user_id || !formData.instruction_type_id) {
+      Swal.fire("Required", "Please select a recipient and instruction.", "warning");
       return;
     }
 
     setIsProcessing(true);
 
+    // Normalize Document ID (handles both Documents and Transactions view)
+    const targetDocId = document.document_id || document.id;
+
+    // 1. Transaction Log (Audit Trail)
     const transFd = new FormData();
     transFd.append("tag", "insert");
-    transFd.append("document_id", document.id);
+    transFd.append("document_id", targetDocId);
     transFd.append("from_user_id", currentUser.id);
     transFd.append("from_department_id", currentUser.department_id);
     transFd.append("to_user_id", formData.to_user_id);
@@ -176,11 +124,13 @@ export default function RouteDocumentModal({
     transFd.append("instruction_type_id", formData.instruction_type_id);
     transFd.append("remarks", formData.remarks);
     transFd.append("due_date", formData.due_date);
+    transFd.append("transaction_status", "Pending");
 
+    // 2. Document Master Update (Global Status)
     const docUpdateFd = new FormData();
     docUpdateFd.append("tag", "update_status");
-    docUpdateFd.append("id", document.id);
-    docUpdateFd.append("document_status", "Pending");
+    docUpdateFd.append("id", targetDocId);
+    docUpdateFd.append("document_status", 2); // '2' usually denotes 'Routed' or 'In Progress'
 
     try {
       const [transRes, docRes] = await Promise.all([
@@ -188,164 +138,100 @@ export default function RouteDocumentModal({
         axios.post(`${API_URL}/document.php`, docUpdateFd),
       ]);
 
-      const transData = transRes.data;
-      const docData = docRes.data;
-
-      if (
-        (transData.success === 1 || transData.success === true) &&
-        (docData.success === 1 || docData.success === true)
-      ) {
-        Swal.fire({
-          title: "Success",
-          text: "Document routed and status updated to Pending.",
-          icon: "success",
-          confirmButtonColor: "#820d0d",
-        });
-
+      if (transRes.data.success && docRes.data.success) {
+        Swal.fire("Routed!", "Document assigned and status updated.", "success");
         onSuccess();
         onClose();
       } else {
-        const errorMsg =
-          transData.success !== 1 && transData.success !== true
-            ? transData.message
-            : docData.message;
-
-        Swal.fire({
-          title: "Error",
-          text: errorMsg || "Routing failed.",
-          icon: "error",
-          confirmButtonColor: "#820d0d",
-        });
+        Swal.fire("Error", "One or more updates failed. Check database logs.", "error");
       }
     } catch (error) {
       console.error("Routing error:", error);
-
-      Swal.fire({
-        title: "Error",
-        text: "Network error occurred while routing the document.",
-        icon: "error",
-        confirmButtonColor: "#820d0d",
-      });
+      Swal.fire("Error", "Connection failed.", "error");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  if (!show || !document) return null;
+  if (!show) return null;
 
   return (
     <div className="modal-overlay">
-      <div className="doc-modal-card-horizontal">
+      <div className="modal-content medium-modal animate-slide-up">
         <div className="modal-header">
-          <div className="header-text">
-            <h2>Route Document</h2>
-            <p>
-              Forwarding: <strong>{document.document_no}</strong>
-            </p>
+          <div className="header-icon-container">
+            <FiSend className="header-icon" />
           </div>
-
-          <button className="close-btn" onClick={onClose}>
-            <FiX />
-          </button>
+          <div className="header-text">
+            <h3>Route Document</h3>
+            <p>Assign this document to a user or department</p>
+          </div>
+          <button className="close-btn" onClick={onClose}><FiX /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="doc-form-horizontal">
-          <div className="form-grid-two">
-            <div className="form-group">
-              <label>
-                <FiBriefcase /> Department
-              </label>
+        <div className="doc-preview-banner">
+          <FiInfo />
+          <span>Routing: <strong>{document?.document_no || "N/A"}</strong> - {document?.title}</span>
+        </div>
 
+        <form onSubmit={handleSubmit} className="modal-form">
+          <div className="form-row">
+            <div className="form-group flex-1">
+              <label><FiBriefcase /> Target Department</label>
               <select
                 className="form-input-styled"
                 required
                 value={formData.department_id}
-                onChange={(e) => handleDepartmentChange(e.target.value)}
+                onChange={(e) => setFormData(prev => ({ ...prev, department_id: e.target.value, to_user_id: "" }))}
               >
-                <option value="">Select Department</option>
-
+                <option value="">Select Department...</option>
                 {departments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.department_name || dept.name}
-                  </option>
+                  <option key={dept.id} value={dept.id}>{dept.department_name}</option>
                 ))}
               </select>
             </div>
 
-            <div className="form-group">
-              <label>
-                <FiUser /> Forward To
-              </label>
-
+            <div className="form-group flex-1">
+              <label><FiUser /> Target User</label>
               <select
                 className="form-input-styled"
                 required
                 disabled={!formData.department_id || isLoadingUsers}
                 value={formData.to_user_id}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    to_user_id: e.target.value,
-                  }))
-                }
+                onChange={(e) => setFormData(prev => ({ ...prev, to_user_id: e.target.value }))}
               >
-                <option value="">
-                  {!formData.department_id
-                    ? "Select department first"
-                    : isLoadingUsers
-                    ? "Loading recipients..."
-                    : users.length === 0
-                    ? "No active users found"
-                    : "Select Recipient"}
-                </option>
-
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.fullname}
-                  </option>
+                <option value="">{isLoadingUsers ? "Loading..." : "Select User..."}</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>{user.fullname}</option>
                 ))}
               </select>
             </div>
+          </div>
 
-            <div className="form-group">
-              <label>
-                <FiInfo /> Purpose / Instruction
-              </label>
-
+          <div className="form-row">
+            <div className="form-group flex-1">
+              <label><FiInfo /> Instruction Type</label>
               <select
                 className="form-input-styled"
                 required
                 value={formData.instruction_type_id}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    instruction_type_id: e.target.value,
-                  }))
-                }
+                onChange={(e) => setFormData(prev => ({ ...prev, instruction_type_id: e.target.value }))}
               >
-                {instructions.map((ins) => (
-                  <option key={ins.id} value={ins.id}>
-                    {ins.instruction_name}
-                  </option>
+                <option value="">Select Instruction...</option>
+                {instructions.map((inst) => (
+                  <option key={inst.id} value={inst.id}>{inst.instruction_name}</option>
                 ))}
               </select>
             </div>
 
-            <div className="form-group">
-              <label>
-                <FiCalendar /> Deadline
-              </label>
-
+            <div className="form-group flex-1">
+              <label><FiCalendar /> Deadline / Due Date</label>
               <input
                 type="date"
                 className="form-input-styled"
+                required
                 value={formData.due_date}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    due_date: e.target.value,
-                  }))
-                }
+                onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
               />
             </div>
           </div>
@@ -353,45 +239,19 @@ export default function RouteDocumentModal({
           <div className="form-row">
             <div className="form-group flex-2">
               <label>Remarks / Special Instructions</label>
-
               <textarea
                 className="form-input-styled textarea-fixed"
-                placeholder="Enter details..."
+                placeholder="Enter notes for the recipient..."
                 value={formData.remarks}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    remarks: e.target.value,
-                  }))
-                }
+                onChange={(e) => setFormData(prev => ({ ...prev, remarks: e.target.value }))}
               />
             </div>
           </div>
 
           <div className="modal-actions-horizontal balanced-actions">
-            <button
-              type="button"
-              className="secondary-btn cancel-route-btn"
-              onClick={onClose}
-              disabled={isProcessing}
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              className="primary-btn route-submit-btn"
-              disabled={isProcessing || isLoadingUsers}
-            >
-              {isProcessing ? (
-                <>
-                  <span className="spinner"></span> Routing...
-                </>
-              ) : (
-                <>
-                  <FiSend style={{ marginRight: "8px" }} /> Route Document
-                </>
-              )}
+            <button type="button" className="secondary-btn" onClick={onClose} disabled={isProcessing}>Cancel</button>
+            <button type="submit" className="primary-btn" disabled={isProcessing || isLoadingUsers}>
+              {isProcessing ? <><span className="spinner"></span> Routing...</> : <><FiSend style={{ marginRight: "8px" }} /> Confirm Route</>}
             </button>
           </div>
         </form>

@@ -1,50 +1,37 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
     FiPlus, FiSettings, FiActivity, FiTrash2,
-    FiEdit2, FiChevronRight, FiInfo,
-    FiCheckSquare,
-    FiSquare,
-    FiPlay,
-    FiXCircle,
-    FiPauseCircle,
-    FiCornerUpLeft,
-    FiCheckCircle
+    FiEdit2, FiChevronRight, FiCheckSquare,
+    FiSquare, FiCheckCircle, FiInfo
 } from "react-icons/fi";
 import Swal from "sweetalert2";
+import Select from 'react-select';
 import { API_URL } from "../shared/constants";
 import CreateActionModal from "../modals/CreateActionModal";
-import InstructionFormModal from "../modals/InstructionFormModal"; // New Modal
+import InstructionFormModal from "../modals/InstructionFormModal";
 import "../styles/instructions.css";
 import "../styles/actionsmanager.css";
 
 export default function Instructions() {
     const [instructionTypes, setInstructionTypes] = useState([]);
+    const [docStatuses, setDocStatuses] = useState([]);
     const [availableActions, setAvailableActions] = useState([]);
     const [instructionMap, setInstructionMap] = useState([]);
     const [selectedInstId, setSelectedInstId] = useState(null);
+    const [selectedCurrentDocStatus, setSelectedCurrentDocStatus] = useState(null);
+    const [selectedNextDocStatus, setSelectedNextDocStatus] = useState(null);
     const [activeTab, setActiveTab] = useState('routing');
 
     // Modals State
     const [showActionModal, setShowActionModal] = useState(false);
     const [showInstModal, setShowInstModal] = useState(false);
-    const [selectedInst, setSelectedInst] = useState(null); // For Editing
+    const [selectedInst, setSelectedInst] = useState(null);
     const [actionFormData, setActionFormData] = useState({
         action_name: '',
-        action_result: 'Proceed', // Default to 'Proceed' instead of ''
+        action_result: 'Proceed',
         outcome: '',
         description: ''
     });
-
-    const getActionIcon = (actionName) => {
-        switch (actionName) {
-            case 'Proceed': return <FiPlay />;
-            case 'Terminate': return <FiXCircle />;
-            case 'Hold': return <FiPauseCircle />;
-            case 'Return': return <FiCornerUpLeft />;
-            case 'Complete': return <FiCheckCircle />;
-            default: return <FiActivity />;
-        }
-    };
 
     const callApi = async (url, formData) => {
         try {
@@ -58,40 +45,43 @@ export default function Instructions() {
     const fetchData = useCallback(async () => {
         const instFd = new FormData(); instFd.append("tag", "getall");
         const actFd = new FormData(); actFd.append("tag", "getall");
+        const statFd = new FormData(); statFd.append("tag", "getall");
         const mapFd = new FormData(); mapFd.append("tag", "get_all_mappings");
 
-        const [instRes, actRes, mapRes] = await Promise.all([
+        const [instRes, actRes, docStatusRes, mapRes] = await Promise.all([
             callApi(`${API_URL}/instructiontypes.php`, instFd),
             callApi(`${API_URL}/actions.php`, actFd),
+            callApi(`${API_URL}/docstatus.php`, statFd),
             callApi(`${API_URL}/instructionmap.php`, mapFd)
         ]);
 
-        if (instRes.success) {
-            setInstructionTypes(instRes.data);
-            if (instRes.data.length > 0 && !selectedInstId) {
-                setSelectedInstId(instRes.data[0].id);
-            }
-        }
+        if (instRes.success) setInstructionTypes(instRes.data);
+        if (docStatusRes.success) setDocStatuses(docStatusRes.data);
         if (actRes.success) setAvailableActions(actRes.data);
         if (mapRes.success) setInstructionMap(mapRes.data);
-    }, [selectedInstId]);
+    }, []);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
-    // --- INSTRUCTION CRUD ---
+    const currentInstruction = instructionTypes.find(i => i.id === selectedInstId);
+
+    // --- Instruction Management Logic ---
     const handleEditInstruction = (inst) => {
         setSelectedInst(inst);
         setShowInstModal(true);
     };
 
     const handleDeleteInstruction = async (id, e) => {
-        e.stopPropagation(); // Prevent changing selection when clicking delete
+        e.stopPropagation();
         const result = await Swal.fire({
-            title: 'Delete Instruction Type?',
-            text: "This will remove all associated mappings.",
+            title: 'Delete Instruction?',
+            text: "This will remove all associated action mappings.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#820d0d'
+            confirmButtonColor: '#820d0d',
+            confirmButtonText: 'Yes, delete it!'
         });
 
         if (result.isConfirmed) {
@@ -99,12 +89,14 @@ export default function Instructions() {
             fd.append("tag", "delete");
             fd.append("id", id);
             const res = await callApi(`${API_URL}/instructiontypes.php`, fd);
-            if (res.success) fetchData();
+            if (res.success) {
+                if (selectedInstId === id) setSelectedInstId(null);
+                fetchData();
+            }
         }
     };
 
-    // --- ACTION HANDLES ---
-
+    // --- Action & Mapping Logic ---
     const handleCreateAction = async (e) => {
         e.preventDefault();
         const fd = new FormData();
@@ -114,97 +106,136 @@ export default function Instructions() {
         const res = await callApi(`${API_URL}/actions.php`, fd);
         if (res.success) {
             setShowActionModal(false);
-            setActionFormData({ action_name: '', action_result: '', outcome: '', description: '' });
+            setActionFormData({ action_name: '', action_result: 'Proceed', outcome: '', description: '' });
             fetchData();
-            Swal.fire({ icon: 'success', title: 'Action Created', timer: 1500, showConfirmButton: false });
         }
     };
 
     const handleDeleteAction = async (id) => {
         const result = await Swal.fire({
-            title: 'Delete Action?',
-            text: "This may affect instructions currently mapped to this action.",
+            title: 'Delete Global Action?',
+            text: "This will remove this action from ALL instructions.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#820d0d',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonColor: '#820d0d'
         });
 
         if (result.isConfirmed) {
             const fd = new FormData();
             fd.append("tag", "delete");
             fd.append("id", id);
-
             const res = await callApi(`${API_URL}/actions.php`, fd);
-
-            if (res.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Deleted!',
-                    text: 'The action has been removed.',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-                fetchData(); // Refresh both actions and mappings
-            } else {
-                Swal.fire('Error', res.message || 'Failed to delete action', 'error');
-            }
+            if (res.success) fetchData();
         }
     };
 
-    // --- MAPPING LOGIC ---
-    const toggleMapping = async (actionId, isMapped) => {
-        const fd = new FormData();
-        fd.append("tag", isMapped ? "delete" : "insert");
-        fd.append("instruction_type_id", selectedInstId);
-        fd.append("action_id", actionId);
-        const res = await callApi(`${API_URL}/instructionmap.php`, fd);
-        if (res.success) fetchData();
-    };
+    const statusOptions = docStatuses.map(s => ({ value: s.id, label: s.status_name }));
+    const instructionOptions = instructionTypes.map(i => ({ value: i.id, label: "GO TO: " + i.instruction_name }));
 
-    const currentInstruction = instructionTypes.find(i => i.id === selectedInstId);
+    // Add a "Clear/None" option for next steps
+    const nextStepOptions = [
+        { value: "", label: "Process Done" },
+        ...instructionOptions
+    ];
+
+    const toggleMapping = async (actionId, nextInstId = null, currentDocStatusId = null, nextDocStatusId = null) => {
+        // 1. Identify the search context: 
+        // If we are changing the current status via dropdown, we need to find the record 
+        // that EXISTS before the change. 
+        // Otherwise, we use the currently selected global status.
+        const searchStatus = selectedCurrentDocStatus || docStatuses[0]?.id;
+
+        if (!selectedInstId) {
+            Swal.fire("Note", "Please select an Instruction type from the sidebar first.", "info");
+            return;
+        }
+
+        // 2. Find the existing record BEFORE we apply new changes
+        const mapping = instructionMap.find(m =>
+            String(m.instruction_type_id) === String(selectedInstId) &&
+            String(m.action_id) === String(actionId) &&
+            String(m.current_document_status_id) === String(searchStatus)
+        );
+
+        const fd = new FormData();
+
+        if (mapping) {
+            // If we found a record, check if we are updating it or deleting it
+            const isUpdate = nextInstId !== null || currentDocStatusId !== null || nextDocStatusId !== null;
+
+            if (isUpdate) {
+                fd.append("tag", "update");
+                fd.append("id", mapping.id);
+                // Use the NEW status if provided, otherwise keep the old one
+                fd.append("current_status_id", currentDocStatusId !== null ? currentDocStatusId : mapping.current_document_status_id);
+                fd.append("next_instruction_id", nextInstId !== null ? nextInstId : (mapping.next_instruction_id || ""));
+                fd.append("next_status_id", nextDocStatusId !== null ? nextDocStatusId : (mapping.next_document_status_id || ""));
+            } else {
+                // No dropdowns changed? This is a toggle-off click (Delete)
+                fd.append("tag", "delete");
+                fd.append("instruction_type_id", selectedInstId);
+                fd.append("action_id", actionId);
+            }
+        } else {
+            // No existing mapping found? This is a first-time activation (Insert)
+            const insertStatus = currentDocStatusId || selectedCurrentDocStatus || docStatuses[0]?.id;
+
+            fd.append("tag", "insert");
+            fd.append("instruction_type_id", selectedInstId);
+            fd.append("action_id", actionId);
+            fd.append("current_status_id", insertStatus);
+            fd.append("next_status_id", insertStatus);
+            fd.append("next_instruction_id", nextInstId || "");
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/instructionmap.php`, {
+                method: "POST",
+                body: fd
+            });
+            const res = await response.json();
+
+            if (res.success) {
+                // If the current status was updated, update the global state so the UI stays in sync
+                if (currentDocStatusId !== null) {
+                    setSelectedCurrentDocStatus(currentDocStatusId);
+                }
+                await fetchData();
+            } else {
+                Swal.fire("Error", res.message || "Failed to process request", "error");
+            }
+        } catch (error) {
+            console.error("Mapping Error:", error);
+        }
+    };
 
     return (
         <div className="instructions-container">
-            <div className="table-toolbar" style={{ borderBottom: 'none' }}>
-                <div>
-                    <h1 className="page-title">Instruction Routing Config</h1>
-                    <div className="tab-switcher">
-                        <button className={`tab-btn ${activeTab === 'routing' ? 'active' : ''}`} onClick={() => setActiveTab('routing')}>
-                            Routing Setup
-                        </button>
-                        <button className={`tab-btn ${activeTab === 'actions' ? 'active' : ''}`} onClick={() => setActiveTab('actions')}>
-                            Manage Actions
-                        </button>
-                    </div>
-                </div>
-                <div className="toolbar-actions">
-                    {activeTab === 'routing' && (
-                        <button className="secondary-btn" style={{ marginRight: '10px' }} onClick={() => { setSelectedInst(null); setShowInstModal(true); }}>
-                            <FiPlus /> <span>New Instruction</span>
-                        </button>
-                    )}
-                    {activeTab === 'actions' && (
-                        <button className="primary-btn" onClick={() => setShowActionModal(true)}>
-                            <FiPlus /> <span>New Action</span>
-                        </button>
-                    )}
-                </div>
+            <h1 className="page-title">Instruction Routing Config</h1>
+            <div className="tab-switcher">
+                <button className={`tab-btn ${activeTab === 'routing' ? 'active' : ''}`} onClick={() => setActiveTab('routing')}>
+                    Workflow Routing
+                </button>
+                <button className={`tab-btn ${activeTab === 'actions' ? 'active' : ''}`} onClick={() => setActiveTab('actions')}>
+                    Manage Global Actions
+                </button>
             </div>
 
             {activeTab === 'routing' ? (
-                <div className="instruction-grid">
-                    {/* Left Panel: Instruction List with Edit/Delete */}
-                    <div className="table-card">
+                <div className="routing-grid">
+                    {/* Left Panel: List */}
+                    <div className="instruction-sidebar">
                         <div className="panel-header">
-                            <FiSettings /> <span>Instruction Types</span>
+                            <h3>Instructions</h3>
+                            <button className="icon-btn" onClick={() => { setSelectedInst(null); setShowInstModal(true); }}>
+                                <FiPlus />
+                            </button>
                         </div>
                         <div className="instruction-list">
                             {instructionTypes.map(type => (
                                 <div
                                     key={type.id}
-                                    className={`d-flex justify-content-between align-items-center instruction-item ${selectedInstId === type.id ? 'active' : ''}`}
+                                    className={`instruction-item ${selectedInstId === type.id ? 'active' : ''}`}
                                     onClick={() => setSelectedInstId(type.id)}
                                 >
                                     <div className="inst-details">
@@ -217,84 +248,128 @@ export default function Instructions() {
                         </div>
                     </div>
 
-                    {/* Right Panel: Action Mapping */}
-                    <div className="table-card">
-                        <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div className="header-details">
-                                <h3 style={{ marginBottom: '4px' }}>
-                                    Configuring: {currentInstruction?.instruction_name || 'Select Instruction'}
-                                </h3>
-                                <p className="text-muted" style={{ fontSize: '0.85rem' }}>
-                                    {currentInstruction?.description || 'No description provided.'}
-                                </p>
-                            </div>
-
-                            {/* Management Controls moved here */}
-                            {currentInstruction && (
-                                <div className="header-management-actions">
-                                    <button
-                                        className="secondary-btn"
-                                        style={{ padding: '6px 12px', fontSize: '0.8rem', marginRight: '8px' }}
-                                        onClick={() => handleEditInstruction(currentInstruction)}
-                                    >
-                                        <FiEdit2 style={{ marginRight: '6px' }} /> Edit Details
-                                    </button>
-                                    <button
-                                        className="icon-btn delete"
-                                        title="Delete Instruction Type"
-                                        onClick={(e) => handleDeleteInstruction(currentInstruction.id, e)}
-                                    >
-                                        <FiTrash2 />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="mapping-section-label" style={{ padding: '16px 20px 0', fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            Mapped Actions
-                        </div>
-
-                        <div className="actions-grid">
-                            {availableActions.map(action => {
-                                // Logic to check if this action is currently mapped to the selected instruction
-                                const isMapped = instructionMap.some(m =>
-                                    parseInt(m.instruction_type_id) === parseInt(selectedInstId) &&
-                                    parseInt(m.action_id) === parseInt(action.id)
-                                );
-
-                                return (
-                                    <div
-                                        key={action.id}
-                                        className={`action-selector-card ${isMapped ? 'selected' : ''}`}
-                                        onClick={() => toggleMapping(action.id, isMapped)}
-                                    >
-                                        <div className="selection-indicator">
-                                            {isMapped ? <FiCheckSquare /> : <FiSquare />}
-                                        </div>
-                                        <div className="card-info">
-                                            <span className="action-label">{action.action_name}</span>
-                                            <span className={`status-pill ${action.action_result?.toLowerCase()}`}>
-                                                {action.action_result}
-                                            </span>
-                                        </div>
+                    {/* Right Panel: Configuration */}
+                    <div className="mapping-panel">
+                        {selectedInstId ? (
+                            <div className="table-card">
+                                <div className="panel-header">
+                                    <div className="header-details">
+                                        <h3>Configuring: {currentInstruction?.instruction_name}</h3>
+                                        <p className="text-muted">{currentInstruction?.description}</p>
                                     </div>
-                                );
-                            })}
-                        </div>
+                                    <div className="header-management-actions">
+                                        <button className="secondary-btn" onClick={() => handleEditInstruction(currentInstruction)}>
+                                            <FiEdit2 /> Edit
+                                        </button>
+                                        <button className="icon-btn delete" onClick={(e) => handleDeleteInstruction(currentInstruction.id, e)}>
+                                            <FiTrash2 />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="mapping-section-label">Available Action Links</div>
+
+                                <div className="actions-grid">
+                                    {availableActions.map(action => {
+                                        const activeStatusContext = selectedCurrentDocStatus || docStatuses[0]?.id;
+
+                                        const mapping = instructionMap.find(m =>
+                                            String(m.instruction_type_id) === String(selectedInstId) &&
+                                            String(m.action_id) === String(action.id) &&
+                                            String(m.current_document_status_id) === String(activeStatusContext)
+                                        );
+
+                                        const isMapped = !!mapping;
+                                        return (
+                                            <div key={action.id} className={`action-selector-card ${isMapped ? 'selected' : ''}`}>
+                                                <div className="card-main-info"
+                                                    onClick={() => toggleMapping(
+                                                        action.id,                 // actionId
+                                                        null,                      // nextInstId
+                                                        null,                       // currentDocStatusId
+                                                        null                       // nextDocStatusId
+                                                    )}>
+                                                    {isMapped ? <FiCheckSquare className="check-icon" /> : <FiSquare className="check-icon" />}
+                                                    <div className="card-info">
+                                                        <span className="action-label">{action.action_name}</span>
+                                                        <span className={`status-pill ${action.action_result?.toLowerCase()}`}>
+                                                            {action.action_result}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {isMapped && (
+                                                    <>
+                                                        <div className="next-step-config">
+                                                            <label>Next Step</label>
+                                                            <Select
+                                                                className="react-select-container"
+                                                                classNamePrefix="react-select"
+                                                                placeholder="Next Step..."
+                                                                // Ensure you are using nextStepOptions which contains the "End Process" object
+                                                                options={nextStepOptions}
+                                                                // Logic: Find the match, OR find the "End Process" option (value: ""), OR default to null
+                                                                value={
+                                                                    nextStepOptions.find(opt => String(opt.value) === String(mapping?.next_instruction_id)) ||
+                                                                    nextStepOptions.find(opt => opt.value === "") ||
+                                                                    null
+                                                                }
+                                                                onChange={(selected) => toggleMapping(action.id, selected ? selected.value : "", null, null)}
+                                                                isClearable
+                                                            />
+                                                        </div>
+                                                        <div className="next-step-config">
+                                                            <label>Current Document Status</label>
+                                                            <Select
+                                                                className="react-select-container"
+                                                                classNamePrefix="react-select"
+                                                                options={statusOptions}
+                                                                value={statusOptions.find(opt => String(opt.value) === String(mapping?.current_document_status_id)) || null}
+                                                                onChange={(selected) => toggleMapping(action.id, null, selected ? selected.value : null, null)}
+                                                            />
+                                                        </div>
+                                                        <div className="next-step-config">
+                                                            <label>Next Document Status</label>
+                                                            <Select
+                                                                className="react-select-container"
+                                                                classNamePrefix="react-select"
+                                                                placeholder="Next Status..."
+                                                                options={statusOptions}
+                                                                value={statusOptions.find(opt => String(opt.value) === String(mapping?.next_document_status_id)) || null}
+                                                                onChange={(selected) => toggleMapping(action.id, null, null, selected ? selected.value : "")}
+                                                                isClearable
+                                                            />
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="empty-state">
+                                <FiInfo size={40} />
+                                <p>Select an instruction from the left to manage its workflow and actions.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             ) : (
-                /* SECTION 2: GLOBAL ACTION POOL MANAGEMENT */
-                <div className="table-card">
-                    <div className="panel-header">
-                        <FiActivity /> <span>Global Action Management</span>
-                    </div>
-                    <div className="table-responsive">
-                        <table className="custom-table">
+                /* Actions Management Tab */
+                <div className="actions-tab-content">
+                    <div className="table-card">
+                        <div className="table-toolbar">
+                            <h3>Global Action Registry</h3>
+                            <button className="primary-btn" onClick={() => setShowActionModal(true)}>
+                                <FiPlus /> Create New Action
+                            </button>
+                        </div>
+                        <table className="data-table">
                             <thead>
                                 <tr>
                                     <th>Action Name</th>
-                                    <th>Result Label</th>
+                                    <th>Behavior</th>
                                     <th>Description</th>
                                     <th className="text-end">Actions</th>
                                 </tr>
@@ -302,19 +377,15 @@ export default function Instructions() {
                             <tbody>
                                 {availableActions.map(action => (
                                     <tr key={action.id}>
+                                        <td className="fw-bold">{action.action_name}</td>
                                         <td>
-                                            <div className="action-info-cell">
-                                                <div className="action-icon-box">{getActionIcon(action.action_result)}</div>
-                                                <span style={{ fontWeight: 600 }}>{action.action_name}</span>
-                                            </div>
+                                            <span className={`status-pill ${action.action_result?.toLowerCase()}`}>
+                                                {action.action_result}
+                                            </span>
                                         </td>
-                                        <td>{action.action_result}</td>
                                         <td className="text-muted">{action.description}</td>
-                                        <td className="d-flex justify-content-end">
-                                            <button
-                                                className="icon-btn delete"
-                                                onClick={() => handleDeleteAction(action.id)}
-                                            >
+                                        <td className="text-end">
+                                            <button className="icon-btn delete" onClick={() => handleDeleteAction(action.id)}>
                                                 <FiTrash2 />
                                             </button>
                                         </td>
@@ -326,7 +397,6 @@ export default function Instructions() {
                 </div>
             )}
 
-            {/* Modals */}
             <InstructionFormModal
                 show={showInstModal}
                 onClose={() => setShowInstModal(false)}

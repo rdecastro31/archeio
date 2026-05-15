@@ -1,8 +1,21 @@
+/* transactions.css */
+
 .transactions-page {
   padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
   animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .trans-header {
@@ -22,150 +35,129 @@
   font-size: 0.95rem;
 }
 
-/* Row-based Layout */
-.trans-grid {
-  display: flex;
-  flex-direction: column; /* Stack sections vertically */
-  gap: 40px; /* Space between the two tables */
-}
-
-/* Section Styling */
-.trans-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-}
-
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.title-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-}
-
-.title-icon.in {
-  background: #dcfce7;
-  color: #166534;
-  box-shadow: 0 4px 10px rgba(22, 101, 52, 0.1);
-}
-
-.title-icon.out {
-  background: #e0f2fe;
-  color: #075985;
-  box-shadow: 0 4px 10px rgba(7, 89, 133, 0.1);
-}
-
-.title-text h2 {
-  font-size: 1.2rem;
-  margin: 0;
-  color: #0f172a;
-  font-weight: 600;
-}
-
-.title-text span {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
-.count-badge {
-  background: #820d0d;
-  color: white;
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin-left: auto;
-}
-
-/* Table Card Base */
+/* Unified Table Card */
 .table-card {
-  background: #ffffff;
-  border: 1px solid rgba(137, 133, 128, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   overflow: hidden;
 }
 
 .trans-table {
   width: 100%;
   border-collapse: collapse;
+  text-align: left;
 }
 
 .trans-table th {
   background: #f8fafc;
   padding: 14px 20px;
-  text-align: left;
   font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 700;
   color: #64748b;
-  border-bottom: 1px solid #f1f5f9;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .trans-table td {
   padding: 16px 20px;
-  border-bottom: 1px solid #f8fafc;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
 }
 
-/* Document Column Styles */
-.doc-cell {
-  max-width: 300px;
+/* Row-based logic */
+.trans-table tbody tr {
   transition: background-color 0.2s ease;
 }
 
-.doc-cell:hover {
+.trans-table tbody tr:hover {
   background-color: #f8fafc;
 }
 
-.doc-cell:hover .doc-title {
-  color: #820d0d;
-  text-decoration: underline;
+.row-direction-outgoing {
+  background-color: rgba(248, 250, 252, 0.4);
+}
+
+/* Accordion Toggle Button */
+.btn-icon-only {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-icon-only:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+/* Direction Indicators */
+.dir-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+.dir-indicator.incoming {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.dir-indicator.outgoing {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+/* Document & User Info */
+.doc-cell {
+  cursor: pointer;
 }
 
 .doc-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 
 .doc-no {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: #820d0d;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.85rem;
 }
 
 .doc-title {
-  font-size: 0.95rem;
-  color: #1e293b;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #64748b;
+  font-size: 0.8rem;
 }
 
-/* User Identity Styles */
+.file-icon-hint {
+  margin-left: 6px;
+  opacity: 0.4;
+}
+
 .user-info {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #475569;
+  font-weight: 500;
 }
 
-/* Instruction Tags */
 .instruction-tag {
-  display: inline-block;
   background: #f1f5f9;
   color: #475569;
   padding: 4px 10px;
@@ -174,7 +166,104 @@
   font-weight: 600;
 }
 
-/* Dynamic Action Buttons Group */
+/* Accordion Content (Activity Trail) */
+.history-row {
+  background-color: #fcfdfe;
+}
+
+.history-container {
+  padding: 20px 60px;
+  border-left: 3px solid #f1f5f9;
+  margin: 10px 0 30px 40px;
+}
+
+.history-header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.history-item {
+  position: relative;
+  padding-bottom: 24px;
+  padding-left: 25px;
+}
+
+.hist-dot {
+  position: absolute;
+  left: -5px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  background: #cbd5e1;
+  border-radius: 50%;
+  z-index: 2;
+  border: 2px solid white;
+}
+
+/* Highlight the latest activity */
+.history-item:first-of-type .hist-dot {
+  background: #820d0d;
+  box-shadow: 0 0 0 4px rgba(130, 13, 13, 0.1);
+}
+
+.hist-line {
+  position: absolute;
+  left: -1px;
+  top: 6px;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.history-item:last-child .hist-line {
+  display: none;
+}
+
+.hist-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.hist-status {
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.hist-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+.hist-details {
+  font-size: 0.85rem;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+.hist-remarks {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-style: italic;
+  margin-top: 6px;
+  padding: 6px 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border-left: 3px solid #e2e8f0;
+}
+
+/* Action Buttons */
 .action-buttons-group {
   display: flex;
   gap: 8px;
@@ -182,24 +271,27 @@
 }
 
 .dynamic-action-btn {
-  padding: 8px 16px;
+  padding: 6px 14px;
   border-radius: 8px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s;
   color: white;
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: #820d0d; /* Default fallback color */
+  background-color: #820d0d;
+}
+
+.dynamic-action-btn.receive-btn {
+  background-color: #3b82f6; /* Blue for Receive */
 }
 
 .dynamic-action-btn:hover {
   filter: brightness(0.9);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Status Pills */
@@ -216,41 +308,74 @@
   background: #fef3c7;
   color: #92400e;
 }
-.status-inprogress {
-  background: #e0f2fe;
-  color: #075985;
-}
 .status-completed {
   background: #dcfce7;
   color: #166534;
 }
+.status-returned {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.status-received {
+  background: #dbeafe;
+  color: #1e40af;
+}
 
-/* Utility */
-.date-text {
+.text-end {
+  text-align: right;
+}
+
+/* Time Remaining Pills */
+.time-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.time-pill.active {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #dcfce7;
+}
+
+.time-pill.warning {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fef3c7;
+}
+
+.time-pill.overdue {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fee2e2;
+  animation: pulse-red 2s infinite;
+}
+
+.time-pill.done {
+  background: #f8fafc;
   color: #94a3b8;
-  font-variant-numeric: tabular-nums;
-  font-size: 0.85rem;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 60px 20px !important;
-  color: #cbd5e1;
+.time-pill.none {
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 400;
   font-style: italic;
-  font-size: 0.95rem;
 }
 
-.modal-overlay {
-  z-index: 1000;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
+@keyframes pulse-red {
+  0% {
     opacity: 1;
-    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
   }
 }
