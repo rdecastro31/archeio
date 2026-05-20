@@ -21,6 +21,7 @@ import Instructions from './pages/Instructions'
 import Documents from './pages/Documents'
 import Transactions from './pages/Transactions'
 import DocumentStatuses from './pages/DocumentStatuses'
+import Archive from './pages/Archive'
 
 function App() {
   const [systemSettings, setSystemSettings] = useState({
@@ -64,7 +65,7 @@ function App() {
             <Route path="/categories" element={<Categories />} />
             <Route path="/instructions" element={<Instructions />} />
             <Route path="/workspace" element={<Workspace />} />
-            <Route path="/storage" element={<Storage />} />
+            <Route path="/archive" element={<Archive />} />
             <Route path="/classification" element={<Classification />} />
             <Route path="/departments" element={<Departments />} />
             <Route path="/types" element={<Types />} />

@@ -15,10 +15,12 @@ import {
   FiTag,
   FiLayers,
   FiChevronDown,
-  FiBriefcase
+  FiBriefcase,
+  FiArchive
 } from 'react-icons/fi'
 import '../styles/sidebar.css'
 import archeioLogo from '../assets/archeiologo.png'
+import Archive from './../pages/Archive';
 
 export default function Sidebar({ isOpen, onClose, logo }) {
   const [masterOpen, setMasterOpen] = useState(false)
@@ -70,12 +72,12 @@ export default function Sidebar({ isOpen, onClose, logo }) {
 
         <NavLink to="/transactions" className="nav-item" onClick={onClose}>
           <FiPaperclip />
-          <span>Transactions</span>
+          <span>Workflow</span>
         </NavLink>
 
-        <NavLink to="/storage" className="nav-item" onClick={onClose}>
-          <FiFolder />
-          <span>Storage</span>
+        <NavLink to="/archive" className="nav-item" onClick={onClose}>
+          <FiArchive />
+          <span>Archive</span>
         </NavLink>
 
         <div className="nav-group">

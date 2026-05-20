@@ -16,7 +16,6 @@ export default function Documents() {
     const [showModal, setShowModal] = useState(false);
     const [selectedDocument, setSelectedDocument] = useState(null);
 
-
     const [showViewModal, setShowViewModal] = useState(false);
     const [fileToView, setFileToView] = useState(null);
 
@@ -27,6 +26,7 @@ export default function Documents() {
             const response = await fetch(url, { method: "POST", body: formData });
             return await response.json();
         } catch (error) {
+            
             return { success: 0, message: "Network error" };
         }
     };
@@ -167,15 +167,20 @@ export default function Documents() {
                                             >
                                                 <FiEye />
                                             </button>
-                                            <button
-                                                className="icon-btn route"
-                                                title="Route Document"
-                                                onClick={() => handleRoute(doc)}
-                                            >
-                                                <FiSend />
-                                            </button>
-                                            <button className="icon-btn edit" onClick={() => { setSelectedDocument(doc); setShowModal(true); }}><FiEdit2 /></button>
-                                            <button className="icon-btn delete" onClick={() => handleDelete(doc)}><FiTrash2 /></button>
+                                            {doc.document_status == 'Draft' && (
+                                                <>
+                                                    <button
+                                                        className="icon-btn route"
+                                                        title="Route Document"
+                                                        onClick={() => handleRoute(doc)}
+                                                    >
+                                                        <FiSend />
+                                                    </button>
+                                                    <button className="icon-btn edit" onClick={() => { setSelectedDocument(doc); setShowModal(true); }}><FiEdit2 /></button>
+                                                    <button className="icon-btn delete" onClick={() => handleDelete(doc)}><FiTrash2 /></button>
+                                                </>
+                                            )}
+
                                         </div>
                                     </td>
                                 </tr>

@@ -37,6 +37,22 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
+.modal-close-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.modal-close-btn:hover {
+  background: #ef4444;
+  color: white;
+}
+
 .header-icon-container {
   width: 48px;
   height: 48px;
@@ -47,6 +63,10 @@
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
+}
+
+.header-text {
+  text-align: center;
 }
 
 .header-text h3 {

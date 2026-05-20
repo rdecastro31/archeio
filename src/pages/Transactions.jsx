@@ -4,7 +4,6 @@ import {
     FiArrowUpRight,
     FiUser,
     FiActivity,
-    FiFileText,
     FiChevronDown,
     FiChevronUp,
     FiClock,
@@ -90,16 +89,25 @@ export default function Transactions() {
                     groups[t.document_id].push(t);
                 });
 
+                // --- FIX APPLIED HERE ---
                 const visibleGroups = Object.values(groups).filter(history => {
-                    const latest = history.sort((a, b) => parseInt(b.id) - parseInt(a.id))[0];
-                    return parseInt(latest.to_user_id) === parseInt(currentUser.id) ||
-                        parseInt(latest.from_user_id) === parseInt(currentUser.id);
+                    // Check if you ever touched this document at any stage in its lifetime
+                    const involvedInHistory = history.some(step =>
+                        parseInt(step.from_user_id) === parseInt(currentUser.id) ||
+                        parseInt(step.to_user_id) === parseInt(currentUser.id)
+                    );
+                    return involvedInHistory;
                 }).map(history => {
+                    // Sort history from newest to oldest
                     const sortedHistory = history.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+
+                    // The main row always reflects the absolute latest status globally
                     const latest = sortedHistory[0];
+
                     return {
                         ...latest,
                         history: sortedHistory,
+                        // Determine row direction badge based on your *original* involvement or latest role
                         direction: parseInt(latest.to_user_id) === parseInt(currentUser.id) ? 'incoming' : 'outgoing'
                     };
                 });
@@ -143,14 +151,12 @@ export default function Transactions() {
     };
 
     const handleActionClick = (transaction, action) => {
-        // If Action is 'Proceed', open the RouteDocumentModal
         if (action.action_result === 'Proceed') {
             setSelectedDocForRouting(transaction);
             setShowRouteModal(true);
             return;
         }
 
-        // Otherwise (Return or Complete), handle with simple confirmation
         Swal.fire({
             title: `Confirm ${action.action_name}?`,
             text: `This will mark the document as ${action.action_result}`,
@@ -164,11 +170,8 @@ export default function Transactions() {
                 fd.append("document_id", transaction.document_id);
                 fd.append("from_user_id", currentUser.id);
                 fd.append("from_department_id", currentUser.department_id);
-
-                // Route back to original sender for Returns, or Creator for Completes
                 fd.append("to_user_id", transaction.from_user_id);
                 fd.append("to_department_id", transaction.from_department_id);
-
                 fd.append("instruction_type_id", transaction.instruction_type_id);
                 fd.append("action_id", action.id);
                 fd.append("due_date", transaction.due_date);
@@ -177,12 +180,11 @@ export default function Transactions() {
 
                 const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
 
-                // Also update the master document status if completing
                 if (action.action_result === 'Complete') {
                     const docFd = new FormData();
                     docFd.append("tag", "update_status");
                     docFd.append("id", transaction.document_id);
-                    docFd.append("document_status", 4);
+                    docFd.append("document_status", 3); // 3 = Completed/Archived
                     await fetch(`${API_URL}/document.php`, { method: "POST", body: docFd });
                 }
 
@@ -217,78 +219,88 @@ export default function Transactions() {
                         </tr>
                     </thead>
                     <tbody>
-                        {groupedTransactions.map(t => (
-                            <React.Fragment key={t.id}>
-                                <tr className={`row-direction-${t.direction}`}>
-                                    <td>
-                                        <button className="btn-icon-only" onClick={() => toggleAccordion(t.document_id)}>
-                                            {expandedDocs[t.document_id] ? <FiChevronUp /> : <FiChevronDown />}
-                                        </button>
-                                    </td>
-                                    <td>
-                                        <div className={`dir-indicator ${t.direction}`}>
-                                            {t.direction === 'incoming' ? <FiArrowDownLeft /> : <FiArrowUpRight />}
-                                            <span>{t.direction.toUpperCase()}</span>
-                                        </div>
-                                    </td>
-                                    <td className="doc-cell" onClick={() => { setViewingFile({ name: t.storage_file_name, path: t.storage_file_path }); setShowViewModal(true); }}>
-                                        <div className="doc-info">
-                                            <span className="doc-no">{t.document_no}</span>
-                                            <span className="doc-title">{t.title}</span>
-                                        </div>
-                                    </td>
-                                    <td>{renderTimeRemaining(t.due_date, t.transaction_status)}</td>
-                                    <td>
-                                        <div className="user-info">
-                                            <FiUser /> <span>{t.direction === 'incoming' ? t.from_user_fullname : t.to_user_fullname}</span>
-                                        </div>
-                                    </td>
-                                    <td><span className="instruction-tag">{t.transaction_status === 'Pending' ? "For Receiving" : t.instruction_name}</span></td>
-                                    <td className="text-end">
-                                        {t.direction === 'incoming' && t.transaction_status === 'Pending' ? (
-                                            <button className="dynamic-action-btn receive-btn" onClick={() => handleReceive(t)}>Receive</button>
-                                        ) : t.direction === 'incoming' && t.transaction_status === 'Received' ? (
-                                            <div className="action-buttons-group">
-                                                {(actionsMap[t.instruction_type_id] || []).map(id => (
-                                                    <button key={id} className="dynamic-action-btn" onClick={() => handleActionClick(t, allActions[id])}>
-                                                        {allActions[id]?.action_name}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <span className={`status-pill status-${t.transaction_status.toLowerCase()}`}>{t.transaction_status}</span>
-                                        )}
-                                    </td>
-                                </tr>
+                        {loading ? (
+                            <tr><td colSpan="7" className="text-center">Loading transactions...</td></tr>
+                        ) : groupedTransactions.length === 0 ? (
+                            <tr><td colSpan="7" className="text-center">No trackable documents found.</td></tr>
+                        ) : groupedTransactions.map(t => {
+                            // Check if the absolute latest state is waiting on you specifically
+                            const isCurrentlyWithMe = parseInt(t.to_user_id) === parseInt(currentUser.id);
 
-                                {expandedDocs[t.document_id] && (
-                                    <tr className="history-row">
-                                        <td colSpan="7">
-                                            <div className="history-container">
-                                                <div className="history-header"><FiClock /> Activity Trail</div>
-                                                {t.history.map((hist) => (
-                                                    <div key={hist.id} className="history-item">
-                                                        <div className="hist-line"></div>
-                                                        <div className="hist-dot"></div>
-                                                        <div className="hist-content">
-                                                            <div className="hist-meta">
-                                                                <span className="hist-status">{hist.transaction_status}</span>
-                                                                <span className="hist-date">{new Date(hist.date_created).toLocaleString()}</span>
-                                                            </div>
-                                                            <div className="hist-details">
-                                                                <strong>{hist.from_user_fullname}</strong>
-                                                                {hist.action_name ? ` → ${hist.action_name}` : " processed the document"}
-                                                            </div>
-                                                            {hist.remarks && <div className="hist-remarks">{hist.remarks}</div>}
-                                                        </div>
-                                                    </div>
-                                                ))}
+                            return (
+                                <React.Fragment key={t.id}>
+                                    <tr className={`row-direction-${t.direction}`}>
+                                        <td>
+                                            <button className="btn-icon-only" onClick={() => toggleAccordion(t.document_id)}>
+                                                {expandedDocs[t.document_id] ? <FiChevronUp /> : <FiChevronDown />}
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <div className={`dir-indicator ${t.direction}`}>
+                                                {t.direction === 'incoming' ? <FiArrowDownLeft /> : <FiArrowUpRight />}
+                                                <span>{t.direction.toUpperCase()}</span>
                                             </div>
                                         </td>
+                                        <td className="doc-cell" onClick={() => { setViewingFile({ name: t.storage_file_name, path: t.storage_file_path }); setShowViewModal(true); }}>
+                                            <div className="doc-info">
+                                                <span className="doc-no">{t.document_no}</span>
+                                                <span className="doc-title">{t.title}</span>
+                                            </div>
+                                        </td>
+                                        <td>{renderTimeRemaining(t.due_date, t.transaction_status)}</td>
+                                        <td>
+                                            <div className="user-info">
+                                                <FiUser /> <span>{isCurrentlyWithMe ? `From: ${t.from_user_fullname}` : `Currently with: ${t.to_user_fullname}`}</span>
+                                            </div>
+                                        </td>
+                                        <td><span className="instruction-tag">{t.instruction_name}</span></td>
+                                        <td className="text-end">
+                                            {isCurrentlyWithMe && t.transaction_status === 'Pending' ? (
+                                                <button className="dynamic-action-btn receive-btn" onClick={() => handleReceive(t)}>Receive</button>
+                                            ) : isCurrentlyWithMe && t.transaction_status === 'Received' ? (
+                                                <div className="action-buttons-group">
+                                                    {(actionsMap[t.instruction_type_id] || []).map(id => (
+                                                        <button key={id} className="dynamic-action-btn" onClick={() => handleActionClick(t, allActions[id])}>
+                                                            {allActions[id]?.action_name}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span className={`status-pill status-${t.transaction_status.toLowerCase()}`}>{t.transaction_status}</span>
+                                            )}
+                                        </td>
                                     </tr>
-                                )}
-                            </React.Fragment>
-                        ))}
+
+                                    {expandedDocs[t.document_id] && (
+                                        <tr className="history-row">
+                                            <td colSpan="7">
+                                                <div className="history-container">
+                                                    <div className="history-header"><FiClock /> Activity Trail</div>
+                                                    {t.history.map((hist) => (
+                                                        <div key={hist.id} className="history-item">
+                                                            <div className="hist-line"></div>
+                                                            <div className="hist-dot"></div>
+                                                            <div className="hist-content">
+                                                                <div className="hist-meta">
+                                                                    <span className="hist-status">{hist.transaction_status}</span>
+                                                                    <span className="hist-date">{new Date(hist.date_created).toLocaleString()}</span>
+                                                                </div>
+                                                                <div className="hist-details">
+                                                                    <strong>{hist.from_user_fullname}</strong>
+                                                                    {hist.to_user_fullname ? ` sent to ${hist.to_user_fullname}` : ''}
+                                                                    {hist.action_name ? ` (${hist.action_name})` : ""}
+                                                                </div>
+                                                                {hist.remarks && <div className="hist-remarks">{hist.remarks}</div>}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>

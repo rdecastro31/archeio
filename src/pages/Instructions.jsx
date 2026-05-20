@@ -151,11 +151,18 @@ export default function Instructions() {
         }
 
         // 2. Find the existing record BEFORE we apply new changes
-        const mapping = instructionMap.find(m =>
-            String(m.instruction_type_id) === String(selectedInstId) &&
-            String(m.action_id) === String(actionId) &&
-            String(m.current_document_status_id) === String(searchStatus)
-        );
+        const mapping = instructionMap.find(m => {
+            const matchInst = String(m.instruction_type_id) === String(selectedInstId);
+            const matchAction = String(m.action_id) === String(action.id);
+
+            // Check if the status matches OR if both are effectively empty/null
+            const currentStatus = m.current_document_status_id;
+            const matchStatus = (!currentStatus && !selectedCurrentDocStatus) ||
+                String(currentStatus) === String(selectedCurrentDocStatus) ||
+                (currentStatus === null && selectedCurrentDocStatus === docStatuses[0]?.id);
+
+            return matchInst && matchAction && matchStatus;
+        });
 
         const fd = new FormData();
 
@@ -273,11 +280,18 @@ export default function Instructions() {
                                     {availableActions.map(action => {
                                         const activeStatusContext = selectedCurrentDocStatus || docStatuses[0]?.id;
 
-                                        const mapping = instructionMap.find(m =>
-                                            String(m.instruction_type_id) === String(selectedInstId) &&
-                                            String(m.action_id) === String(action.id) &&
-                                            String(m.current_document_status_id) === String(activeStatusContext)
-                                        );
+                                        const mapping = instructionMap.find(m => {
+                                            const matchInst = String(m.instruction_type_id) === String(selectedInstId);
+                                            const matchAction = String(m.action_id) === String(action.id);
+
+                                            // Check if the status matches OR if both are effectively empty/null
+                                            const currentStatus = m.current_document_status_id;
+                                            const matchStatus = (!currentStatus && !selectedCurrentDocStatus) ||
+                                                String(currentStatus) === String(selectedCurrentDocStatus) ||
+                                                (currentStatus === null && selectedCurrentDocStatus === docStatuses[0]?.id);
+
+                                            return matchInst && matchAction && matchStatus;
+                                        });
 
                                         const isMapped = !!mapping;
                                         return (
