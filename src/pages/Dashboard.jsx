@@ -1,118 +1,142 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
 import {
-  FiFileText,
-  FiArchive,
   FiClock,
   FiAlertTriangle,
-  FiFolder,
-  FiDatabase,
-  FiShield,
-  FiTrendingUp,
-  FiArrowUpRight,
+  FiSend,
+  FiInbox,
   FiCheckCircle,
-  FiSearch,
+  FiFileText,
 } from 'react-icons/fi'
 import '../styles/dashboard.css'
 
-const stats = [
-  {
-    title: 'Total Documents',
-    value: '124,580',
-    meta: '+2.4% this month',
-    icon: <FiFileText />,
-  },
-  {
-    title: 'Archived Records',
-    value: '82,410',
-    meta: '+1.8% this month',
-    icon: <FiArchive />,
-  },
-  {
-    title: 'Pending Retrievals',
-    value: '216',
-    meta: '12 new today',
-    icon: <FiClock />,
-  },
-  {
-    title: 'Storage Locations',
-    value: '18',
-    meta: 'Active facilities',
-    icon: <FiDatabase />,
-  },
-  {
-    title: 'Compliance Health',
-    value: '96.4%',
-    meta: 'Within target',
-    icon: <FiShield />,
-  },
-]
-
-const documentGroups = [
-  {
-    title: 'Legal Documents',
-    desc: 'Contracts, agreements, case records, and legal correspondence',
-    total: '24,320',
-  },
-  {
-    title: 'Finance Records',
-    desc: 'Invoices, payroll files, vouchers, and accounting reports',
-    total: '18,904',
-  },
-  {
-    title: 'HR Files',
-    desc: '201 files, onboarding records, memos, and personnel documents',
-    total: '9,182',
-  },
-  {
-    title: 'Administrative Archive',
-    desc: 'Policies, office forms, circulars, and internal records',
-    total: '15,074',
-  },
-]
-
-const recentActivities = [
-  'Box BX-204 transferred to Central Archive',
-  'OCR completed for Legal Batch L-112',
-  'Document retrieval request approved',
-  'Finance 2018 records flagged for retention review',
-]
-
-const storageLocations = [
-  {
-    name: 'Central Records Office',
-    docs: '24,320 documents',
-    status: 'Healthy',
-  },
-  {
-    name: 'North Archive Facility',
-    docs: '18,904 documents',
-    status: 'Near Capacity',
-  },
-  {
-    name: 'Legal Records Vault',
-    docs: '9,182 documents',
-    status: 'Restricted',
-  },
-  {
-    name: 'Finance Filing Section',
-    docs: '15,074 documents',
-    status: 'Review Needed',
-  },
-]
-
-const summaryItems = [
-  { label: 'Checked Out Files', value: '96' },
-  { label: 'Overdue Returns', value: '7' },
-  { label: 'Boxes for Disposal Review', value: '31' },
-  { label: 'OCR Queue', value: '74' },
-  { label: 'Transfer Requests', value: '12' },
-  { label: 'Retention Alerts', value: '14' },
-]
+const DASHBOARD_URL = 'https://archeio.layon.ph/api/dashboard.php'
 
 export default function Dashboard() {
+  const [summary, setSummary] = useState({
+    pending_my_action: 0,
+    incoming_documents: 0,
+    forwarded_documents: 0,
+    overdue_documents: 0,
+  })
+
+  const [pendingActions, setPendingActions] = useState([])
+  const [dueSoonOverdue, setDueSoonOverdue] = useState([])
+  const [recentActivity, setRecentActivity] = useState([])
+  const [activeDocuments, setActiveDocuments] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+  const userId = storedUser.id || storedUser.userid
+
+  const postDashboard = async (tag) => {
+    const formData = new FormData()
+    formData.append('tag', tag)
+    formData.append('user_id', userId)
+
+    const response = await axios.post(DASHBOARD_URL, formData)
+    return response.data
+  }
+
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false)
+      return
+    }
+
+    const loadDashboard = async () => {
+      try {
+        const [
+          summaryRes,
+          pendingRes,
+          dueRes,
+          activityRes,
+          activeDocsRes,
+        ] = await Promise.all([
+          postDashboard('get_user_summary'),
+          postDashboard('get_pending_actions'),
+          postDashboard('get_due_soon_overdue'),
+          postDashboard('get_recent_activity'),
+          postDashboard('get_my_active_documents'),
+        ])
+
+        if (summaryRes.success === 1) {
+          setSummary(summaryRes.data || {})
+        }
+
+        if (pendingRes.success === 1) {
+          setPendingActions(pendingRes.data || [])
+        }
+
+        if (dueRes.success === 1) {
+          setDueSoonOverdue(dueRes.data || [])
+        }
+
+        if (activityRes.success === 1) {
+          setRecentActivity(activityRes.data || [])
+        }
+
+        if (activeDocsRes.success === 1) {
+          setActiveDocuments(activeDocsRes.data || [])
+        }
+      } catch (error) {
+        console.error('Dashboard loading error:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadDashboard()
+  }, [userId])
+
+  const stats = [
+    {
+      title: 'Pending My Action',
+      value: summary.pending_my_action || 0,
+      meta: 'Needs your attention',
+      icon: <FiClock />,
+    },
+    {
+      title: 'Incoming Documents',
+      value: summary.incoming_documents || 0,
+      meta: 'Sent to you',
+      icon: <FiInbox />,
+    },
+    {
+      title: 'Forwarded Documents',
+      value: summary.forwarded_documents || 0,
+      meta: 'Sent by you',
+      icon: <FiSend />,
+    },
+    {
+      title: 'Overdue Documents',
+      value: summary.overdue_documents || 0,
+      meta: 'Past due date',
+      icon: <FiAlertTriangle />,
+    },
+  ]
+
+  const formatDate = (dateValue) => {
+    if (!dateValue) return '-'
+
+    return new Date(dateValue).toLocaleDateString('en-PH', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+    })
+  }
+
+  if (loading) {
+    return (
+      <div className="dashboard-page">
+        <p>Loading dashboard...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="dashboard-page">
-      <section className="dashboard-stats-grid dashboard-stats-grid-five">
+      <section className="dashboard-stats-grid">
         {stats.map((item, index) => (
           <div className="dashboard-stat-card" key={index}>
             <div className="dashboard-stat-top">
@@ -125,98 +149,111 @@ export default function Dashboard() {
         ))}
       </section>
 
-      <section className="dashboard-search-strip">
-        <div className="dashboard-inline-search">
-          <FiSearch />
-          <input
-            type="text"
-            placeholder="Search document number, barcode, employee, box, or location..."
-          />
-        </div>
-
-        <div className="dashboard-search-meta">
-          <div className="search-meta-box">
-            <span>Last Sync</span>
-            <strong>Today, 10:42 AM</strong>
-          </div>
-          <div className="search-meta-box">
-            <span>OCR Queue</span>
-            <strong>74 pending</strong>
-          </div>
-        </div>
-      </section>
-
       <section className="dashboard-main-grid">
         <div className="dashboard-card dashboard-card-large">
           <div className="dashboard-card-header">
             <div>
-              <span className="card-kicker">Records Overview</span>
-              <h3>Document categories</h3>
+              <span className="card-kicker">Work Queue</span>
+              <h3>My Pending Actions</h3>
             </div>
-
-            <button className="dashboard-text-btn">
-              View All <FiArrowUpRight />
-            </button>
           </div>
 
-          <div className="document-group-list">
-            {documentGroups.map((group, index) => (
-              <div className="document-group-item" key={index}>
-                <div className="document-group-icon">
-                  <FiFolder />
-                </div>
-
-                <div className="document-group-content">
-                  <h4>{group.title}</h4>
-                  <p>{group.desc}</p>
-                </div>
-
-                <div className="document-group-total">
-                  <strong>{group.total}</strong>
-                  <span>documents</span>
-                </div>
-              </div>
-            ))}
+          <div className="dashboard-table-wrap">
+            <table className="dashboard-table">
+              <thead>
+                <tr>
+                  <th>Document No.</th>
+                  <th>Title</th>
+                  <th>From</th>
+                  <th>Instruction</th>
+                  <th>Status</th>
+                  <th>Due Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingActions.length > 0 ? (
+                  pendingActions.map((item) => (
+                    <tr key={item.transaction_id}>
+                      <td>{item.document_no}</td>
+                      <td>{item.title}</td>
+                      <td>{item.from_user || item.from_department || '-'}</td>
+                      <td>{item.instruction_name || '-'}</td>
+                      <td>
+                        <span className="status-pill">
+                          {item.document_status_name || '-'}
+                        </span>
+                      </td>
+                      <td>{formatDate(item.due_date)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6">No pending actions found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 
         <div className="dashboard-card">
           <div className="dashboard-card-header">
             <div>
-              <span className="card-kicker">Operations</span>
-              <h3>Quick summary</h3>
+              <span className="card-kicker">Deadline Watch</span>
+              <h3>Due Soon / Overdue</h3>
             </div>
           </div>
 
           <div className="summary-list">
-            {summaryItems.map((item, index) => (
-              <div className="summary-row" key={index}>
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-              </div>
-            ))}
+            {dueSoonOverdue.length > 0 ? (
+              dueSoonOverdue.map((item) => (
+                <div className="summary-row" key={item.id}>
+                  <span>
+                    {item.document_no} - {item.title}
+                  </span>
+                  <strong>
+                    {item.days_remaining < 0
+                      ? `${Math.abs(item.days_remaining)} days overdue`
+                      : `${item.days_remaining} days left`}
+                  </strong>
+                </div>
+              ))
+            ) : (
+              <p>No due or overdue documents.</p>
+            )}
           </div>
         </div>
 
         <div className="dashboard-card dashboard-card-large">
           <div className="dashboard-card-header">
             <div>
-              <span className="card-kicker">Archive Facilities</span>
-              <h3>Storage locations</h3>
+              <span className="card-kicker">Current Responsibility</span>
+              <h3>My Active Documents</h3>
             </div>
           </div>
 
-          <div className="storage-location-list">
-            {storageLocations.map((location, index) => (
-              <div className="storage-location-item" key={index}>
-                <div>
-                  <h4>{location.name}</h4>
-                  <p>{location.docs}</p>
-                </div>
+          <div className="document-group-list">
+            {activeDocuments.length > 0 ? (
+              activeDocuments.map((doc) => (
+                <div className="document-group-item" key={doc.id}>
+                  <div className="document-group-icon">
+                    <FiFileText />
+                  </div>
 
-                <span className="location-status">{location.status}</span>
-              </div>
-            ))}
+                  <div className="document-group-content">
+                    <h4>{doc.document_no}</h4>
+                    <p>{doc.title}</p>
+                  </div>
+
+                  <div className="document-group-total">
+                    <strong>{doc.document_status_name}</strong>
+                    <span>{formatDate(doc.due_date)}</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>No active documents found.</p>
+            )}
           </div>
         </div>
 
@@ -229,27 +266,22 @@ export default function Dashboard() {
           </div>
 
           <div className="activity-feed">
-            {recentActivities.map((item, index) => (
-              <div className="activity-feed-item" key={index}>
-                <div className="activity-feed-icon">
-                  <FiCheckCircle />
+            {recentActivity.length > 0 ? (
+              recentActivity.map((item) => (
+                <div className="activity-feed-item" key={item.transaction_id}>
+                  <div className="activity-feed-icon">
+                    <FiCheckCircle />
+                  </div>
+                  <p>
+                    <strong>{item.document_no}</strong> —{' '}
+                    {item.action_name || item.instruction_name || 'Updated'}{' '}
+                    {item.to_user ? `to ${item.to_user}` : ''}
+                  </p>
                 </div>
-                <p>{item}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="alert-panel">
-            <div className="alert-panel-icon">
-              <FiTrendingUp />
-            </div>
-            <div>
-              <strong>Archive growth remains steady</strong>
-              <p>
-                Total archived volume increased this month while pending
-                retrievals remain manageable.
-              </p>
-            </div>
+              ))
+            ) : (
+              <p>No recent activity found.</p>
+            )}
           </div>
         </div>
       </section>
