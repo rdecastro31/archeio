@@ -80,6 +80,13 @@ export default function Sidebar({ isOpen, onClose, logo }) {
           <span>Archive</span>
         </NavLink>
 
+        
+
+         <NavLink to="/ai-checker" className="nav-item" onClick={onClose}>
+          <FiArchive />
+          <span>Document Checker</span>
+        </NavLink>
+
         <div className="nav-group">
           <button
             type="button"

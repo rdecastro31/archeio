@@ -22,6 +22,7 @@ import Documents from './pages/Documents'
 import Transactions from './pages/Transactions'
 import DocumentStatuses from './pages/DocumentStatuses'
 import Archive from './pages/Archive'
+import AIChecker from './pages/AIChecker'
 
 function App() {
   const [systemSettings, setSystemSettings] = useState({
@@ -72,6 +73,7 @@ function App() {
             <Route path="/document_statuses" element={<DocumentStatuses />} />
             <Route path="/users" element={<Users />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/ai-checker" element={<AIChecker />} />
           </Route>
         </Route>
 
