@@ -9,8 +9,9 @@ import {
   FiFileText,
 } from 'react-icons/fi'
 import '../styles/dashboard.css'
+import { API_URL } from '../shared/constants'
 
-const DASHBOARD_URL = 'https://archeio.layon.ph/api/dashboard.php'
+const DASHBOARD_URL = `${API_URL}/dashboard.php`
 
 export default function Dashboard() {
   const [summary, setSummary] = useState({

@@ -10,8 +10,9 @@ import {
 } from "react-icons/fi";
 import Swal from "sweetalert2";
 import "../styles/aichecker.css";
+import { API_URL } from "../shared/constants";
 
-const AI_CHECKER_URL = "https://archeio.layon.ph/api/plagiarismcheck.php";
+const AI_CHECKER_URL = `${API_URL}/plagiarismcheck.php`;
 
 export default function AIChecker() {
   const fileInputRef = useRef(null);
