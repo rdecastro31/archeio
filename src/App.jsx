@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
 
 import Dashboard from './pages/Dashboard'
+import DashboardAdmin from './pages/DashboardAdmin'
 import Categories from './pages/Categories'
 import Classification from './pages/Classification'
 import Departments from './pages/Departments'
@@ -61,6 +62,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout logo={systemSettings.logo} />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin-dashboard" element={<DashboardAdmin />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/categories" element={<Categories />} />

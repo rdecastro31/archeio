@@ -56,7 +56,16 @@ export default function Login({ logo }) {
       if (result.success === 1) {
         localStorage.setItem("token", result.data.email);
         localStorage.setItem("user", JSON.stringify(result.data));
+
+          const userLevel = result.data.userlevel?.trim();
+
+if (userLevel === "Super Admin" || userLevel === "SuperAdmin"){
+  navigate("/admin-dashboard");
+} 
+else{
+
         navigate("/dashboard");
+}
       } else {
         // Use the message from your PHP backend
         setError(result.message || "Invalid email or password.");
