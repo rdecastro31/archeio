@@ -35,7 +35,7 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
       to_department_id: "",
       instruction_type_id: "",
       remarks: "",
-      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      due_date: "",
     });
   };
 
@@ -140,7 +140,7 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
     transFd.append("to_department_id", formData.to_department_id);
     transFd.append("instruction_type_id", formData.instruction_type_id);
     transFd.append("remarks", formData.remarks);
-    transFd.append("due_date", formData.due_date);
+    transFd.append("due_date", document.due_date);
     transFd.append("transaction_status", "Pending");
 
     const docUpdateFd = new FormData();
@@ -226,17 +226,6 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
                 <option value="">Select Instruction...</option>
                 {instructions.map(i => <option key={i.id} value={i.id}>{i.instruction_name}</option>)}
               </select>
-            </div>
-
-            <div className="form-group flex-1">
-              <label><FiCalendar /> Due Date</label>
-              <input
-                type="date"
-                className="form-input-styled"
-                required
-                value={formData.due_date}
-                onChange={(e) => setFormData(p => ({ ...p, due_date: e.target.value }))}
-              />
             </div>
           </div>
 

@@ -103,7 +103,9 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
       const data = await response.json();
 
       if (data.success) {
+        console.log("update user success")
         if (user && formData.password) {
+          console.log("updating user password")
           const passFd = new FormData();
           passFd.append("tag", "update_password");
           passFd.append("email", formData.email);

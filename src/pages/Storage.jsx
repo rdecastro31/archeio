@@ -19,6 +19,7 @@ import FileViewerModal from "../modals/ViewFileModal";
 import EditPDFModal from "../modals/EditPDFModal";
 import { FileEdit } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import VersionHistoryModal from "../modals/VersionHistoryModal";
 
 export default function Storage({ hideHeader = false, isEmbedded = false, onFetchSuggested = (() => { }) }) {
     const { user } = useOutletContext();
@@ -39,6 +40,10 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
     // PDF Editor State[cite: 5]
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedEditFile, setSelectedEditFile] = useState(null);
+
+    // History Viewer State Setup
+    const [showHistoryModal, setShowHistoryModal] = useState(false);
+    const [selectedHistoryFile, setSelectedHistoryFile] = useState(null);
 
     const [contextMenu, setContextMenu] = useState({
         show: false,
@@ -80,7 +85,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         fetchStorage();
     }, [fetchStorage]);
 
-    // --- PDF Edit Save Handler[cite: 4] ---
+    // --- PDF Edit Save Handler ---
     const handleSaveEditedPDF = async (editedFile) => {
         const fd = new FormData();
         fd.append("tag", "addFile");
@@ -398,61 +403,111 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         const item = contextMenu.targetItem;
         if (!item) return [];
 
-        const options = [];
+        const isFile = item.type === 'file';
+        const filePath = item.path || currentPath;
 
-        if (currentPath == "Archive") {
-            options.push({
-                label: "Restore",
-                icon: <FiRefreshCw />,
-                onClick: () => handleRestore(item)
-            });
-            options.push({ divider: true });
-            options.push({ label: "Delete Permanently", icon: <FiTrash2 className="text-danger" />, className: "text-danger", onClick: () => handleDelete(item) });
-        } else {
-            options.push({ label: "Rename", icon: <FiEdit2 />, onClick: () => handleRename(item) })
+        // --- Reusable Menu Actions ---
+        const getViewOption = () => ({
+            label: "View",
+            icon: <FiSearch />,
+            onClick: () => {
+                trackAccess(item);
+                setViewFile({ ...item, user: USER_ID, path: filePath });
+                setShowViewer(true);
+            }
+        });
 
-            if (item.type === 'file') {
-                options.unshift({
-                    label: "View",
-                    icon: <FiSearch />,
-                    onClick: () => {
-                        // Use currentPath as fallback if item.path is not set
-                        trackAccess(item);
-                        const filePath = item.path || currentPath;
-                        setViewFile({ ...item, user: USER_ID, path: filePath });
-                        setShowViewer(true);
-                    }
-                });
+        const getHistoryOption = () => ({
+            label: "Version History",
+            icon: <FiClock />,
+            onClick: () => {
+                setSelectedHistoryFile({ ...item, user: USER_ID, path: filePath });
+                setShowHistoryModal(true);
+            }
+        });
 
-                if (item.name.toLowerCase().endsWith('.pdf')) {
-                    options.push({
-                        label: "Edit PDF",
-                        icon: <FileEdit />,
-                        onClick: () => {
-                            // Ensure the path is included so the modal knows which folder to look in[cite: 6, 8]
-                            const filePath = item.path || currentPath;
-                            setSelectedEditFile({ ...item, user: USER_ID, path: filePath });
-                            setShowEditModal(true);
-                        }
-                    });
-                }
+        const getDownloadOption = () => ({
+            label: "Download",
+            icon: <FiDownload />,
+            onClick: () => { /* Handle download */ }
+        });
 
-                options.push({ label: "Version History", icon: <FiClock />, onClick: () => handleViewHistory(item) });
-                options.push({ label: "Download", icon: <FiDownload />, onClick: () => { } });
+
+        // --- Context-Based Menu Construction ---
+
+        // 1. Archive Path
+        if (currentPath === "Archive") {
+            const archiveOptions = [
+                { label: "Restore", icon: <FiRefreshCw />, onClick: () => handleRestore(item) }
+            ];
+
+            // Add View option in between if it's a file
+            if (isFile) {
+                archiveOptions.push(getViewOption());
             }
 
-            options.push({ divider: true });
+            archiveOptions.push(
+                { divider: true },
+                { label: "Delete Permanently", icon: <FiTrash2 className="text-danger" />, className: "text-danger", onClick: () => handleDelete(item) }
+            );
 
-            options.push({
-                label: "Archive",
-                icon: <FiArchive className="text-danger" />,
-                className: "text-danger",
-                onClick: () => handleArchive(item)
-            });
+            return archiveOptions;
         }
 
+        // 2. Documents Path
+        if (currentPath === "Documents") {
+            if (!isFile) return []; // Documents only shows options if it's a file
+            return [
+                getViewOption(),
+                getHistoryOption(),
+                getDownloadOption()
+            ];
+        }
+
+        // 3. Fallback / Default Path (Else)
+        const options = [];
+
+        if (isFile) {
+            options.push(getViewOption());
+        }
+
+        options.push({ label: "Rename", icon: <FiEdit2 />, onClick: () => handleRename(item) });
+
+        if (isFile) {
+            if (item.name?.toLowerCase().endsWith('.pdf')) {
+                options.push({
+                    label: "Edit PDF",
+                    icon: <FileEdit />,
+                    onClick: () => {
+                        setSelectedEditFile({ ...item, user: USER_ID, path: filePath });
+                        setShowEditModal(true);
+                    }
+                });
+            }
+            options.push(getHistoryOption(), getDownloadOption());
+        }
+
+        options.push(
+            { divider: true },
+            { label: "Archive", icon: <FiArchive className="text-danger" />, className: "text-danger", onClick: () => handleArchive(item) }
+        );
+
         return options;
-    }, [contextMenu.targetItem, currentPath, handleArchive]);
+
+    }, [
+        contextMenu.targetItem,
+        currentPath,
+        handleRestore,
+        handleDelete,
+        handleRename,
+        handleArchive,
+        setViewFile,
+        setShowViewer,
+        setSelectedHistoryFile,
+        setShowHistoryModal,
+        setSelectedEditFile,
+        setShowEditModal
+    ]);
 
     const highlightText = (text, highlight) => {
         if (!highlight.trim()) return text;
@@ -495,7 +550,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                         </div>
                     </div>
                     <div className="action-buttons">
-                        {currentPath !== "Archive" && (
+                        {currentPath !== "Archive" && currentPath !== "Documents" && (
                             <>
                                 <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
                                 <button className="secondary-btn" onClick={() => fileInputRef.current.click()}>
@@ -536,11 +591,13 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                 ))}
                             </div>
                         </div>
-                        <div className="action-buttons">
-                            <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
-                            <button className="secondary-btn" onClick={() => fileInputRef.current.click()}><FiUpload /><span>Upload</span></button>
-                            <button className="primary-btn" onClick={() => setShowFolderModal(true)}><FiFolderPlus /><span>New Folder</span></button>
-                        </div>
+                        {currentPath !== "Documents" && (
+                            <div className="action-buttons">
+                                <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
+                                <button className="secondary-btn" onClick={() => fileInputRef.current.click()}><FiUpload /><span>Upload</span></button>
+                                <button className="primary-btn" onClick={() => setShowFolderModal(true)}><FiFolderPlus /><span>New Folder</span></button>
+                            </div>
+                        )}
                     </div>
                 )}
                 <div className="table-toolbar">
@@ -606,7 +663,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                         <tr
                                             key={item.id}
                                             onDoubleClick={() => item.type === 'folder' && navigateTo(item.name)}
-                                            onContextMenu={(e) => handleContextMenu(e, item)}
+                                            onContextMenu={(e) => (item.type !== 'folder' || item.name !== "Documents") && handleContextMenu(e, item)}
                                         >
                                             <td className="fw-semibold">
                                                 <div className="d-flex align-items-center gap-2">
@@ -626,7 +683,9 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                             </td>
                                             <td>{item.type}</td>
                                             <td className="d-flex justify-content-end">
-                                                <button className="icon-btn" onClick={(e) => handleContextMenu(e, item, true)}><FiMoreVertical /></button>
+                                                {(item.type !== 'folder' || item.name !== "Documents") && (
+                                                    <button className="icon-btn" onClick={(e) => handleContextMenu(e, item, true)}><FiMoreVertical /></button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
@@ -641,7 +700,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                     key={item.id}
                                     className={`drive-preview-card ${item.isSearchResult ? 'search-result-card' : ''}`}
                                     onDoubleClick={() => item.type === 'folder' && navigateTo(item.name)}
-                                    onContextMenu={(e) => handleContextMenu(e, item)}
+                                    onContextMenu={(e) => (item.type !== 'folder' || item.name !== "Documents") && handleContextMenu(e, item)}
                                 >
                                     {/* 1. HEADER: Small icon and Name side-by-side */}
                                     <div className="preview-card-header">
@@ -654,12 +713,14 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                             <span className="file-name-text">{item.name}</span>
                                         </div>
 
-                                        <button
-                                            className="icon-btn-tiny"
-                                            onClick={(e) => { e.stopPropagation(); handleContextMenu(e, item, true); }}
-                                        >
-                                            <FiMoreVertical />
-                                        </button>
+                                        {(item.type !== 'folder' || item.name !== "Documents") && (
+                                            <button
+                                                className="icon-btn-tiny"
+                                                onClick={(e) => { e.stopPropagation(); handleContextMenu(e, item, true); }}
+                                            >
+                                                <FiMoreVertical />
+                                            </button>
+                                        )}
                                     </div>
 
                                     {/* 2. BODY: Large preview area or Search Metadata */}
@@ -699,9 +760,11 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
             <ContextMenu x={contextMenu.x} y={contextMenu.y} show={contextMenu.show} options={menuOptions} onClose={closeContextMenu} />
             <CreateFolderModal show={showFolderModal} onClose={() => setShowFolderModal(false)} formData={folderFormData} setFormData={setFolderFormData} onSubmit={handleCreateFolder} />
 
-            {/* Modal Components[cite: 3, 5] */}
+            {/* Modal Components */}
             <FileViewerModal show={showViewer} onClose={() => setShowViewer(false)} file={viewFile} />
             <EditPDFModal show={showEditModal} onClose={() => setShowEditModal(false)} file={selectedEditFile} onSave={handleSaveEditedPDF} />
+
+            <VersionHistoryModal show={showHistoryModal} onClose={() => setShowHistoryModal(false)} file={selectedHistoryFile} />
         </div>
     );
 }

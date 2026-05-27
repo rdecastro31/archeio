@@ -21,6 +21,11 @@ export default function Transactions() {
     const { user: currentUser } = useOutletContext();
     const [groupedTransactions, setGroupedTransactions] = useState([]);
     const [expandedDocs, setExpandedDocs] = useState({});
+
+    // Direct history storage keyed by document_id
+    const [docHistories, setDocHistories] = useState({});
+    const [historyLoading, setHistoryLoading] = useState({});
+
     const [actionsMap, setActionsMap] = useState({});
     const [allActions, setAllActions] = useState({});
     const [showViewModal, setShowViewModal] = useState(false);
@@ -31,9 +36,6 @@ export default function Transactions() {
     const [showRouteModal, setShowRouteModal] = useState(false);
     const [selectedDocForRouting, setSelectedDocForRouting] = useState(null);
 
-    /**
-     * Logic: Calculate days until due_date
-     */
     const calculateDaysRemaining = (dueDate) => {
         if (!dueDate) return null;
         const now = new Date();
@@ -52,7 +54,7 @@ export default function Transactions() {
     };
 
     /**
-     * Data Fetching
+     * Initial Tracking Core Data Fetching
      */
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -89,25 +91,17 @@ export default function Transactions() {
                     groups[t.document_id].push(t);
                 });
 
-                // --- FIX APPLIED HERE ---
                 const visibleGroups = Object.values(groups).filter(history => {
-                    // Check if you ever touched this document at any stage in its lifetime
-                    const involvedInHistory = history.some(step =>
+                    return history.some(step =>
                         parseInt(step.from_user_id) === parseInt(currentUser.id) ||
                         parseInt(step.to_user_id) === parseInt(currentUser.id)
                     );
-                    return involvedInHistory;
                 }).map(history => {
-                    // Sort history from newest to oldest
                     const sortedHistory = history.sort((a, b) => parseInt(b.id) - parseInt(a.id));
-
-                    // The main row always reflects the absolute latest status globally
                     const latest = sortedHistory[0];
 
                     return {
                         ...latest,
-                        history: sortedHistory,
-                        // Determine row direction badge based on your *original* involvement or latest role
                         direction: parseInt(latest.to_user_id) === parseInt(currentUser.id) ? 'incoming' : 'outgoing'
                     };
                 });
@@ -124,10 +118,38 @@ export default function Transactions() {
     useEffect(() => { fetchData(); }, [fetchData]);
 
     /**
-     * Handlers
+     * Lazily fetch history trail for a specific document on accordion expansion
      */
+    const fetchDocumentHistory = async (documentId) => {
+        setHistoryLoading(prev => ({ ...prev, [documentId]: true }));
+        const fd = new FormData();
+        fd.append("tag", "view_transaction_history");
+        fd.append("document_id", documentId);
+
+        try {
+            const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
+            if (res.success && res.history) {
+                // Ensure layout matches newest-to-oldest sequence
+                const sortedHistory = res.history.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+                setDocHistories(prev => ({ ...prev, [documentId]: sortedHistory }));
+            } else {
+                setDocHistories(prev => ({ ...prev, [documentId]: [] }));
+            }
+        } catch (error) {
+            console.error("Failed to fetch historical steps:", error);
+        } finally {
+            setHistoryLoading(prev => ({ ...prev, [documentId]: false }));
+        }
+    };
+
     const toggleAccordion = (docId) => {
-        setExpandedDocs(prev => ({ ...prev, [docId]: !prev[docId] }));
+        const matchingState = !expandedDocs[docId];
+        setExpandedDocs(prev => ({ ...prev, [docId]: matchingState }));
+
+        // Trigger network request if moving to opened state and no historical cash exists
+        if (matchingState && !docHistories[docId]) {
+            fetchDocumentHistory(docId);
+        }
     };
 
     const handleReceive = async (transaction) => {
@@ -146,6 +168,8 @@ export default function Transactions() {
         const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
         if (res.success) {
             Swal.fire({ title: "Received", icon: "success", timer: 800, showConfirmButton: false });
+            // Refresh main table and reset target history cache so it re-fetches updated logs
+            setDocHistories(prev => { const c = { ...prev }; delete c[transaction.document_id]; return c; });
             fetchData();
         }
     };
@@ -184,12 +208,13 @@ export default function Transactions() {
                     const docFd = new FormData();
                     docFd.append("tag", "update_status");
                     docFd.append("id", transaction.document_id);
-                    docFd.append("document_status", 3); // 3 = Completed/Archived
+                    docFd.append("document_status", 3);
                     await fetch(`${API_URL}/document.php`, { method: "POST", body: docFd });
                 }
 
                 if (res.success) {
                     Swal.fire("Success", "Action processed.", "success");
+                    setDocHistories(prev => { const c = { ...prev }; delete c[transaction.document_id]; return c; });
                     fetchData();
                 }
             }
@@ -224,8 +249,9 @@ export default function Transactions() {
                         ) : groupedTransactions.length === 0 ? (
                             <tr><td colSpan="7" className="text-center">No trackable documents found.</td></tr>
                         ) : groupedTransactions.map(t => {
-                            // Check if the absolute latest state is waiting on you specifically
                             const isCurrentlyWithMe = parseInt(t.to_user_id) === parseInt(currentUser.id);
+                            const currentHistory = docHistories[t.document_id] || [];
+                            const isHistoryLoading = historyLoading[t.document_id];
 
                             return (
                                 <React.Fragment key={t.id}>
@@ -276,24 +302,35 @@ export default function Transactions() {
                                             <td colSpan="7">
                                                 <div className="history-container">
                                                     <div className="history-header"><FiClock /> Activity Trail</div>
-                                                    {t.history.map((hist) => (
-                                                        <div key={hist.id} className="history-item">
-                                                            <div className="hist-line"></div>
-                                                            <div className="hist-dot"></div>
-                                                            <div className="hist-content">
-                                                                <div className="hist-meta">
-                                                                    <span className="hist-status">{hist.transaction_status}</span>
-                                                                    <span className="hist-date">{new Date(hist.date_created).toLocaleString()}</span>
+
+                                                    {isHistoryLoading ? (
+                                                        <div className="p-3 text-muted text-center">Loading trail details...</div>
+                                                    ) : currentHistory.length === 0 ? (
+                                                        <div className="p-3 text-muted text-center">No structural details found for this document lifecycle.</div>
+                                                    ) : currentHistory.map((hist) => {
+                                                        // Fallbacks to handle naming differences between both endpoints cleanly
+                                                        const sender = hist.from_user_name || hist.from_user_fullname;
+                                                        const receiver = hist.to_user_name || hist.to_user_fullname;
+
+                                                        return (
+                                                            <div key={hist.id} className="history-item">
+                                                                <div className="hist-line"></div>
+                                                                <div className="hist-dot"></div>
+                                                                <div className="hist-content">
+                                                                    <div className="hist-meta">
+                                                                        <span className="hist-status">{hist.transaction_status}</span>
+                                                                        <span className="hist-date">{new Date(hist.date_created).toLocaleString()}</span>
+                                                                    </div>
+                                                                    <div className="hist-details">
+                                                                        <strong>{sender}</strong>
+                                                                        {receiver ? ` sent to ${receiver}` : ''}
+                                                                        {hist.action_name ? ` (${hist.action_name})` : ""}
+                                                                    </div>
+                                                                    {hist.remarks && <div className="hist-remarks">{hist.remarks}</div>}
                                                                 </div>
-                                                                <div className="hist-details">
-                                                                    <strong>{hist.from_user_fullname}</strong>
-                                                                    {hist.to_user_fullname ? ` sent to ${hist.to_user_fullname}` : ''}
-                                                                    {hist.action_name ? ` (${hist.action_name})` : ""}
-                                                                </div>
-                                                                {hist.remarks && <div className="hist-remarks">{hist.remarks}</div>}
                                                             </div>
-                                                        </div>
-                                                    ))}
+                                                        );
+                                                    })}
                                                 </div>
                                             </td>
                                         </tr>
@@ -311,7 +348,10 @@ export default function Transactions() {
                 show={showRouteModal}
                 onClose={() => setShowRouteModal(false)}
                 document={selectedDocForRouting}
-                onSuccess={fetchData}
+                onSuccess={() => {
+                    setDocHistories(prev => { const c = { ...prev }; delete c[selectedDocForRouting.document_id]; return c; });
+                    fetchData();
+                }}
             />
         </div>
     );

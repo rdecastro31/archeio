@@ -46,9 +46,21 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
 
     const uploadFile = async () => {
         if (!selectedFile) return document?.storage_file_id || null;
+
+        // 1. Safely pull the correct document number
+        const baseName = formData.document_no || (document ? document.document_no : `DOC-${Date.now()}`);
+
+        // 2. Safe extension extraction
+        const hasExtension = selectedFile.name.includes('.');
+        const extension = hasExtension ? selectedFile.name.split('.').pop() : '';
+        const finalFileName = extension ? `${baseName}.${extension}` : baseName;
+
+        // 3. Instantiate a new File object with the updated name
+        const renamedFile = new File([selectedFile], finalFileName, { type: selectedFile.type });
+
         const fileFd = new FormData();
         fileFd.append("tag", "addFile");
-        fileFd.append("file", selectedFile);
+        fileFd.append("file", renamedFile);
         fileFd.append("path", "Documents");
         fileFd.append("userid", currentUser?.id);
 

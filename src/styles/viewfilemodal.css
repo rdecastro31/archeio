@@ -43,6 +43,14 @@
   color: #64748b;
 }
 
+/* Force-hide the outline sidebar container and its toggle buttons if they linger */
+.docx-viewer-wrapper .docx-sidebar,
+.docx-viewer-wrapper [class*="sidebar"],
+.docx-viewer-wrapper [title*="Outline"],
+.docx-outline-nav {
+  display: none !important;
+}
+
 @keyframes modalIn {
   from {
     opacity: 0;

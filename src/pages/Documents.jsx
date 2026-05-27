@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiFileText, FiCalendar, FiActivity, FiEye, FiSend } from "react-icons/fi";
+import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiFileText, FiCalendar, FiEye, FiSend, FiArchive } from "react-icons/fi";
 import Swal from "sweetalert2";
 import { API_URL } from "../shared/constants";
 import DocumentFormModal from "../modals/DocumentFormModal";
@@ -21,12 +21,12 @@ export default function Documents() {
 
     const [showRouteModal, setShowRouteModal] = useState(false);
     const [documentToRoute, setDocumentToRoute] = useState(null);
+
     const callApi = async (url, formData) => {
         try {
             const response = await fetch(url, { method: "POST", body: formData });
             return await response.json();
         } catch (error) {
-            
             return { success: 0, message: "Network error" };
         }
     };
@@ -64,11 +64,10 @@ export default function Documents() {
             return;
         }
 
-        // Map your document data to the format ViewFileModal expects
         setFileToView({
             name: doc.filename,
-            path: doc.file_path, // Ensure your API returns the path
-            user: doc.created_by  // The modal uses this to find the folder (user_1, etc)
+            path: doc.file_path,
+            user: doc.created_by
         });
         setShowViewModal(true);
     };
@@ -91,6 +90,31 @@ export default function Documents() {
             if (data.success) {
                 fetchData();
                 Swal.fire("Deleted!", data.message, "success");
+            }
+        }
+    };
+
+    const handleArchive = async (doc) => {
+        const res = await Swal.fire({
+            title: 'Archive Document?',
+            text: `Are you sure you want to archive "${doc.title}"? The associated file will be securely transferred into the Archive.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2e7d32',
+            confirmButtonText: 'Yes, archive'
+        });
+
+        if (res.isConfirmed) {
+            const fd = new FormData();
+            fd.append("tag", "archive");
+            fd.append("id", doc.id);
+
+            const data = await callApi(`${API_URL}/document.php`, fd);
+            if (data.success) {
+                fetchData();
+                Swal.fire("Archived!", data.message, "success");
+            } else {
+                Swal.fire("Error", data.message || "Failed to complete archive execution.", "error");
             }
         }
     };
@@ -167,7 +191,8 @@ export default function Documents() {
                                             >
                                                 <FiEye />
                                             </button>
-                                            {doc.document_status == 'Draft' && (
+
+                                            {doc.document_status === 'Draft' && (
                                                 <>
                                                     <button
                                                         className="icon-btn route"
@@ -181,6 +206,16 @@ export default function Documents() {
                                                 </>
                                             )}
 
+                                            {/* Show Archive Button when status is exactly Completed or Cancelled */}
+                                            {(doc.document_status === 'Completed' || doc.document_status === 'Cancelled') && (
+                                                <button
+                                                    className="icon-btn archive"
+                                                    title="Archive Document"
+                                                    onClick={() => handleArchive(doc)}
+                                                >
+                                                    <FiArchive />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -209,7 +244,7 @@ export default function Documents() {
                 show={showRouteModal}
                 onClose={() => setShowRouteModal(false)}
                 document={documentToRoute}
-                onSuccess={fetchData} // Refresh list after routing
+                onSuccess={fetchData}
             />
         </div>
     );
