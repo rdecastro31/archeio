@@ -140,7 +140,7 @@ export default function Sidebar({ isOpen, onClose, logo }) {
           </NavLink>
         )}
 
-        <NavLink to="/reports" className="nav-item" onClick={onClose}>
+        {/* <NavLink to="/reports" className="nav-item" onClick={onClose}>
           <FiBarChart2 />
           <span>Reports</span>
         </NavLink>
@@ -148,7 +148,7 @@ export default function Sidebar({ isOpen, onClose, logo }) {
         <NavLink to="/security" className="nav-item" onClick={onClose}>
           <FiShield />
           <span>Security</span>
-        </NavLink>
+        </NavLink> */}
 
         <NavLink to="/settings" className="nav-item" onClick={onClose}>
           <FiSettings />
