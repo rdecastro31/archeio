@@ -108,12 +108,12 @@ export default function Settings() {
                     >
                         <FiUser /> Profile Account
                     </button>
-                    <button
+                    {/* <button
                         className={`sidebar-item ${activeTab === 'notifications' ? 'active' : ''}`}
                         onClick={() => setActiveTab('notifications')}
                     >
                         <FiBell /> Notifications
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Content Area */}
