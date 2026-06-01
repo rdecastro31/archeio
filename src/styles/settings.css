@@ -53,6 +53,9 @@
 }
 
 .section-header-simple {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
   border-bottom: 1px solid rgba(137, 133, 128, 0.1);
   padding-bottom: 16px;

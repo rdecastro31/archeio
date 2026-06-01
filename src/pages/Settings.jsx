@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
     FiUser, FiLayout, FiBell, FiShield,
     FiUpload, FiSave, FiRefreshCcw, FiCheck, FiLock
@@ -6,11 +6,15 @@ import {
 import Swal from "sweetalert2";
 import "../styles/settings.css";
 import { API_URL } from "../shared/constants";
+import { useOutletContext } from "react-router-dom";
 
 export default function Settings() {
+    const { user } = useOutletContext();
     const [activeTab, setActiveTab] = useState("branding");
     const [logoFile, setLogoFile] = useState(null);
     const logoInputRef = useRef(null);
+
+    useEffect(() => { console.log(user) }, [])
 
     // Branding State
     const [branding, setBranding] = useState({
@@ -39,7 +43,7 @@ export default function Settings() {
         }
     };
 
-    const handleSaveSettings = async () => {
+    const handleSaveLogoSettings = async () => {
         const formData = new FormData();
         formData.append("tag", "updateBranding");
         formData.append("primaryColor", branding.primaryColor);
@@ -77,19 +81,49 @@ export default function Settings() {
         }
     };
 
+    const handleSaveUserSettings = async () => {
+        const formData = new FormData();
+        formData.append("tag", "updateBranding");
+        formData.append("primaryColor", branding.primaryColor);
+        formData.append("appName", branding.appName);
+
+        if (logoFile) {
+            formData.append("logo", logoFile);
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/settings.php`, {
+                method: "POST",
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (result.success === 1) {
+                Swal.fire({
+                    title: 'Updating Account Information...',
+                    timer: 1500,
+                    didOpen: () => Swal.showLoading(),
+                    willClose: () => {
+                        Swal.fire("Success", result.message, "success");
+                        // Refresh to apply the new logo/colors globally
+                        window.location.reload();
+                    }
+                });
+            } else {
+                Swal.fire("Error", result.message || "Failed to update account information", "error");
+            }
+        } catch (err) {
+            console.error("Save Error:", err);
+            Swal.fire("Error", "Server connection failed.", "error");
+        }
+    }
+
     return (
         <div className="settings-page">
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Settings</h1>
-                </div>
-                <div className="action-buttons">
-                    <button className="secondary-btn">
-                        <FiRefreshCcw /><span>Reset to Default</span>
-                    </button>
-                    <button className="primary-btn" onClick={handleSaveSettings}>
-                        <FiSave /><span>Save Changes</span>
-                    </button>
                 </div>
             </div>
 
@@ -122,8 +156,18 @@ export default function Settings() {
                     {activeTab === 'branding' && (
                         <div className="settings-section">
                             <div className="section-header-simple">
-                                <h2 className="section-subtitle">Branding & Appearance</h2>
-                                <p className="text-muted">Customize how ArcheIO looks for your organization.</p>
+                                <div>
+                                    <h2 className="section-subtitle">Branding & Appearance</h2>
+                                    <p className="text-muted">Customize how ArcheIO looks for your organization.</p>
+                                </div>
+                                <div className="action-buttons">
+                                    <button className="secondary-btn">
+                                        <FiRefreshCcw /><span>Reset to Default</span>
+                                    </button>
+                                    <button className="primary-btn" onClick={handleSaveLogoSettings}>
+                                        <FiSave /><span>Save Changes</span>
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="settings-grid">
@@ -185,15 +229,25 @@ export default function Settings() {
 
                     {activeTab === 'profile' && (
                         <div className="settings-section">
-                            <h2 className="section-subtitle">Account Information</h2>
+                            <div className="section-header-simple">
+                                <div>
+                                    <h2 className="section-subtitle">Account Information</h2>
+                                    <p className="text-muted">Update your Account Name and Email here.</p>
+                                </div>
+                                {/* <div className="action-buttons">
+                                    <button className="primary-btn" onClick={handleSaveUserSettings}>
+                                        <FiSave /><span>Save Changes</span>
+                                    </button>
+                                </div> */}
+                            </div>
                             <div className="settings-grid">
                                 <div className="settings-group">
                                     <label>Full Name</label>
-                                    <input type="text" placeholder="Allan Steven Reyes" className="form-input" />
+                                    <input type="text" placeholder="Full Name" className="form-input" value={user?.fullname} read-only/>
                                 </div>
                                 <div className="settings-group">
                                     <label>Email Address</label>
-                                    <input type="email" placeholder="allan@example.com" className="form-input" />
+                                    <input type="email" placeholder="allan@example.com" className="form-input" value={user?.email} read-only/>
                                 </div>
                             </div>
                         </div>
