@@ -288,6 +288,74 @@ body {
   line-height: 1.5;
 }
 
+.reset-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(47, 38, 51, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.reset-modal {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  background: #fffaf7;
+  border-radius: 24px;
+  border: 1px solid #eadfd8;
+  box-shadow: 0 20px 60px rgba(75, 36, 56, 0.2);
+  padding: 34px;
+}
+
+.reset-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  border: none;
+  background: #f1e7e1;
+  color: #4b2438;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.reset-modal-header h3 {
+  margin: 0;
+  color: #321827;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.reset-modal-header p {
+  margin: 10px 0 24px;
+  color: #6f6470;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.reset-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.success-message-box {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #e8f7ee;
+  color: #146c43;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 @media (max-width: 992px) {
   .login-wrapper {
     grid-template-columns: 1fr;
