@@ -162,3 +162,35 @@
   outline: none;
   border-color: #820d0d;
 }
+
+.password-input-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 0 12px;
+}
+
+.password-input-box svg {
+    color: #820d0d;
+    flex-shrink: 0;
+}
+
+.password-field {
+    border: none !important;
+    box-shadow: none !important;
+    flex: 1;
+    padding-left: 0 !important;
+}
+
+.password-eye-btn {
+    border: none;
+    background: transparent;
+    color: #820d0d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

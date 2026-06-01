@@ -186,6 +186,127 @@
   color: #898580;
 }
 
+.change-password-header-btn {
+  border: none;
+  background: transparent;
+  color: #656565;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.change-password-header-btn:hover {
+  color: #820d0d;
+}
+
+.change-password-header-btn svg {
+  font-size: 15px;
+}
+
+.change-password-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(47, 38, 51, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.change-password-modal {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  background: #fffaf7;
+  border-radius: 24px;
+  border: 1px solid #eadfd8;
+  box-shadow: 0 20px 60px rgba(75, 36, 56, 0.2);
+  padding: 34px;
+}
+
+.change-password-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  border: none;
+  background: #f1e7e1;
+  color: #4b2438;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.change-password-header h3 {
+  margin: 0;
+  color: #321827;
+  font-size: 24px;
+}
+
+.change-password-header p {
+  margin: 10px 0 24px;
+  color: #6f6470;
+  font-size: 14px;
+}
+
+.change-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.change-password-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #321827;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.change-password-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fbf7f4;
+  border: 1px solid #eadfd8;
+  border-radius: 14px;
+  padding: 0 14px;
+  color: #4b2438;
+}
+
+.change-password-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 14px 0;
+  color: #2f2633;
+}
+
+.change-password-input button {
+  border: none;
+  background: transparent;
+  color: #4b2438;
+  cursor: pointer;
+  display: flex;
+}
+
+.change-password-submit {
+  border: none;
+  background: #4b2438;
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 /* RESPONSIVE */
 @media (max-width: 992px) {
   .search-box {

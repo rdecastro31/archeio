@@ -278,7 +278,7 @@ export default function DashboardAdmin() {
           </div>
         </div>
 
-        <div className="dashboard-card">
+        <div className="dashboard-card">npm
           <div className="dashboard-card-header">
             <div>
               <span className="card-kicker">Departments</span>

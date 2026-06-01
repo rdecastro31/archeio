@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import {
     FiUser, FiLayout, FiBell, FiShield,
-    FiUpload, FiSave, FiRefreshCcw, FiCheck
+    FiUpload, FiSave, FiRefreshCcw, FiCheck, FiLock
 } from "react-icons/fi";
 import Swal from "sweetalert2";
 import "../styles/settings.css";
@@ -108,6 +108,7 @@ export default function Settings() {
                     >
                         <FiUser /> Profile Account
                     </button>
+
                     {/* <button
                         className={`sidebar-item ${activeTab === 'notifications' ? 'active' : ''}`}
                         onClick={() => setActiveTab('notifications')}
