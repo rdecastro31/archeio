@@ -10,6 +10,12 @@ export default function AddCategoryModal({
 }) {
   if (!show) return null
 
+  // 1. Intercept the form submission
+  const handleSubmit = (e) => {
+    e.preventDefault(); // 👈 This explicitly stops the browser hard reload
+    onSubmit();         // 👈 Fires your handleCreateFolder function safely
+  };
+
   return (
     <div className="modal-overlay">
       <div className="category-modal">
@@ -28,7 +34,7 @@ export default function AddCategoryModal({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="category-form">
+        <form onSubmit={handleSubmit} className="category-form">
           <div className="form-group">
             <label>Category Name</label>
             <input
@@ -42,7 +48,7 @@ export default function AddCategoryModal({
 
           <div className="form-group">
             <label>Description</label>
-           <textarea
+            <textarea
               name="description"
               placeholder="Enter description"
               value={formData.description || ""}
@@ -51,7 +57,7 @@ export default function AddCategoryModal({
             />
           </div>
 
-        
+
 
           <div className="modal-actions">
             <button type="button" className="secondary-btn" onClick={onClose}>

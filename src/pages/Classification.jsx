@@ -20,12 +20,12 @@ export default function Classifications() {
   const [showAddModal, setShowAddModal] = useState(false)
 
   const [formData, setFormData] = useState({
-        id: "",
-        classification_name: "",
-        short_name: "",
-        description: "",
-        category_id: "",
-        status: "Active",
+    id: "",
+    classification_name: "",
+    short_name: "",
+    description: "",
+    category_id: "",
+    status: "Active",
   })
 
   const [categories, setCategories] = useState([])
@@ -75,222 +75,222 @@ export default function Classifications() {
   }, [classifications, searchTerm])
 
   const handleAdd = () => {
-  setFormData({
-    id: "",
-    classification_name: "",
-    short_name: "",
-    description: "",
-    category_id: "",
-    status: "Active",
-  })
+    setFormData({
+      id: "",
+      classification_name: "",
+      short_name: "",
+      description: "",
+      category_id: "",
+      status: "Active",
+    })
 
-  setShowAddModal(true)
-}
-
-const closeAddModal = () => {
-  setShowAddModal(false)
-}
-
-const handleCreateClassification = async (e) => {
-  e.preventDefault()
-
-  if (!formData.classification_name.trim()) {
-    alert("Classification name is required.")
-    return
+    setShowAddModal(true)
   }
 
-  if (!formData.category_id) {
-    alert("Please select a category.")
-    return
+  const closeAddModal = () => {
+    setShowAddModal(false)
   }
 
-  try {
-     const user = JSON.parse(localStorage.getItem("user"));
-    const data = new FormData()
-    data.append("tag", "insert")
-    data.append("classification_name", formData.classification_name)
-    data.append("short_name", formData.short_name)
-    data.append("description", formData.description)
-    data.append("category_id", formData.category_id)
-    data.append("userid", user.id)
+  const handleCreateClassification = async (e) => {
+    e.preventDefault()
 
-    const response = await axios.post(
-      `${API_URL}/classification.php`,
-      data
-    )
-
-    if (response.data.success === 1) {
-       Swal.fire({
-                icon: "success",
-                title: "Saved!",
-                text: "Classification has been added successfully.",
-                timer: 1500,
-                showConfirmButton: false,
-              })
-      closeAddModal()
-      fetchClassifications()
-    } else {
-         Swal.fire({
-              icon: "error",
-              title: "Error",
-              text: "Something went wrong while creating classification.",
-            })
+    if (!formData.classification_name.trim()) {
+      alert("Classification name is required.")
+      return
     }
-  } catch (error) {
-    console.error(error)
-       Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "Something went wrong while creating category.",
-          })
-  }
-}
 
-const handleEdit = (classification) => {
-  setFormData({
-    id: classification.id,
-    classification_name: classification.classification_name,
-    short_name: classification.short_name,
-    description: classification.description || "",
-    category_id: classification.category_id,
-    status: classification.status,
-  })
-
-  setShowEditModal(true)
-}
-
-const handleUpdateClassification = async (e) => {
-  e.preventDefault()
-
-  if (!formData.classification_name.trim()) {
-    alert("Classification name is required.")
-    return
-  }
-
-  if (!formData.category_id) {
-    alert("Please select a category.")
-    return
-  }
-
-  try {
-     const user = JSON.parse(localStorage.getItem("user"));
-    const data = new FormData()
-    data.append("tag", "update")
-    data.append("id", formData.id)
-    data.append("classification_name", formData.classification_name.trim())
-    data.append("short_name", formData.short_name.trim())
-    data.append("description", formData.description.trim())
-    data.append("category_id", formData.category_id)
-    data.append("status", formData.status)
-    data.append("userid", user.id)
-
-    const response = await axios.post(
-      `${API_URL}/classification.php`,
-      data
-    )
-
-    if (response.data.success === 1) {
-      Swal.fire({
-                icon: "success",
-                title: "Saved!",
-                text: "Classification has been updated successfully.",
-                timer: 1500,
-                showConfirmButton: false,
-              })
-      closeEditModal()
-      fetchClassifications()
-    } else {
-       Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: response.data.message || "Failed to update classification.",
-          })
-      
+    if (!formData.category_id) {
+      alert("Please select a category.")
+      return
     }
-  } catch (error) {
-    console.error(error)
-    alert("Something went wrong while updating classification.")
-  }
-}
 
-const closeEditModal = () => {
-  setShowEditModal(false)
-}
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const data = new FormData()
+      data.append("tag", "insert")
+      data.append("classification_name", formData.classification_name)
+      data.append("short_name", formData.short_name)
+      data.append("description", formData.description)
+      data.append("category_id", formData.category_id)
+      data.append("userid", user.id)
 
-const fetchCategories = async () => {
-  try {
-    const formData = new FormData()
-    formData.append("tag", "getall")
-
-    const response = await axios.post(
-      `${API_URL}/category.php`,
-      formData
-    )
-
-    if (response.data.success === 1) {
-      setCategories(response.data.data || [])
-    }
-  } catch (error) {
-    console.error(error)
-  }
-}
- const handleDelete = async (id) => {
-  const result = await Swal.fire({
-    title: "Delete Classification?",
-    text: "This action cannot be undone.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#dc2626",
-    cancelButtonColor: "#6b7280",
-    confirmButtonText: "Yes, delete it",
-    cancelButtonText: "Cancel",
-    reverseButtons: true,
-  })
-
-  if (!result.isConfirmed) return
-
-  try {
-    const data = new FormData()
-    const user = JSON.parse(localStorage.getItem("user"));
-    data.append("tag", "delete")
-    data.append("id", id)
-    data.append("userid", user.id)
-
-    const response = await axios.post(
-      `${API_URL}/classification.php`,
-      data
-    )
-
-    if (response.data.success === 1) {
-      // remove from UI
-      setClassifications((prev) =>
-        prev.filter((item) => item.id !== id)
+      const response = await axios.post(
+        `${API_URL}/classification.php`,
+        data
       )
 
-      Swal.fire({
-        icon: "success",
-        title: "Deleted!",
-        text: "Classification has been removed.",
-        timer: 1500,
-        showConfirmButton: false,
-      })
-    } else {
+      if (response.data.success === 1) {
+        Swal.fire({
+          icon: "success",
+          title: "Saved!",
+          text: "Classification has been added successfully.",
+          timer: 1500,
+          showConfirmButton: false,
+        })
+        closeAddModal()
+        fetchClassifications()
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Something went wrong while creating classification.",
+        })
+      }
+    } catch (error) {
+      console.error(error)
       Swal.fire({
         icon: "error",
-        title: "Failed",
-        text: response.data.message || "Failed to delete.",
+        title: "Error",
+        text: "Something went wrong while creating category.",
       })
     }
-  } catch (error) {
-    console.error(error)
-
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "Something went wrong while deleting.",
-    })
   }
-}
+
+  const handleEdit = (classification) => {
+    setFormData({
+      id: classification.id,
+      classification_name: classification.classification_name,
+      short_name: classification.short_name,
+      description: classification.description || "",
+      category_id: classification.category_id,
+      status: classification.status,
+    })
+
+    setShowEditModal(true)
+  }
+
+  const handleUpdateClassification = async (e) => {
+    e.preventDefault()
+
+    if (!formData.classification_name.trim()) {
+      alert("Classification name is required.")
+      return
+    }
+
+    if (!formData.category_id) {
+      alert("Please select a category.")
+      return
+    }
+
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const data = new FormData()
+      data.append("tag", "update")
+      data.append("id", formData.id)
+      data.append("classification_name", formData.classification_name.trim())
+      data.append("short_name", formData.short_name.trim())
+      data.append("description", formData.description.trim())
+      data.append("category_id", formData.category_id)
+      data.append("status", formData.status)
+      data.append("userid", user.id)
+
+      const response = await axios.post(
+        `${API_URL}/classification.php`,
+        data
+      )
+
+      if (response.data.success === 1) {
+        Swal.fire({
+          icon: "success",
+          title: "Saved!",
+          text: "Classification has been updated successfully.",
+          timer: 1500,
+          showConfirmButton: false,
+        })
+        closeEditModal()
+        fetchClassifications()
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: response.data.message || "Failed to update classification.",
+        })
+
+      }
+    } catch (error) {
+      console.error(error)
+      alert("Something went wrong while updating classification.")
+    }
+  }
+
+  const closeEditModal = () => {
+    setShowEditModal(false)
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const formData = new FormData()
+      formData.append("tag", "getall")
+
+      const response = await axios.post(
+        `${API_URL}/category.php`,
+        formData
+      )
+
+      if (response.data.success === 1) {
+        setCategories(response.data.data || [])
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: "Delete Classification?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+    })
+
+    if (!result.isConfirmed) return
+
+    try {
+      const data = new FormData()
+      const user = JSON.parse(localStorage.getItem("user"));
+      data.append("tag", "delete")
+      data.append("id", id)
+      data.append("userid", user.id)
+
+      const response = await axios.post(
+        `${API_URL}/classification.php`,
+        data
+      )
+
+      if (response.data.success === 1) {
+        // remove from UI
+        setClassifications((prev) =>
+          prev.filter((item) => item.id !== id)
+        )
+
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Classification has been removed.",
+          timer: 1500,
+          showConfirmButton: false,
+        })
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: response.data.message || "Failed to delete.",
+        })
+      }
+    } catch (error) {
+      console.error(error)
+
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Something went wrong while deleting.",
+      })
+    }
+  }
 
   return (
     <div className="categories-page">
@@ -359,22 +359,21 @@ const fetchCategories = async () => {
                     <td>{item.classification_name || "-"}</td>
 
                     <td>
-                        {item.short_name ? (
-                          <span className="short-name-badge">
-                            {item.short_name}
-                          </span>
-                        ) : "-"}
-                </td>
+                      {item.short_name ? (
+                        <span className="short-name-badge">
+                          {item.short_name}
+                        </span>
+                      ) : "-"}
+                    </td>
 
                     <td>{item.description || "-"}</td>
 
                     <td>
                       <span
-                        className={`status-badge ${
-                          item.status === "Active"
+                        className={`status-badge ${item.status === "Active"
                             ? "status-active"
                             : "status-inactive"
-                        }`}
+                          }`}
                       >
                         {item.status}
                       </span>
@@ -413,23 +412,23 @@ const fetchCategories = async () => {
         </div>
       </div>
 
-<AddClassificationModal
-  show={showAddModal}
-  formData={formData}
-  setFormData={setFormData}
-  categories={categories}
-  onClose={closeAddModal}
-  onSubmit={handleCreateClassification}
-/>
+      <AddClassificationModal
+        show={showAddModal}
+        formData={formData}
+        setFormData={setFormData}
+        categories={categories}
+        onClose={closeAddModal}
+        onSubmit={handleCreateClassification}
+      />
 
-    <EditClassificationModal
-  show={showEditModal}
-  formData={formData}
-  categories={categories}
-  setFormData={setFormData}
-  onClose={closeEditModal}
-  onUpdate={handleUpdateClassification}
-/>
+      <EditClassificationModal
+        show={showEditModal}
+        formData={formData}
+        categories={categories}
+        setFormData={setFormData}
+        onClose={closeEditModal}
+        onUpdate={handleUpdateClassification}
+      />
     </div>
   )
 }

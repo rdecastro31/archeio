@@ -8,6 +8,12 @@ export default function AddTypesModal({
 }) {
   if (!show) return null
 
+   // 1. Intercept the form submission
+  const handleSubmit = (e) => {
+    e.preventDefault(); // 👈 This explicitly stops the browser hard reload
+    onSubmit();         // 👈 Fires your handleCreateFolder function safely
+  };
+
   return (
     <div className="modal-backdrop">
       <div className="category-modal wide-modal">
@@ -18,7 +24,7 @@ export default function AddTypesModal({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="category-form">
+        <form onSubmit={handleSubmit} className="category-form">
           <div className="form-grid">
             {/* TYPE NAME */}
             <div className="form-group">

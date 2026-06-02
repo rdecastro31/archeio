@@ -8,6 +8,12 @@ export default function AddClassificationModal({
 }) {
   if (!show) return null
 
+   // 1. Intercept the form submission
+  const handleSubmit = (e) => {
+    e.preventDefault(); // 👈 This explicitly stops the browser hard reload
+    onSubmit();         // 👈 Fires your handleCreateFolder function safely
+  };
+
   return (
     <div className="modal-backdrop">
       <div className="category-modal">
@@ -18,7 +24,7 @@ export default function AddClassificationModal({
           </button>
         </div>
 
-        <form onSubmit={onSubmit}>
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Category</label>
             <select
