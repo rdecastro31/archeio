@@ -16,7 +16,9 @@ import {
   FiLayers,
   FiChevronDown,
   FiBriefcase,
-  FiArchive
+  FiArchive,
+  FiCpu,
+  FiSearch
 } from 'react-icons/fi'
 import '../styles/sidebar.css'
 import archeioLogo from '../assets/archeiologo.png'
@@ -82,10 +84,21 @@ export default function Sidebar({ isOpen, onClose, logo }) {
 
         
 
-         <NavLink to="/ai-checker" className="nav-item" onClick={onClose}>
+         {/*<NavLink to="/ai-checker" className="nav-item" onClick={onClose}>
           <FiArchive />
           <span>Document Checker</span>
+        </NavLink>*/}
+
+        <NavLink to="/ai-detection" className="nav-item" onClick={onClose}>
+          <FiCpu/>
+          <span>AI Detection Checker</span>
         </NavLink>
+
+         <NavLink to="/plagiarism-checker" className="nav-item" onClick={onClose}>
+          <FiSearch  />
+          <span>Plagiarism Checker</span>
+        </NavLink>
+
 
         <div className="nav-group">
           <button

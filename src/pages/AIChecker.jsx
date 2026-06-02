@@ -25,6 +25,26 @@ export default function AIChecker() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const USER_ID = user?.id || user?.userid || "";
 
+  const allowedTypes = [
+    "application/pdf",
+    "text/plain",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+
+  const allowedExtensions = [".pdf", ".txt", ".doc", ".docx"];
+
+  const isAllowedFile = (file) => {
+    if (!file) return false;
+
+    const fileName = file.name.toLowerCase();
+
+    return (
+      allowedTypes.includes(file.type) ||
+      allowedExtensions.some((ext) => fileName.endsWith(ext))
+    );
+  };
+
   const getOriginalityInterpretation = (score) => {
     if (score >= 80) {
       return {
@@ -81,18 +101,16 @@ export default function AIChecker() {
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
+
     if (!file) return;
 
-    const allowedTypes = ["application/pdf", "text/plain"];
-    const allowedExtensions = [".pdf", ".txt"];
-    const fileName = file.name.toLowerCase();
+    if (!isAllowedFile(file)) {
+      Swal.fire(
+        "Invalid File",
+        "Only PDF, TXT, DOC, and DOCX files are allowed.",
+        "error"
+      );
 
-    const isValid =
-      allowedTypes.includes(file.type) ||
-      allowedExtensions.some((ext) => fileName.endsWith(ext));
-
-    if (!isValid) {
-      Swal.fire("Invalid File", "Only PDF and TXT files are allowed.", "error");
       e.target.value = null;
       return;
     }
@@ -105,8 +123,17 @@ export default function AIChecker() {
     if (!selectedFile) {
       Swal.fire(
         "No File Selected",
-        "Please upload a PDF or TXT file first.",
+        "Please upload a PDF, TXT, DOC, or DOCX file first.",
         "warning"
+      );
+      return;
+    }
+
+    if (!isAllowedFile(selectedFile)) {
+      Swal.fire(
+        "Invalid File",
+        "Only PDF, TXT, DOC, and DOCX files are allowed.",
+        "error"
       );
       return;
     }
@@ -205,8 +232,8 @@ export default function AIChecker() {
         <div>
           <h1 className="page-title">Document Checker</h1>
           <p className="page-subtitle">
-            Upload a PDF or TXT document and check online similarity using AI
-            and Google Search grounding.
+            Upload a PDF, TXT, DOC, or DOCX document and check online similarity
+            using AI and Google Search grounding.
           </p>
         </div>
 
@@ -232,7 +259,7 @@ export default function AIChecker() {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.txt"
+              accept=".pdf,.txt,.doc,.docx"
               hidden
               onChange={handleFileSelect}
             />
@@ -246,8 +273,8 @@ export default function AIChecker() {
             </h4>
 
             <p>
-              Supported formats: PDF and TXT. Maximum file size depends on your
-              backend limit.
+              Supported formats: PDF, TXT, DOC, and DOCX. Maximum file size
+              depends on your backend limit.
             </p>
           </div>
 

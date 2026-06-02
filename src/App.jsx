@@ -24,6 +24,8 @@ import Transactions from './pages/Transactions'
 import DocumentStatuses from './pages/DocumentStatuses'
 import Archive from './pages/Archive'
 import AIChecker from './pages/AIChecker'
+import AIDetection from './pages/AIDetection'
+import PlagiarismChecker from './pages/PlagiarismChecker'
 
 function App() {
   const [systemSettings, setSystemSettings] = useState({
@@ -76,6 +78,8 @@ function App() {
             <Route path="/users" element={<Users />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/ai-checker" element={<AIChecker />} />
+            <Route path="/ai-detection" element={<AIDetection />} />
+            <Route path="/plagiarism-checker" element={<PlagiarismChecker />} />
           </Route>
         </Route>
 
