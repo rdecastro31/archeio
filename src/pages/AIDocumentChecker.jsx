@@ -12,9 +12,10 @@ import {
 } from "react-icons/fi";
 import Swal from "sweetalert2";
 import "../styles/aichecker.css";
+import { API_URL } from "../shared/constants";
 
-const AI_DETECTION_URL = "https://archeio.layon.ph/api/copyleaks_ai_detector.php";
-const COPYLEAKS_URL = "https://archeio.layon.ph/api/copyleaks.php";
+const AI_DETECTION_URL = `${API_URL}/copyleaks_ai_detector.php`;
+const COPYLEAKS_URL = `${API_URL}/copyleaks.php`;
 
 export default function AIDocumentChecker() {
   const fileInputRef = useRef(null);
@@ -497,7 +498,7 @@ export default function AIDocumentChecker() {
 
   const originalityScore = Number(
     plagiarismResult?.originality_score ||
-      100 - Number(score?.aggregatedScore || 0)
+    100 - Number(score?.aggregatedScore || 0)
   ).toFixed(2);
 
   const fileName =
