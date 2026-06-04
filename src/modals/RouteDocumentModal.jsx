@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import Select from "react-select"; // Import react-select
+import Select from "react-select";
 import {
   FiX,
   FiSend,
   FiUser,
   FiInfo,
-  FiCalendar,
+  FiPlus,
+  FiTrash2
 } from "react-icons/fi";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -21,27 +22,14 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
 
-  const [formData, setFormData] = useState({
-    to_user_id: "",
-    to_department_id: "",
-    instruction_type_id: "",
-    remarks: "",
-    due_date: "",
-  });
-
-  const resetModal = () => {
-    setFormData({
-      to_user_id: "",
-      to_department_id: "",
-      instruction_type_id: "",
-      remarks: "",
-      due_date: "",
-    });
-  };
+  // Tracks explicit step parameters
+  const [steps, setSteps] = useState([
+    { to_user_id: "", to_department_id: "", instruction_type_id: "", remarks: "" }
+  ]);
 
   useEffect(() => {
     if (show) {
-      resetModal();
+      setSteps([{ to_user_id: "", to_department_id: "", instruction_type_id: "", remarks: "" }]);
       fetchInitialData();
     }
   }, [show]);
@@ -60,7 +48,7 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
       ]);
 
       if (userRes.data.success) {
-        // Filter out current user
+        // Exclude current sender from recipient dropdown selection options
         const filteredUsers = userRes.data.data.filter(u => parseInt(u.id) !== parseInt(currentUser.id));
         setUsers(filteredUsers);
       }
@@ -72,36 +60,39 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
     }
   };
 
-  // --- REACT-SELECT DATA TRANSFORMATION ---
-  // 1. Group users by department
+  const addStep = () => {
+    setSteps([...steps, { to_user_id: "", to_department_id: "", instruction_type_id: "", remarks: "" }]);
+  };
+
+  const removeStep = (index) => {
+    if (steps.length === 1) return;
+    setSteps(steps.filter((_, i) => i !== index));
+  };
+
+  const handleStepChange = (index, field, value) => {
+    const updatedSteps = [...steps];
+    updatedSteps[index][field] = value;
+    setSteps(updatedSteps);
+  };
+
+  // Group database users by their department names for clear layout structure
   const groupedData = users.reduce((acc, user) => {
     const deptName = user.department_name || "Unassigned";
     if (!acc[deptName]) acc[deptName] = [];
     acc[deptName].push({
       value: user.id,
       label: user.fullname,
-      deptName: deptName, // Store department name here for searching
-      deptId: user.department_id,
+      deptId: user.department_id, // Explicit numeric mapping parameter
       job: user.job_title
     });
     return acc;
   }, {});
 
-  // 2. Format for react-select: [{ label: 'Dept', options: [...] }]
   const selectOptions = Object.keys(groupedData).sort().map(dept => ({
     label: dept,
     options: groupedData[dept]
   }));
 
-  const handleSelectChange = (selectedOption) => {
-    setFormData(prev => ({
-      ...prev,
-      to_user_id: selectedOption ? selectedOption.value : "",
-      to_department_id: selectedOption ? selectedOption.deptId : ""
-    }));
-  };
-
-  // Custom styling for react-select to match your theme
   const customSelectStyles = {
     control: (base) => ({
       ...base,
@@ -123,24 +114,64 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.to_user_id) {
-      Swal.fire("Required", "Please select a recipient.", "warning");
-      return;
+
+    // Verification check step loop
+    for (let i = 0; i < steps.length; i++) {
+      if (!steps[i].to_user_id || !steps[i].instruction_type_id) {
+        Swal.fire("Required Fields", `Please finish filling out step #${i + 1}`, "warning");
+        return;
+      }
     }
 
     setIsProcessing(true);
-    const targetDocId = document.document_id || document.id;
+    const targetDocId = document?.document_id || document?.id;
+    const fallbackDueDate = document?.due_date || null;
+
+    const firstStep = steps[0];
+
+    // Helper lookup to extract destination department ID straight from our data options if missing
+    const getVerifiedDeptId = (stepObj) => {
+      if (stepObj.to_department_id && parseInt(stepObj.to_department_id) !== 1) {
+        return stepObj.to_department_id;
+      }
+      const matchedUser = users.find(u => parseInt(u.id) === parseInt(stepObj.to_user_id));
+      return matchedUser ? matchedUser.department_id : currentUser.department_id;
+    };
+
+    // Process remaining steps in chain array strings
+    const remainingChain = steps.slice(1).map((step, idx) => {
+      const stepFromUser = steps[idx].to_user_id;
+      const matchedFromUser = users.find(u => parseInt(u.id) === parseInt(stepFromUser));
+      const calculatedFromDept = matchedFromUser ? matchedFromUser.department_id : currentUser.department_id;
+
+      return {
+        to_user_id: step.to_user_id,
+        to_department_id: getVerifiedDeptId(step),
+        instruction_type_id: step.instruction_type_id,
+        remarks: step.remarks,
+        due_date: fallbackDueDate,
+        from_user_id: stepFromUser,
+        from_department_id: calculatedFromDept
+      };
+    });
+
+    const remarksPayload = {
+      user_remarks: firstStep.remarks,
+      routing_chain: remainingChain
+    };
+
+    const firstStepDeptId = getVerifiedDeptId(firstStep);
 
     const transFd = new FormData();
     transFd.append("tag", "insert");
     transFd.append("document_id", targetDocId);
     transFd.append("from_user_id", currentUser.id);
     transFd.append("from_department_id", currentUser.department_id);
-    transFd.append("to_user_id", formData.to_user_id);
-    transFd.append("to_department_id", formData.to_department_id);
-    transFd.append("instruction_type_id", formData.instruction_type_id);
-    transFd.append("remarks", formData.remarks);
-    transFd.append("due_date", document.due_date);
+    transFd.append("to_user_id", firstStep.to_user_id);
+    transFd.append("to_department_id", firstStepDeptId); // Pass verified department integer
+    transFd.append("instruction_type_id", firstStep.instruction_type_id);
+    transFd.append("remarks", JSON.stringify(remarksPayload));
+    transFd.append("due_date", fallbackDueDate || "");
     transFd.append("transaction_status", "Pending");
 
     const docUpdateFd = new FormData();
@@ -155,12 +186,14 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
       ]);
 
       if (transRes.data.success && docRes.data.success) {
-        Swal.fire("Routed!", "Document assigned successfully.", "success");
+        Swal.fire("Routed!", `Document workflow initialized across ${steps.length} step(s).`, "success");
         onSuccess();
         onClose();
+      } else {
+        Swal.fire("Execution Error", transRes.data.message || "Database rejected transaction record creation.", "error");
       }
     } catch (error) {
-      Swal.fire("Error", "A server error occurred.", "error");
+      Swal.fire("Error", "A server error occurred during chain deployment.", "error");
     } finally {
       setIsProcessing(false);
     }
@@ -170,79 +203,87 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content medium-modal animate-slide-up">
+      <div className="modal-content medium-modal animate-slide-up" style={{ maxWidth: '800px', width: '95%' }}>
         <div className="modal-header">
-          <div className="header-icon-container"><FiSend /></div>
-          <div className="header-text">
-            <h3>Route Document</h3>
-            <p>Search and select the recipient</p>
+          <div className="d-flex align-items-center gap-2">
+            <FiSend className="modal-icon" />
+            <h2 className="modal-title">Multi-Recipient Document Routing</h2>
           </div>
-          <button className="modal-close-btn" onClick={onClose}><FiX /></button>
-        </div>
-
-        <div className="doc-preview-banner">
-          <FiInfo />
-          <span>Routing: <strong>{document?.document_no}</strong> - {document?.title}</span>
+          <button className="close-btn" onClick={onClose}><FiX /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="modal-form">
-          <div className="form-group full-width">
-            <label><FiUser /> Recipient (Search by name or department)</label>
-            <Select
-              options={selectOptions}
-              onChange={handleSelectChange}
-              placeholder="Search by name or department..."
-              isClearable
-              isLoading={loadingData}
-              styles={customSelectStyles}
-              // This custom filter checks both the user name and the department name
-              filterOption={(option, inputValue) => {
-                const term = inputValue.toLowerCase();
-                const nameMatch = option.data.label.toLowerCase().includes(term);
-                const deptMatch = option.data.deptName.toLowerCase().includes(term);
-                return nameMatch || deptMatch;
-              }}
-              formatOptionLabel={option => (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div>{option.label}</div>
-                    <small style={{ color: '#94a3b8', fontSize: '0.7rem' }}>{option.deptName}</small>
+          <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '5px' }}>
+            {steps.map((step, index) => {
+              const currentSelection = selectOptions.flatMap(g => g.options).find(o => o.value === step.to_user_id) || null;
+
+              return (
+                <div key={index} style={{ borderBottom: '2px dashed #e2e8f0', marginBottom: '20px', paddingBottom: '15px' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span style={{ fontWeight: 'bold', color: '#820d0d' }}>Step {index + 1} Recipient Route</span>
+                    {steps.length > 1 && (
+                      <button type="button" className="btn-link" style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px', border: 'none', background: 'transparent', cursor: 'pointer' }} onClick={() => removeStep(index)}>
+                        <FiTrash2 /> Remove Step
+                      </button>
+                    )}
                   </div>
-                  {option.job && <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{option.job}</small>}
+
+                  <div className="form-row">
+                    <div className="form-group flex-2">
+                      <label><FiUser /> Recipient User</label>
+                      <Select
+                        options={selectOptions}
+                        styles={customSelectStyles}
+                        placeholder="Search employee or department..."
+                        isClearable
+                        value={currentSelection}
+                        onChange={(sel) => {
+                          console.log(sel)
+                          handleStepChange(index, "to_user_id", sel ? sel.value : "");
+                          handleStepChange(index, "to_department_id", sel ? sel.deptId : "");
+                        }}
+                      />
+                    </div>
+
+                    <div className="form-group flex-2">
+                      <label><FiInfo /> Instruction Assignment</label>
+                      <select
+                        className="form-input-styled"
+                        required
+                        value={step.instruction_type_id}
+                        onChange={(e) => handleStepChange(index, "instruction_type_id", e.target.value)}
+                      >
+                        <option value="">Select Instruction...</option>
+                        {instructions.map(i => <option key={i.id} value={i.id}>{i.instruction_name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group mt-2">
+                    <label>Step Remarks / Directives</label>
+                    <textarea
+                      rows="2"
+                      className="form-input-styled textarea-fixed"
+                      placeholder={`Directives targeted specifically for step ${index + 1}...`}
+                      value={step.remarks}
+                      onChange={(e) => handleStepChange(index, "remarks", e.target.value)}
+                    />
+                  </div>
                 </div>
-              )}
-            />
+              );
+            })}
           </div>
 
-          <div className="form-row">
-            <div className="form-group flex-1">
-              <label><FiInfo /> Instruction</label>
-              <select
-                className="form-input-styled"
-                required
-                value={formData.instruction_type_id}
-                onChange={(e) => setFormData(p => ({ ...p, instruction_type_id: e.target.value }))}
-              >
-                <option value="">Select Instruction...</option>
-                {instructions.map(i => <option key={i.id} value={i.id}>{i.instruction_name}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Remarks</label>
-            <textarea
-              className="form-input-styled textarea-fixed"
-              placeholder="Notes for the recipient..."
-              value={formData.remarks}
-              onChange={(e) => setFormData(p => ({ ...p, remarks: e.target.value }))}
-            />
+          <div className="d-flex justify-content-start mb-3">
+            <button type="button" className="secondary-btn" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={addStep}>
+              <FiPlus /> Add Next Routing Step
+            </button>
           </div>
 
           <div className="modal-actions-horizontal">
             <div className="d-flex justify-content-between">
               <button type="submit" className="primary-btn" disabled={isProcessing}>
-                {isProcessing ? "Routing..." : "Confirm Route"}
+                {isProcessing ? "Processing Routing Chain..." : "Confirm & Deploy Route"}
               </button>
               <button type="button" className="secondary-btn" onClick={onClose}>Cancel</button>
             </div>
