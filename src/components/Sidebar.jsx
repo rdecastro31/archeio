@@ -82,7 +82,6 @@ export default function Sidebar({ isOpen, onClose, logo }) {
           <span>Archive</span>
         </NavLink>
 
-        
 
        <NavLink to="/ai-document-checker" className="nav-item" onClick={onClose}>
           <FiArchive />
@@ -94,8 +93,8 @@ export default function Sidebar({ isOpen, onClose, logo }) {
           <span>AI Detection Checker</span>
         </NavLink>
 
-         <NavLink to="/plagiarism-checker" className="nav-item" onClick={onClose}>
-          <FiSearch  />
+        <NavLink to="/plagiarism-checker" className="nav-item" onClick={onClose}>
+          <FiSearch />
           <span>Plagiarism Checker</span>
         </NavLink>*/}
 
