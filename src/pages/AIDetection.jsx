@@ -157,55 +157,66 @@ export default function AIDetection() {
   };
 
   const loadPreviousScans = async () => {
-    setShowHistoryModal(true);
-    setHistoryLoading(true);
+  if (!USER_ID) {
+    Swal.fire(
+      "User Error",
+      "Unable to identify the logged-in user.",
+      "error"
+    );
+    return;
+  }
 
-    try {
-      const fd = new FormData();
-      fd.append("tag", "getall");
+  setHistoryLoading(true);
+  setPreviousScans([]);
 
-      if (USER_ID) {
-        fd.append("checked_by", USER_ID);
-      }
+  try {
+    const fd = new FormData();
+    fd.append("tag", "getallbyuser");
+    fd.append("checked_by", USER_ID);
 
-      const response = await fetch(AI_DETECTION_URL, {
-        method: "POST",
-        body: fd,
+    const response = await fetch(AI_DETECTION_URL, {
+      method: "POST",
+      body: fd,
+    });
+
+    const data = await response.json();
+
+    if (data.success === 1) {
+      const rows = Array.isArray(data.data) ? data.data : [];
+
+      const sortedRows = rows.sort((a, b) => {
+        const dateA = new Date(a.date_created || 0);
+        const dateB = new Date(b.date_created || 0);
+        return dateB - dateA;
       });
 
-      const data = await response.json();
-
-      if (data.success === 1) {
-        const rows = Array.isArray(data.data) ? data.data : [];
-
-        const sortedRows = rows.sort((a, b) => {
-          const dateA = new Date(a.date_created || 0);
-          const dateB = new Date(b.date_created || 0);
-          return dateB - dateA;
-        });
-
-        setPreviousScans(sortedRows);
-      } else {
-        setPreviousScans([]);
-        Swal.fire(
-          "Error",
-          data.message || "Unable to load previous AI detection records.",
-          "error"
-        );
-      }
-    } catch (error) {
-      console.error("Previous AI Detection Error:", error);
+      setPreviousScans(sortedRows);
+      setShowHistoryModal(true);
+    } else {
       setPreviousScans([]);
+      setShowHistoryModal(false);
 
       Swal.fire(
-        "Server Error",
-        "Unable to connect to the AI detection history API.",
+        "Error",
+        data.message || "Unable to load previous AI detection records.",
         "error"
       );
-    } finally {
-      setHistoryLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Previous AI Detection Error:", error);
+
+    setPreviousScans([]);
+    setShowHistoryModal(false);
+
+    Swal.fire(
+      "Server Error",
+      "Unable to connect to the AI detection history API.",
+      "error"
+    );
+  } finally {
+    setHistoryLoading(false);
+  }
+};
 
   const resetChecker = () => {
     setSelectedFile(null);
@@ -228,7 +239,7 @@ export default function AIDetection() {
           <h1 className="page-title">AI Content Detector</h1>
           <p className="page-subtitle">
             Upload a PDF, TXT, or DOCX document and detect whether the content
-            is human-written or AI-generated using Copyleaks AI Detector.
+            is human-written or AI-generated using our AI Detector.
           </p>
         </div>
 
@@ -298,7 +309,7 @@ export default function AIDetection() {
               </div>
 
               <p>
-                Extracting document text and sending it to Copyleaks AI Detector.
+                Extracting document text and sending it to our AI Detector.
               </p>
             </div>
           )}
@@ -324,7 +335,7 @@ export default function AIDetection() {
 
         <div className="ai-info-card">
           <span className="card-kicker">How it works</span>
-          <h3>Copyleaks AI writing review</h3>
+          <h3>AI writing review</h3>
 
           <div className="ai-step-list">
             <div>
@@ -339,7 +350,7 @@ export default function AIDetection() {
 
             <div>
               <strong>3</strong>
-              <span>Copyleaks evaluates AI-generated probability</span>
+              <span> Our AI evaluates AI-generated probability</span>
             </div>
 
             <div>
@@ -442,7 +453,7 @@ export default function AIDetection() {
             <div className="scan-history-header">
               <div>
                 <h3>Previous AI Detection Records</h3>
-                <p>List of documents checked through Copyleaks AI Detector.</p>
+                <p>List of documents checked through our AI Detector.</p>
               </div>
 
               <button

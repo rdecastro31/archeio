@@ -23,7 +23,7 @@ import Documents from './pages/Documents'
 import Transactions from './pages/Transactions'
 import DocumentStatuses from './pages/DocumentStatuses'
 import Archive from './pages/Archive'
-import AIChecker from './pages/AIChecker'
+import AIDocumentChecker from './pages/AIDocumentChecker'
 import AIDetection from './pages/AIDetection'
 import PlagiarismChecker from './pages/PlagiarismChecker'
 
@@ -77,7 +77,7 @@ function App() {
             <Route path="/document_statuses" element={<DocumentStatuses />} />
             <Route path="/users" element={<Users />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/ai-checker" element={<AIChecker />} />
+            <Route path="/ai-document-checker" element={<AIDocumentChecker />} />
             <Route path="/ai-detection" element={<AIDetection />} />
             <Route path="/plagiarism-checker" element={<PlagiarismChecker />} />
           </Route>

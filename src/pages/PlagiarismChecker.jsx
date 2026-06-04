@@ -350,7 +350,8 @@ export default function PlagiarismChecker() {
 
     try {
       const fd = new FormData();
-      fd.append("tag", "getall");
+      fd.append("tag", "getallbyuser");
+      fd.append("checked_by", USER_ID);
 
       if (USER_ID) {
         fd.append("checked_by", USER_ID);
@@ -564,7 +565,7 @@ export default function PlagiarismChecker() {
 
         <div className="ai-info-card">
           <span className="card-kicker">How it works</span>
-          <h3>Copyleaks similarity review</h3>
+          <h3>Similarity review process</h3>
 
           <div className="ai-step-list">
             <div>
