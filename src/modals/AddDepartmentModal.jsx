@@ -10,6 +10,12 @@ export default function AddDepartmentModal({
 }) {
   if (!show) return null
 
+  // 1. Intercept the form submission
+  const handleSubmit = (e) => {
+    e.preventDefault(); // 👈 This explicitly stops the browser hard reload
+    onSubmit();         // 👈 Fires your handleCreateFolder function safely
+  };
+
   return (
     <div className="modal-overlay">
       <div className="category-modal">
@@ -21,8 +27,8 @@ export default function AddDepartmentModal({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="category-form">
-          
+        <form onSubmit={handleSubmit} className="category-form">
+
           <div className="form-group">
             <label>Department Name</label>
             <input

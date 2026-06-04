@@ -9,6 +9,12 @@ export default function CreateFolderModal({
 }) {
     if (!show) return null
 
+    // 1. Intercept the form submission
+    const handleSubmit = (e) => {
+        e.preventDefault(); // 👈 This explicitly stops the browser hard reload
+        onSubmit();         // 👈 Fires your handleCreateFolder function safely
+    };
+
     return (
         <div className="modal-overlay">
             <div className="category-modal">
@@ -23,7 +29,8 @@ export default function CreateFolderModal({
                     </button>
                 </div>
 
-                <form onSubmit={onSubmit} className="category-form">
+                {/* 2. Update the form onSubmit prop to look at the interceptor */}
+                <form onSubmit={handleSubmit} className="category-form">
                     <div className="form-group">
                         <label>Folder Name</label>
                         <div style={{ position: 'relative' }}>

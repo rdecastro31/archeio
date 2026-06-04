@@ -11,8 +11,9 @@ import {
 } from "react-icons/fi";
 import Swal from "sweetalert2";
 import "../styles/aichecker.css";
+import { API_URL } from "../shared/constants";
 
-const AI_DETECTION_URL = "https://archeio.layon.ph/api/copyleaks_ai_detector.php";
+const AI_DETECTION_URL = `${API_URL}/copyleaks_ai_detector.php`;
 
 export default function AIDetection() {
   const fileInputRef = useRef(null);

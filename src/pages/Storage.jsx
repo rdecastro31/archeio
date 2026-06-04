@@ -758,6 +758,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
             </div>
 
             <ContextMenu x={contextMenu.x} y={contextMenu.y} show={contextMenu.show} options={menuOptions} onClose={closeContextMenu} />
+            
             <CreateFolderModal show={showFolderModal} onClose={() => setShowFolderModal(false)} formData={folderFormData} setFormData={setFolderFormData} onSubmit={handleCreateFolder} />
 
             {/* Modal Components */}

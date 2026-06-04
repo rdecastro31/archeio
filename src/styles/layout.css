@@ -72,6 +72,10 @@ body {
   animation: fadeInOverlay 0.22s ease;
 }
 
+.swal2-container {
+    z-index: 99999 !important;
+}
+
 @keyframes fadeInOverlay {
   from {
     opacity: 0;

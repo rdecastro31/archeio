@@ -12,8 +12,9 @@ import {
 } from "react-icons/fi";
 import Swal from "sweetalert2";
 import "../styles/aichecker.css";
+import { API_URL } from "../shared/constants";
 
-const COPYLEAKS_URL = "https://archeio.layon.ph/api/copyleaks.php";
+const COPYLEAKS_URL = `${API_URL}/copyleaks.php`;
 
 export default function PlagiarismChecker() {
   const fileInputRef = useRef(null);
@@ -525,10 +526,10 @@ export default function PlagiarismChecker() {
                   {scanStatus === "Uploading"
                     ? "Uploading document..."
                     : scanStatus === "Submitted"
-                    ? "Submitted to Copyleaks..."
-                    : scanStatus === "Processing" || scanStatus === "In Progress"
-                    ? "Copyleaks is analyzing your document..."
-                    : "Waiting for scan result..."}
+                      ? "Submitted to Copyleaks..."
+                      : scanStatus === "Processing" || scanStatus === "In Progress"
+                        ? "Copyleaks is analyzing your document..."
+                        : "Waiting for scan result..."}
                 </span>
                 <strong>{progress}%</strong>
               </div>

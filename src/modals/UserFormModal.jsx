@@ -82,8 +82,6 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
     const fd = new FormData();
     fd.append("tag", user ? "update" : "insert");
 
-    if (user) fd.append("id", user.id);
-
     Object.keys(formData).forEach((key) => {
       if (key !== "password") {
         fd.append(key, formData[key]);
