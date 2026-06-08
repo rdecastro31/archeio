@@ -150,6 +150,19 @@ export default function Sidebar({ isOpen, onClose, logo }) {
             <FiUsers />
             <span>Users</span>
           </NavLink>
+
+          
+
+        )}
+
+      {canAccessUsers && (
+          <NavLink to="/roles" className="nav-item" onClick={onClose}>
+            <FiUsers />
+            <span>Roles</span>
+          </NavLink>
+
+          
+
         )}
 
         {/* <NavLink to="/reports" className="nav-item" onClick={onClose}>

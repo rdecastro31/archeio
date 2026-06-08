@@ -26,6 +26,7 @@ import Archive from './pages/Archive'
 import AIDocumentChecker from './pages/AIDocumentChecker'
 import AIDetection from './pages/AIDetection'
 import PlagiarismChecker from './pages/PlagiarismChecker'
+import Roles from './pages/Roles'
 
 function App() {
   const [systemSettings, setSystemSettings] = useState({
@@ -76,6 +77,7 @@ function App() {
             <Route path="/types" element={<Types />} />
             <Route path="/document_statuses" element={<DocumentStatuses />} />
             <Route path="/users" element={<Users />} />
+            <Route path="/roles" element={<Roles />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/ai-document-checker" element={<AIDocumentChecker />} />
             <Route path="/ai-detection" element={<AIDetection />} />
