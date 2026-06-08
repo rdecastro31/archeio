@@ -3,15 +3,33 @@ import { FiEye, FiEyeOff, FiX } from "react-icons/fi";
 import Swal from "sweetalert2";
 import { API_URL } from "../shared/constants";
 
-export default function UserFormModal({ show, onClose, user, departments, onSuccess }) {
+export default function UserFormModal({
+  show,
+  onClose,
+  user,
+  departments,
+  roles = [],
+  onSuccess,
+}) {
   const [showPassword, setShowPassword] = useState(false);
+
+  const getDefaultRole = () => {
+    const staffRole = roles.find((role) => role.role_name === "Staff");
+    return staffRole?.id || roles[0]?.id || "";
+  };
+
+  const getRoleNameById = (roleId) => {
+    const role = roles.find((item) => String(item.id) === String(roleId));
+    return role ? role.role_name : "";
+  };
 
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
     mobile_number: "",
     password: "",
-    userlevel: "Staff",
+    role_id: "",
+    userlevel: "",
     department_id: "",
     position: "",
     status: "Active",
@@ -19,24 +37,31 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
 
   useEffect(() => {
     if (user) {
+      const roleId = user.role_id || getDefaultRole();
+
       setFormData({
         ...user,
         mobile_number: user.mobile_number || "",
         password: "",
+        role_id: roleId,
+        userlevel: user.role_name || user.userlevel || getRoleNameById(roleId),
       });
     } else {
+      const defaultRoleId = getDefaultRole();
+
       setFormData({
         fullname: "",
         email: "",
         mobile_number: "",
         password: "",
-        userlevel: "Staff",
+        role_id: defaultRoleId,
+        userlevel: getRoleNameById(defaultRoleId),
         department_id: departments[0]?.id || "",
         position: "",
         status: "Active",
       });
     }
-  }, [user, show, departments]);
+  }, [user, show, departments, roles]);
 
   if (!show) return null;
 
@@ -57,6 +82,14 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
     setShowPassword(true);
   };
 
+  const handleRoleChange = (roleId) => {
+    setFormData((prev) => ({
+      ...prev,
+      role_id: roleId,
+      userlevel: getRoleNameById(roleId),
+    }));
+  };
+
   const handleMobileChange = (value) => {
     const cleaned = value.replace(/[^\d+]/g, "").slice(0, 13);
 
@@ -69,13 +102,26 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!formData.role_id) {
+      Swal.fire("Required", "Please select a user role.", "warning");
+      return;
+    }
+
     if (!user && formData.password.length < 6) {
-      Swal.fire("Invalid Password", "Password must be at least 6 characters.", "warning");
+      Swal.fire(
+        "Invalid Password",
+        "Password must be at least 6 characters.",
+        "warning"
+      );
       return;
     }
 
     if (user && formData.password && formData.password.length < 6) {
-      Swal.fire("Invalid Password", "New password must be at least 6 characters.", "warning");
+      Swal.fire(
+        "Invalid Password",
+        "New password must be at least 6 characters.",
+        "warning"
+      );
       return;
     }
 
@@ -87,6 +133,10 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
         fd.append(key, formData[key]);
       }
     });
+
+    if (user) {
+      fd.append("id", user.id);
+    }
 
     if (!user) {
       fd.append("password", formData.password);
@@ -101,9 +151,7 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
       const data = await response.json();
 
       if (data.success) {
-        console.log("update user success")
         if (user && formData.password) {
-          console.log("updating user password")
           const passFd = new FormData();
           passFd.append("tag", "update_password");
           passFd.append("email", formData.email);
@@ -126,11 +174,11 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
           }
         }
 
-        Swal.fire("Success", "User details updated successfully", "success");
+        Swal.fire("Success", "User details saved successfully.", "success");
         onSuccess();
         onClose();
       } else {
-        Swal.fire("Error", data.message, "error");
+        Swal.fire("Error", data.message || "Failed to save user.", "error");
       }
     } catch (error) {
       Swal.fire("Error", "Connection failed", "error");
@@ -143,7 +191,7 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
         <div className="modal-header">
           <div>
             <h2>{user ? "Edit User Account" : "Add New User"}</h2>
-            <p>Manage credentials, mobile OTP, and departmental access.</p>
+            <p>Manage credentials, mobile OTP, role, and departmental access.</p>
           </div>
 
           <button className="modal-close-btn" onClick={onClose}>
@@ -226,21 +274,22 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
             </div>
 
             <div className="form-group">
-              <label>Access Level</label>
+              <label>Role</label>
               <select
                 className="form-input-styled form-select-styled"
-                value={formData.userlevel}
-                onChange={(e) =>
-                  setFormData({ ...formData, userlevel: e.target.value })
-                }
+                required
+                value={formData.role_id}
+                onChange={(e) => handleRoleChange(e.target.value)}
               >
                 <option value="" disabled>
-                  Select Access Level
+                  Select Role
                 </option>
-                <option value="Administrator">Administrator</option>
-                <option value="Records Officer">Records Officer</option>
-                <option value="Approver">Approver</option>
-                <option value="Staff">Staff</option>
+
+                {roles.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.role_name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -257,6 +306,7 @@ export default function UserFormModal({ show, onClose, user, departments, onSucc
                 <option value="" disabled>
                   Select Department
                 </option>
+
                 {departments.map((dept) => (
                   <option key={dept.id} value={dept.id}>
                     {dept.department_name}

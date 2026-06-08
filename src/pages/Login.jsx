@@ -131,13 +131,26 @@ export default function Login({ logo }) {
         localStorage.setItem("token", result.data.email);
         localStorage.setItem("user", JSON.stringify(result.data));
 
-        const userLevel = result.data.userlevel?.trim();
+       const loggedUser = result.data || {};
 
-        if (userLevel === "Super Admin" || userLevel === "SuperAdmin") {
-          navigate("/admin-dashboard");
-        } else {
-          navigate("/dashboard");
-        }
+const roleName = String(
+  loggedUser.role_name || loggedUser.userlevel || ""
+).trim();
+
+const permissions = Array.isArray(loggedUser.permissions)
+  ? loggedUser.permissions
+  : [];
+
+const isSuperAdmin =
+  roleName === "Super Admin" ||
+  roleName === "SuperAdmin" ||
+  permissions.includes("DashboardAdmin.View");
+
+if (isSuperAdmin) {
+  navigate("/admin-dashboard");
+} else {
+  navigate("/dashboard");
+}
       } else {
         setError(result.message || "Invalid email or password.");
       }
