@@ -18,7 +18,11 @@ import {
   FiBriefcase,
   FiArchive,
   FiCpu,
-  FiSearch
+  FiSearch,
+  FiCheckSquare, 
+  FiHome, 
+  FiMapPin,
+  FiCheckCircle
 } from 'react-icons/fi'
 import '../styles/sidebar.css'
 import archeioLogo from '../assets/archeiologo.png'
@@ -84,7 +88,7 @@ export default function Sidebar({ isOpen, onClose, logo }) {
 
 
        <NavLink to="/ai-document-checker" className="nav-item" onClick={onClose}>
-          <FiArchive />
+          <FiCheckSquare />
           <span>Document Checker</span>
         </NavLink>
 
@@ -123,7 +127,7 @@ export default function Sidebar({ isOpen, onClose, logo }) {
               </NavLink>
 
               <NavLink to="/document_statuses" className="nav-subitem" onClick={onClose}>
-                <FiTag />
+                <FiCheckCircle />
                 <span>Statuses</span>
               </NavLink>
 
@@ -133,12 +137,12 @@ export default function Sidebar({ isOpen, onClose, logo }) {
               </NavLink>
 
               <NavLink to="/departments" className="nav-subitem" onClick={onClose}>
-                <FiBriefcase />
+                <FiHome />
                 <span>Departments</span>
               </NavLink>
 
               <NavLink to="/instructions" className="nav-subitem" onClick={onClose}>
-                <FiBriefcase />
+                <FiMapPin />
                 <span>Instructions</span>
               </NavLink>
             </div>
