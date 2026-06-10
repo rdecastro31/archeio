@@ -17,6 +17,12 @@ export default function Layout({ logo }) {
     setSidebarOpen(false)
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    window.location.href = '/'
+  }
+
   return (
     <div className="app-shell">
       <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} logo={logo} />
@@ -24,7 +30,7 @@ export default function Layout({ logo }) {
       {sidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar}></div>}
 
       <div className="main-section">
-        <Header onToggleSidebar={toggleSidebar} user={user} />
+        <Header onToggleSidebar={toggleSidebar} user={user} onLogout={handleLogout} />
 
         <main className="page-content">
           <Outlet context={{ user }} />

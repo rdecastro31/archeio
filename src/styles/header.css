@@ -7,14 +7,25 @@
   margin-bottom: 18px;
 
   background:
-    linear-gradient(180deg, rgba(252, 252, 252, 0.96), rgba(224, 221, 213, 0.42)),
-    radial-gradient(circle at top left, rgba(130, 13, 13, 0.08), transparent 30%);
+    linear-gradient(
+      180deg,
+      rgba(252, 252, 252, 0.96),
+      rgba(224, 221, 213, 0.42)
+    ),
+    radial-gradient(
+      circle at top left,
+      rgba(130, 13, 13, 0.08),
+      transparent 30%
+    );
 
   border: 1px solid rgba(137, 133, 128, 0.22);
   border-radius: 22px;
 
   box-shadow: 0 14px 35px rgba(101, 101, 101, 0.07);
   backdrop-filter: blur(14px);
+
+  position: relative;
+  z-index: 100;
 }
 
 /* LEFT SIDE */
@@ -135,7 +146,11 @@
   transform: scale(0.96);
 }
 
-/* PROFILE */
+/* PROFILE & DROPDOWN CONTAINER */
+.profile-container {
+  position: relative; /* Context for absolute positioning the dropdown */
+}
+
 .profile-box {
   display: flex;
   align-items: center;
@@ -148,10 +163,12 @@
   border: 1px solid rgba(137, 133, 128, 0.22);
 
   cursor: pointer;
+  user-select: none;
   transition: all 0.2s ease;
 }
 
-.profile-box:hover {
+.profile-box:hover,
+.profile-box.active {
   background: rgba(224, 221, 213, 0.34);
   border-color: rgba(130, 13, 13, 0.18);
 }
@@ -186,28 +203,99 @@
   color: #898580;
 }
 
-.change-password-header-btn {
-  border: none;
-  background: transparent;
-  color: #656565;
-  padding: 6px 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.dropdown-arrow {
+  color: #898580;
+  font-size: 14px;
+  transition: transform 0.2s ease;
+  margin-left: 4px;
 }
 
-.change-password-header-btn:hover {
+.dropdown-arrow.open {
+  transform: rotate(180deg);
   color: #820d0d;
 }
 
-.change-password-header-btn svg {
-  font-size: 15px;
+/* PROFILE DROPDOWN MENU CARD */
+.profile-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: #fcfcfc;
+  border: 1px solid rgba(137, 133, 128, 0.22);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(101, 101, 101, 0.12);
+  padding: 6px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  /* Smooth entry animation */
+  animation: slideDownDrop 0.15s ease-out forwards;
 }
 
+@keyframes slideDownDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2f2f2f;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.dropdown-item svg {
+  font-size: 16px;
+  color: #898580;
+  transition: color 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(224, 221, 213, 0.34);
+  color: #820d0d;
+}
+
+.dropdown-item:hover svg {
+  color: #820d0d;
+}
+
+.dropdown-divider {
+  border: 0;
+  height: 1px;
+  background: rgba(137, 133, 128, 0.15);
+  margin: 4px 6px;
+}
+
+/* Distinct hover color for logout if preferred */
+.dropdown-item.logout:hover {
+  background: rgba(130, 13, 13, 0.08);
+  color: #820d0d;
+}
+
+.dropdown-item.logout:hover svg {
+  color: #820d0d;
+}
+
+/* PASSWORD MODAL STYLES */
 .change-password-backdrop {
   position: fixed;
   inset: 0;
@@ -325,7 +413,8 @@
     justify-content: space-between;
   }
 
+  /* Modified: keeping profile text visible on mobile so it remains clear where to tap */
   .profile-text {
-    display: none;
+    display: flex;
   }
 }

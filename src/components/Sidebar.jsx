@@ -19,8 +19,8 @@ import {
   FiArchive,
   FiCpu,
   FiSearch,
-  FiCheckSquare, 
-  FiHome, 
+  FiCheckSquare,
+  FiHome,
   FiMapPin,
   FiCheckCircle
 } from 'react-icons/fi'
@@ -35,18 +35,12 @@ export default function Sidebar({ isOpen, onClose, logo }) {
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   const userlevel = user?.userlevel
 
+  const isSuperAdmin = userlevel === 'Super Admin'
+
   const canAccessMasterData =
     userlevel === 'Super Admin' ||
     userlevel === 'Administrator' ||
     userlevel === 'Admin'
-
-  const canAccessUsers = userlevel === 'Super Admin'
-
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    window.location.href = '/'
-  }
 
   return (
     <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
@@ -61,9 +55,16 @@ export default function Sidebar({ isOpen, onClose, logo }) {
       <div className="sidebar-divider" />
 
       <nav className="sidebar-nav">
+        {isSuperAdmin && (
+          <NavLink to="/admin-dashboard" className="nav-item" onClick={onClose}>
+            <FiGrid />
+            <span>Admin Dashboard</span>
+          </NavLink>
+        )}
+
         <NavLink to="/dashboard" className="nav-item" onClick={onClose}>
           <FiGrid />
-          <span>Dashboard</span>
+          <span>{isSuperAdmin ? "Document Dashboard" : "Dashboard"}</span>
         </NavLink>
 
         <NavLink to="/workspace" className="nav-item" onClick={onClose}>
@@ -87,12 +88,12 @@ export default function Sidebar({ isOpen, onClose, logo }) {
         </NavLink>
 
 
-       <NavLink to="/ai-document-checker" className="nav-item" onClick={onClose}>
+        <NavLink to="/ai-document-checker" className="nav-item" onClick={onClose}>
           <FiCheckSquare />
           <span>Document Checker</span>
         </NavLink>
 
-          {/*<NavLink to="/ai-detection" className="nav-item" onClick={onClose}>
+        {/*<NavLink to="/ai-detection" className="nav-item" onClick={onClose}>
           <FiCpu/>
           <span>AI Detection Checker</span>
         </NavLink>
@@ -149,24 +150,18 @@ export default function Sidebar({ isOpen, onClose, logo }) {
           )}
         </div>
 
-        {canAccessUsers && (
-          <NavLink to="/users" className="nav-item" onClick={onClose}>
-            <FiUsers />
-            <span>Users</span>
-          </NavLink>
+        {isSuperAdmin && (
+          <>
+            <NavLink to="/users" className="nav-item" onClick={onClose}>
+              <FiUsers />
+              <span>Users</span>
+            </NavLink>
 
-          
-
-        )}
-
-      {canAccessUsers && (
-          <NavLink to="/roles" className="nav-item" onClick={onClose}>
-            <FiUsers />
-            <span>Roles</span>
-          </NavLink>
-
-          
-
+            <NavLink to="/roles" className="nav-item" onClick={onClose}>
+              <FiUsers />
+              <span>Roles</span>
+            </NavLink>
+          </>
         )}
 
         {/* <NavLink to="/reports" className="nav-item" onClick={onClose}>
@@ -185,14 +180,14 @@ export default function Sidebar({ isOpen, onClose, logo }) {
         </NavLink>
       </nav>
 
-      <div className="sidebar-divider" />
+      {/* <div className="sidebar-divider" />
 
       <div className="sidebar-bottom">
         <button className="logout-btn" onClick={handleLogout}>
           <FiLogOut />
           <span>Logout</span>
         </button>
-      </div>
+      </div> */}
     </aside>
   )
 }
