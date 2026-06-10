@@ -17,6 +17,7 @@ export default function Instructions() {
     const [docStatuses, setDocStatuses] = useState([]);
     const [availableActions, setAvailableActions] = useState([]);
     const [instructionMap, setInstructionMap] = useState([]);
+    const [documentPermissions, setDocumentPermissions] = useState([]);
     const [selectedInstId, setSelectedInstId] = useState(null);
     const [selectedCurrentDocStatus, setSelectedCurrentDocStatus] = useState(null);
     const [selectedNextDocStatus, setSelectedNextDocStatus] = useState(null);
@@ -47,18 +48,21 @@ export default function Instructions() {
         const actFd = new FormData(); actFd.append("tag", "getall");
         const statFd = new FormData(); statFd.append("tag", "getall");
         const mapFd = new FormData(); mapFd.append("tag", "get_all_mappings");
+        const permFd = new FormData(); permFd.append("tag", "getpermissions");
 
-        const [instRes, actRes, docStatusRes, mapRes] = await Promise.all([
+        const [instRes, actRes, docStatusRes, mapRes, permRes] = await Promise.all([
             callApi(`${API_URL}/instructiontypes.php`, instFd),
             callApi(`${API_URL}/actions.php`, actFd),
             callApi(`${API_URL}/docstatus.php`, statFd),
-            callApi(`${API_URL}/instructionmap.php`, mapFd)
+            callApi(`${API_URL}/instructionmap.php`, mapFd),
+            callApi(`${API_URL}/rolepermission.php`, permFd)
         ]);
 
         if (instRes.success) setInstructionTypes(instRes.data);
         if (docStatusRes.success) setDocStatuses(docStatusRes.data);
         if (actRes.success) setAvailableActions(actRes.data);
         if (mapRes.success) setInstructionMap(mapRes.data);
+        if (permRes.success) setDocumentPermissions(permRes.data);
     }, []);
 
     useEffect(() => {
@@ -138,7 +142,7 @@ export default function Instructions() {
         ...instructionOptions
     ];
 
-    const toggleMapping = async (actionId, nextInstId = null, currentDocStatusId = null, nextDocStatusId = null) => {
+    const toggleMapping = async (actionId, nextInstId = null, nextDocStatusId = null) => {
         // 1. Identify the search context: 
         // If we are changing the current status via dropdown, we need to find the record 
         // that EXISTS before the change. 
@@ -168,13 +172,12 @@ export default function Instructions() {
 
         if (mapping) {
             // If we found a record, check if we are updating it or deleting it
-            const isUpdate = nextInstId !== null || currentDocStatusId !== null || nextDocStatusId !== null;
+            const isUpdate = nextInstId !== null || nextDocStatusId !== null;
 
             if (isUpdate) {
                 fd.append("tag", "update");
                 fd.append("id", mapping.id);
                 // Use the NEW status if provided, otherwise keep the old one
-                fd.append("current_status_id", currentDocStatusId !== null ? currentDocStatusId : mapping.current_document_status_id);
                 fd.append("next_instruction_id", nextInstId !== null ? nextInstId : (mapping.next_instruction_id || ""));
                 fd.append("next_status_id", nextDocStatusId !== null ? nextDocStatusId : (mapping.next_document_status_id || ""));
             } else {
@@ -185,12 +188,11 @@ export default function Instructions() {
             }
         } else {
             // No existing mapping found? This is a first-time activation (Insert)
-            const insertStatus = currentDocStatusId || selectedCurrentDocStatus || docStatuses[0]?.id;
+            const insertStatus = selectedCurrentDocStatus || docStatuses[0]?.id;
 
             fd.append("tag", "insert");
             fd.append("instruction_type_id", selectedInstId);
             fd.append("action_id", actionId);
-            fd.append("current_status_id", insertStatus);
             fd.append("next_status_id", insertStatus);
             fd.append("next_instruction_id", nextInstId || "");
         }
@@ -203,10 +205,6 @@ export default function Instructions() {
             const res = await response.json();
 
             if (res.success) {
-                // If the current status was updated, update the global state so the UI stays in sync
-                if (currentDocStatusId !== null) {
-                    setSelectedCurrentDocStatus(currentDocStatusId);
-                }
                 await fetchData();
             } else {
                 Swal.fire("Error", res.message || "Failed to process request", "error");
@@ -300,7 +298,6 @@ export default function Instructions() {
                                                     onClick={() => toggleMapping(
                                                         action.id,                 // actionId
                                                         null,                      // nextInstId
-                                                        null,                       // currentDocStatusId
                                                         null                       // nextDocStatusId
                                                     )}>
                                                     {isMapped ? <FiCheckSquare className="check-icon" /> : <FiSquare className="check-icon" />}
@@ -330,16 +327,6 @@ export default function Instructions() {
                                                                 }
                                                                 onChange={(selected) => toggleMapping(action.id, selected ? selected.value : "", null, null)}
                                                                 isClearable
-                                                            />
-                                                        </div>
-                                                        <div className="next-step-config">
-                                                            <label>Current Document Status</label>
-                                                            <Select
-                                                                className="react-select-container"
-                                                                classNamePrefix="react-select"
-                                                                options={statusOptions}
-                                                                value={statusOptions.find(opt => String(opt.value) === String(mapping?.current_document_status_id)) || null}
-                                                                onChange={(selected) => toggleMapping(action.id, null, selected ? selected.value : null, null)}
                                                             />
                                                         </div>
                                                         <div className="next-step-config">
@@ -415,6 +402,7 @@ export default function Instructions() {
                 show={showInstModal}
                 onClose={() => setShowInstModal(false)}
                 instruction={selectedInst}
+                permissions={documentPermissions}
                 onSuccess={fetchData}
             />
 

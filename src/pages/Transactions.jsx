@@ -296,7 +296,7 @@ export default function Transactions() {
                     const docFd = new FormData();
                     docFd.append("tag", "update_status");
                     docFd.append("id", transaction.document_id);
-                    docFd.append("document_status", 3);
+                    docFd.append("document_status", 4);
                     await fetch(`${API_URL}/document.php`, { method: "POST", body: docFd });
                 }
 

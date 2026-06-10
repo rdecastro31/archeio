@@ -17,19 +17,18 @@ import "../styles/routedocumentmodal.css";
 export default function RouteDocumentModal({ show, onClose, document, onSuccess }) {
   const { user: currentUser } = useOutletContext();
 
-  const [users, setUsers] = useState([]);
   const [instructions, setInstructions] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
 
-  // Tracks explicit step parameters
+  // Each step now keeps track of its own eligible users list
   const [steps, setSteps] = useState([
-    { to_user_id: "", to_department_id: "", instruction_type_id: "", remarks: "" }
+    { to_user_id: "", to_department_id: "", instruction_type_id: "", remarks: "", eligibleUsers: [] }
   ]);
 
   useEffect(() => {
     if (show) {
-      setSteps([{ to_user_id: "", to_department_id: "", instruction_type_id: "", remarks: "" }]);
+      setSteps([{ to_user_id: "", to_department_id: "", instruction_type_id: "", remarks: "", eligibleUsers: [] }]);
       fetchInitialData();
     }
   }, [show]);
@@ -37,31 +36,20 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
   const fetchInitialData = async () => {
     setLoadingData(true);
     try {
-      const userFd = new FormData();
-      userFd.append("tag", "getall");
       const instFd = new FormData();
       instFd.append("tag", "getall");
 
-      const [userRes, instRes] = await Promise.all([
-        axios.post(`${API_URL}/users.php`, userFd),
-        axios.post(`${API_URL}/instructiontypes.php`, instFd),
-      ]);
-
-      if (userRes.data.success) {
-        // Exclude current sender from recipient dropdown selection options
-        const filteredUsers = userRes.data.data.filter(u => parseInt(u.id) !== parseInt(currentUser.id));
-        setUsers(filteredUsers);
-      }
-      if (instRes.data.success) setInstructions(instRes.data.data);
+      const res = await axios.post(`${API_URL}/instructiontypes.php`, instFd);
+      if (res.data.success) setInstructions(res.data.data);
     } catch (error) {
-      console.error("Error fetching modal data:", error);
+      console.error("Error fetching instructions:", error);
     } finally {
       setLoadingData(false);
     }
   };
 
   const addStep = () => {
-    setSteps([...steps, { to_user_id: "", to_department_id: "", instruction_type_id: "", remarks: "" }]);
+    setSteps([...steps, { to_user_id: "", to_department_id: "", instruction_type_id: "", remarks: "", eligibleUsers: [] }]);
   };
 
   const removeStep = (index) => {
@@ -75,23 +63,62 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
     setSteps(updatedSteps);
   };
 
-  // Group database users by their department names for clear layout structure
-  const groupedData = users.reduce((acc, user) => {
-    const deptName = user.department_name || "Unassigned";
-    if (!acc[deptName]) acc[deptName] = [];
-    acc[deptName].push({
-      value: user.id,
-      label: user.fullname,
-      deptId: user.department_id, // Explicit numeric mapping parameter
-      job: user.job_title
-    });
-    return acc;
-  }, {});
+  // Triggered whenever the user chooses an instruction for a step
+  const handleInstructionChange = async (index, instructionId) => {
+    const updatedSteps = [...steps];
+    updatedSteps[index]["instruction_type_id"] = instructionId;
 
-  const selectOptions = Object.keys(groupedData).sort().map(dept => ({
-    label: dept,
-    options: groupedData[dept]
-  }));
+    // Reset selected user if instruction changes
+    updatedSteps[index]["to_user_id"] = "";
+    updatedSteps[index]["to_department_id"] = "";
+
+    if (!instructionId) {
+      updatedSteps[index]["eligibleUsers"] = [];
+      setSteps(updatedSteps);
+      return;
+    }
+
+    try {
+      const fd = new FormData();
+      fd.append("tag", "geteligibleusersbypermissionid");
+      fd.append("permission_id", instructionId); // Using instruction_type_id as permission_id mapping
+
+      const res = await axios.post(`${API_URL}/rolepermission.php`, fd);
+
+      if (res.data.success && Array.isArray(res.data.data)) {
+        // Exclude current sender from recipient dropdown selection options
+        const filteredUsers = res.data.data.filter(u => parseInt(u.id) !== parseInt(currentUser.id));
+        updatedSteps[index]["eligibleUsers"] = filteredUsers;
+      } else {
+        updatedSteps[index]["eligibleUsers"] = [];
+      }
+    } catch (error) {
+      console.error("Error fetching eligible users:", error);
+      updatedSteps[index]["eligibleUsers"] = [];
+    }
+
+    setSteps(updatedSteps);
+  };
+
+  // Helper logic to group users array by department for React-Select formatting
+  const getGroupedSelectOptions = (usersList) => {
+    const groupedData = usersList.reduce((acc, user) => {
+      const deptName = user.department_name || "Unassigned";
+      if (!acc[deptName]) acc[deptName] = [];
+      acc[deptName].push({
+        value: user.id,
+        label: user.fullname || user.name, // Fallback if property key names vary in your rolepermission class data query
+        deptId: user.department_id,
+        job: user.job_title
+      });
+      return acc;
+    }, {});
+
+    return Object.keys(groupedData).sort().map(dept => ({
+      label: dept,
+      options: groupedData[dept]
+    }));
+  };
 
   const customSelectStyles = {
     control: (base) => ({
@@ -115,7 +142,6 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Verification check step loop
     for (let i = 0; i < steps.length; i++) {
       if (!steps[i].to_user_id || !steps[i].instruction_type_id) {
         Swal.fire("Required Fields", `Please finish filling out step #${i + 1}`, "warning");
@@ -129,19 +155,19 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
 
     const firstStep = steps[0];
 
-    // Helper lookup to extract destination department ID straight from our data options if missing
+    // Helper lookup from step-specific lists
     const getVerifiedDeptId = (stepObj) => {
       if (stepObj.to_department_id && parseInt(stepObj.to_department_id) !== 1) {
         return stepObj.to_department_id;
       }
-      const matchedUser = users.find(u => parseInt(u.id) === parseInt(stepObj.to_user_id));
+      const matchedUser = stepObj.eligibleUsers.find(u => parseInt(u.id) === parseInt(stepObj.to_user_id));
       return matchedUser ? matchedUser.department_id : currentUser.department_id;
     };
 
-    // Process remaining steps in chain array strings
     const remainingChain = steps.slice(1).map((step, idx) => {
       const stepFromUser = steps[idx].to_user_id;
-      const matchedFromUser = users.find(u => parseInt(u.id) === parseInt(stepFromUser));
+      // Look up previous step user from that step's eligible users pool
+      const matchedFromUser = steps[idx].eligibleUsers.find(u => parseInt(u.id) === parseInt(stepFromUser));
       const calculatedFromDept = matchedFromUser ? matchedFromUser.department_id : currentUser.department_id;
 
       return {
@@ -168,7 +194,7 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
     transFd.append("from_user_id", currentUser.id);
     transFd.append("from_department_id", currentUser.department_id);
     transFd.append("to_user_id", firstStep.to_user_id);
-    transFd.append("to_department_id", firstStepDeptId); // Pass verified department integer
+    transFd.append("to_department_id", firstStepDeptId);
     transFd.append("instruction_type_id", firstStep.instruction_type_id);
     transFd.append("remarks", JSON.stringify(remarksPayload));
     transFd.append("due_date", fallbackDueDate || "");
@@ -215,7 +241,9 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
         <form onSubmit={handleSubmit} className="modal-form">
           <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '5px' }}>
             {steps.map((step, index) => {
-              const currentSelection = selectOptions.flatMap(g => g.options).find(o => o.value === step.to_user_id) || null;
+              // Dynamically build the options array specifically for this step's pool of users
+              const currentSelectOptions = getGroupedSelectOptions(step.eligibleUsers);
+              const currentSelection = currentSelectOptions.flatMap(g => g.options).find(o => o.value === step.to_user_id) || null;
 
               return (
                 <div key={index} style={{ borderBottom: '2px dashed #e2e8f0', marginBottom: '20px', paddingBottom: '15px' }}>
@@ -230,32 +258,32 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
 
                   <div className="form-row">
                     <div className="form-group flex-2">
-                      <label><FiUser /> Recipient User</label>
-                      <Select
-                        options={selectOptions}
-                        styles={customSelectStyles}
-                        placeholder="Search employee or department..."
-                        isClearable
-                        value={currentSelection}
-                        onChange={(sel) => {
-                          console.log(sel)
-                          handleStepChange(index, "to_user_id", sel ? sel.value : "");
-                          handleStepChange(index, "to_department_id", sel ? sel.deptId : "");
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group flex-2">
                       <label><FiInfo /> Instruction Assignment</label>
                       <select
                         className="form-input-styled"
                         required
                         value={step.instruction_type_id}
-                        onChange={(e) => handleStepChange(index, "instruction_type_id", e.target.value)}
+                        onChange={(e) => handleInstructionChange(index, e.target.value)}
                       >
                         <option value="">Select Instruction...</option>
                         {instructions.map(i => <option key={i.id} value={i.id}>{i.instruction_name}</option>)}
                       </select>
+                    </div>
+
+                    <div className="form-group flex-2">
+                      <label><FiUser /> Recipient User</label>
+                      <Select
+                        options={currentSelectOptions}
+                        styles={customSelectStyles}
+                        placeholder={step.instruction_type_id ? "Search eligible employee..." : "Choose an instruction first..."}
+                        isClearable
+                        disabled={!step.instruction_type_id}
+                        value={currentSelection}
+                        onChange={(sel) => {
+                          handleStepChange(index, "to_user_id", sel ? sel.value : "");
+                          handleStepChange(index, "to_department_id", sel ? sel.deptId : "");
+                        }}
+                      />
                     </div>
                   </div>
 
