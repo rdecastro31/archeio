@@ -6,8 +6,11 @@ import DocumentFormModal from "../modals/DocumentFormModal";
 import ViewFileModal from "../modals/ViewFileModal";
 import "../styles/documents.css";
 import RouteDocumentModal from "../modals/RouteDocumentModal";
+import { useOutletContext } from "react-router-dom";
 
 export default function Documents() {
+    const { user } = useOutletContext();
+    const USER_ID = user?.id || null;
     const [documents, setDocuments] = useState([]);
     const [docTypes, setDocTypes] = useState([]);
     const [transTypes, setTransTypes] = useState([]);
@@ -34,7 +37,8 @@ export default function Documents() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         const docFd = new FormData();
-        docFd.append("tag", "getall");
+        docFd.append("tag", "getcreatedbyuser");
+        docFd.append("user_id", USER_ID);
         const docData = await callApi(`${API_URL}/document.php`, docFd);
 
         const typeFd = new FormData();
@@ -173,8 +177,8 @@ export default function Documents() {
                                         </div>
                                     </td>
                                     <td>
-                                        <span className={`status-badge status-${doc.document_status?.toLowerCase().replace(' ', '-')}`}>
-                                            {doc.document_status}
+                                        <span className={`status-badge status-${doc.document_status_name?.toLowerCase().replace(' ', '-')}`}>
+                                            {doc.document_status_name}
                                         </span>
                                     </td>
                                     <td>
@@ -192,7 +196,7 @@ export default function Documents() {
                                                 <FiEye />
                                             </button>
 
-                                            {doc.document_status === 'Draft' && (
+                                            {doc.document_status_name === 'Draft' && (
                                                 <>
                                                     <button
                                                         className="icon-btn route"
@@ -207,7 +211,7 @@ export default function Documents() {
                                             )}
 
                                             {/* Show Archive Button when status is exactly Completed or Cancelled */}
-                                            {(doc.document_status === 'Completed' || doc.document_status === 'Cancelled') && (
+                                            {(doc.document_status_name === 'Completed' || doc.document_status_name === 'Cancelled') && (
                                                 <button
                                                     className="icon-btn archive"
                                                     title="Archive Document"

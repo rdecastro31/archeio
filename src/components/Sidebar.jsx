@@ -67,14 +67,14 @@ export default function Sidebar({ isOpen, onClose, logo }) {
           <span>{isSuperAdmin ? "Document Dashboard" : "Dashboard"}</span>
         </NavLink>
 
+        <NavLink to="/documents" className="nav-item" onClick={onClose}>
+          <FiFileText />
+          <span>Drive</span>
+        </NavLink>
+
         <NavLink to="/workspace" className="nav-item" onClick={onClose}>
           <FiServer />
           <span>Workspace</span>
-        </NavLink>
-
-        <NavLink to="/documents" className="nav-item" onClick={onClose}>
-          <FiFileText />
-          <span>Documents</span>
         </NavLink>
 
         <NavLink to="/transactions" className="nav-item" onClick={onClose}>
@@ -122,6 +122,11 @@ export default function Sidebar({ isOpen, onClose, logo }) {
                 <span>Categories</span>
               </NavLink>
 
+              <NavLink to="/classification" className="nav-subitem" onClick={onClose}>
+                <FiLayers />
+                <span>Classification</span>
+              </NavLink>
+
               <NavLink to="/types" className="nav-subitem" onClick={onClose}>
                 <FiTag />
                 <span>Types</span>
@@ -130,11 +135,6 @@ export default function Sidebar({ isOpen, onClose, logo }) {
               <NavLink to="/document_statuses" className="nav-subitem" onClick={onClose}>
                 <FiCheckCircle />
                 <span>Statuses</span>
-              </NavLink>
-
-              <NavLink to="/classification" className="nav-subitem" onClick={onClose}>
-                <FiLayers />
-                <span>Classification</span>
               </NavLink>
 
               <NavLink to="/departments" className="nav-subitem" onClick={onClose}>
