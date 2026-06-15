@@ -1,38 +1,43 @@
 import { Link } from "react-router-dom";
 import "../styles/home.css";
-
-import archeioLogo from '../assets/archeiologo.png';
+import archeioLogo from "../assets/archeiologo.png";
 
 export default function Home({ logo }) {
-  const currentLogo = logo || archeioLogo
+  const currentLogo = logo || archeioLogo;
+
   return (
     <div className="landing-page">
       <header className="landing-header">
         <div className="brand">
-          <img src={currentLogo} alt="ArcheIO Logo" style={{ width: '100%', height: '50px' }} />
-          {/* <div className="brand-icon">DMS</div>
-          <div>
-            <h1>ArcheIO</h1>
-            <span>Document Management System</span>
-          </div> */}
+          <img src={currentLogo} alt="ArcheIO Logo" />
         </div>
 
-        <Link to="/login" className="login-btn">
-          Login
-        </Link>
+        <nav className="landing-nav">
+          <a href="#features">Features</a>
+          <a href="#workflow">Workflow</a>
+          <Link to="/login" className="login-btn">
+            Login
+          </Link>
+        </nav>
       </header>
 
       <section className="hero-section">
-        <div className="hero-content">
-          <div className="hero-badge">Secure • Organized • OCR Ready</div>
+        <div className="hero-glow"></div>
 
-          <h2>
-            Efficient Document Management with Archiving and OCR
-          </h2>
+        <div className="hero-content">
+          <div className="hero-badge">
+            AI-Powered • OCR Search • Secure Routing
+          </div>
+
+          <h1>
+            Smart Document Management with{" "}
+            <span>OCR & AI Review</span>
+          </h1>
 
           <p>
-            A streamlined platform designed to manage document filing, routing,
-            approvals, archiving, and OCR-based search in a secure and organized environment.
+            ArcheIO helps organizations file, route, approve, archive, and
+            review documents faster through OCR-powered search, intelligent
+            document review, and secure role-based workflows.
           </p>
 
           <div className="hero-actions">
@@ -40,35 +45,67 @@ export default function Home({ logo }) {
               Get Started
             </Link>
 
-            <a href="#features" className="secondary-btn">
-              View Features
-            </a>
+           
+          </div>
+
+          <div className="hero-highlights">
+            <div>
+              <strong>99%</strong>
+              <span>Faster retrieval</span>
+            </div>
+            <div>
+              <strong>24/7</strong>
+              <span>Secure access</span>
+            </div>
+            <div>
+              <strong>AI</strong>
+              <span>Document review</span>
+            </div>
           </div>
         </div>
 
-        <div className="hero-banner">
-          <div className="banner-card main-card">
-            <div className="card-top">
-              <span>Document Overview</span>
-              <strong>Active</strong>
+        <div className="hero-dashboard">
+          <div className="dashboard-card">
+            <div className="dashboard-header">
+              <div>
+                <span>Document Intelligence</span>
+                <h3>Live Overview</h3>
+              </div>
+              <small>Active</small>
             </div>
 
-            <div className="document-row">
-              <div></div>
-              <span>Administrative Case</span>
-              <small>For Approval</small>
+            <div className="search-preview">
+              <span>Search scanned documents...</span>
+              <strong>OCR</strong>
             </div>
 
-            <div className="document-row">
-              <div></div>
-              <span>Inspection Report</span>
-              <small>Archived</small>
-            </div>
+            <div className="document-list">
+              <div className="document-item">
+                <div className="doc-icon blue"></div>
+                <div>
+                  <strong>Administrative Case</strong>
+                  <span>Pending AI Review</span>
+                </div>
+                <small>For Approval</small>
+              </div>
 
-            <div className="document-row">
-              <div></div>
-              <span>Agency Order</span>
-              <small>OCR Indexed</small>
+              <div className="document-item">
+                <div className="doc-icon green"></div>
+                <div>
+                  <strong>Inspection Report</strong>
+                  <span>OCR Indexed</span>
+                </div>
+                <small>Archived</small>
+              </div>
+
+              <div className="document-item">
+                <div className="doc-icon violet"></div>
+                <div>
+                  <strong>Agency Order</strong>
+                  <span>Routed to Department</span>
+                </div>
+                <small>In Progress</small>
+              </div>
             </div>
           </div>
 
@@ -78,76 +115,74 @@ export default function Home({ logo }) {
           </div>
 
           <div className="floating-card bottom">
-            <strong>OCR</strong>
-            <span>Searchable Files</span>
+            <strong>AI</strong>
+            <span>Review Ready</span>
           </div>
-        </div>
-      </section>
-
-      <section className="stats-section">
-        <div>
-          <h3>99%</h3>
-          <p>Faster retrieval</p>
-        </div>
-
-        <div>
-          <h3>24/7</h3>
-          <p>Document access</p>
-        </div>
-
-        <div>
-          <h3>OCR</h3>
-          <p>Smart searching</p>
-        </div>
-
-        <div>
-          <h3>Secure</h3>
-          <p>Role-based access</p>
         </div>
       </section>
 
       <section className="features-section" id="features">
         <div className="section-heading">
           <span>Core Features</span>
-          <h2>Built for reliable document operations</h2>
+          <h2>Modern tools for reliable document operations</h2>
           <p>
-            Everything your office needs to organize, process, and preserve
-            important records.
+            Manage records, approvals, routing, OCR search, and AI-assisted
+            document review in one secure platform.
           </p>
         </div>
 
         <div className="features-grid">
           <div className="feature-card">
+            <span>01</span>
             <h3>Document Tracking</h3>
             <p>
-              Monitor document movement, status, ownership, and routing history
-              from one centralized dashboard.
+              Track document status, routing history, ownership, and pending
+              actions from a centralized dashboard.
             </p>
           </div>
 
           <div className="feature-card">
+            <span>02</span>
             <h3>OCR Search</h3>
             <p>
-              Convert scanned files into searchable text for faster document
-              discovery and retrieval.
+              Convert scanned files into searchable text so teams can retrieve
+              records quickly and accurately.
             </p>
           </div>
 
           <div className="feature-card">
-            <h3>Archiving</h3>
+            <span>03</span>
+            <h3>AI Document Review</h3>
             <p>
-              Store old and completed documents securely with retention period
-              support.
+              Assist users in reviewing content, identifying important details,
+              and improving document processing speed.
             </p>
           </div>
 
           <div className="feature-card">
-            <h3>Master Data</h3>
+            <span>04</span>
+            <h3>Secure Archiving</h3>
             <p>
-              Manage categories, classifications, document types, departments,
-              actions, and instructions.
+              Preserve completed documents with retention support, access
+              control, and organized storage.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section className="workflow-section" id="workflow">
+        <div>
+          <span>Workflow</span>
+          <h2>From filing to archiving, everything stays traceable.</h2>
+        </div>
+
+        <div className="workflow-steps">
+          <div>Upload</div>
+          <div>OCR Index</div>
+          <div>AI Review</div>
+          <div>Route</div>
+          <div>Approve</div>
+          <div>Archive</div>
         </div>
       </section>
     </div>

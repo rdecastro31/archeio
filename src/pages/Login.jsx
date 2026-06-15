@@ -180,9 +180,7 @@ if (isSuperAdmin) {
             <h1>Welcome Back</h1>
 
             <p>
-              Manage, organize, and retrieve your documents with ease. Leverage
-              OCR technology to digitize files and streamline your document
-              workflows.
+              Simplify document management with OCR-powered search, AI document review, secure workflow routing, and centralized archiving—helping organizations work faster, smarter, and more efficiently
             </p>
 
             <div className="brand-features">
