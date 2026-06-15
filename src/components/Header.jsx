@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FiMenu,
   FiSearch,
@@ -7,23 +7,39 @@ import {
   FiEye,
   FiEyeOff,
   FiX,
+  FiLogOut,
+  FiChevronDown,
 } from "react-icons/fi";
 import Swal from "sweetalert2";
 import "../styles/header.css";
 import { API_URL } from "../shared/constants";
 
-export default function Header({ onToggleSidebar, user }) {
+export default function Header({ onToggleSidebar, user, onLogout }) {
   const username = user?.fullname || "ArcheIO User";
   const userlevel = user?.userlevel || "";
   const email = user?.email || "";
 
   const [showModal, setShowModal] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false); // Dropdown visibility state
   const [showPassword, setShowPassword] = useState(false);
   const [showRetypePassword, setShowRetypePassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
     password: "",
     retype_password: "",
   });
+
+  const dropdownRef = useRef(null); // Reference to detect outside clicks
+
+  // Close dropdown if the user clicks outside of it
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
@@ -76,6 +92,15 @@ export default function Header({ onToggleSidebar, user }) {
     }
   };
 
+  const handleLogoutClick = () => {
+    setShowDropdown(false);
+    if (onLogout) {
+      onLogout();
+    } else {
+      Swal.fire("Logout", "Logout functionality triggered.", "info");
+    }
+  };
+
   return (
     <>
       <header className="top-header">
@@ -91,28 +116,54 @@ export default function Header({ onToggleSidebar, user }) {
         </div>
 
         <div className="header-right">
-          <div className="search-box">
+          {/* <div className="search-box">
             <FiSearch />
             <input type="text" placeholder="Search..." />
-          </div>
+          </div> */}
 
-          <button
-            type="button"
-            className="change-password-header-btn"
-            onClick={() => setShowModal(true)}
-          >
-            <FiLock />
-            <span>Change Password</span>
-          </button>
+          {/* Profile Dropdown Container */}
+          <div className="profile-container" ref={dropdownRef}>
+            <div
+              className={`profile-box ${showDropdown ? "active" : ""}`}
+              onClick={() => setShowDropdown(!showDropdown)}
+            >
+              <div className="profile-avatar">
+                <FiUser />
+              </div>
+              <div className="profile-text">
+                <strong>{username}</strong>
+                <span>{userlevel}</span>
+              </div>
+              <FiChevronDown className={`dropdown-arrow ${showDropdown ? "open" : ""}`} />
+            </div>
 
-          <div className="profile-box">
-            <div className="profile-avatar">
-              <FiUser />
-            </div>
-            <div className="profile-text">
-              <strong>{username}</strong>
-              <span>{userlevel}</span>
-            </div>
+            {/* Dropdown Menu */}
+            {showDropdown && (
+              <div className="profile-dropdown-menu">
+                <button
+                  type="button"
+                  className="dropdown-item"
+                  onClick={() => {
+                    setShowModal(true);
+                    setShowDropdown(false);
+                  }}
+                >
+                  <FiLock />
+                  <span>Change Password</span>
+                </button>
+
+                <hr className="dropdown-divider" />
+
+                <button
+                  type="button"
+                  className="dropdown-item logout"
+                  onClick={handleLogoutClick}
+                >
+                  <FiLogOut />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>

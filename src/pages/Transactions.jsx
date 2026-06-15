@@ -3,7 +3,6 @@ import {
     FiArrowDownLeft,
     FiArrowUpRight,
     FiUser,
-    FiActivity,
     FiChevronDown,
     FiChevronUp,
     FiClock,
@@ -22,7 +21,6 @@ export default function Transactions() {
     const [groupedTransactions, setGroupedTransactions] = useState([]);
     const [expandedDocs, setExpandedDocs] = useState({});
 
-    // Direct history storage keyed by document_id
     const [docHistories, setDocHistories] = useState({});
     const [historyLoading, setHistoryLoading] = useState({});
 
@@ -32,7 +30,6 @@ export default function Transactions() {
     const [viewingFile, setViewingFile] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Routing Modal State
     const [showRouteModal, setShowRouteModal] = useState(false);
     const [selectedDocForRouting, setSelectedDocForRouting] = useState(null);
 
@@ -53,9 +50,6 @@ export default function Transactions() {
         return <span className="time-pill active">{days}d remaining</span>;
     };
 
-    /**
-     * Initial Tracking Core Data Fetching
-     */
     const fetchData = useCallback(async () => {
         setLoading(true);
         const transFd = new FormData(); transFd.append("tag", "getall");
@@ -117,9 +111,6 @@ export default function Transactions() {
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
-    /**
-     * Lazily fetch history trail for a specific document on accordion expansion
-     */
     const fetchDocumentHistory = async (documentId) => {
         setHistoryLoading(prev => ({ ...prev, [documentId]: true }));
         const fd = new FormData();
@@ -129,7 +120,6 @@ export default function Transactions() {
         try {
             const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
             if (res.success && res.history) {
-                // Ensure layout matches newest-to-oldest sequence
                 const sortedHistory = res.history.sort((a, b) => parseInt(b.id) - parseInt(a.id));
                 setDocHistories(prev => ({ ...prev, [documentId]: sortedHistory }));
             } else {
@@ -146,7 +136,6 @@ export default function Transactions() {
         const matchingState = !expandedDocs[docId];
         setExpandedDocs(prev => ({ ...prev, [docId]: matchingState }));
 
-        // Trigger network request if moving to opened state and no historical cash exists
         if (matchingState && !docHistories[docId]) {
             fetchDocumentHistory(docId);
         }
@@ -158,24 +147,84 @@ export default function Transactions() {
         fd.append("document_id", transaction.document_id);
         fd.append("from_user_id", transaction.from_user_id);
         fd.append("to_user_id", currentUser.id);
-        fd.append("from_department_id", transaction.from_department_id);
+        fd.append("from_department_id", transaction.from_department_id || currentUser.department_id);
         fd.append("to_department_id", currentUser.department_id);
         fd.append("instruction_type_id", transaction.instruction_type_id);
-        fd.append("due_date", transaction.due_date);
+        fd.append("due_date", transaction.due_date || "");
         fd.append("transaction_status", "Received");
-        fd.append("remarks", "Document physically received.");
+        fd.append("remarks", transaction.remarks || "Document physically received.");
 
-        const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
-        if (res.success) {
-            Swal.fire({ title: "Received", icon: "success", timer: 800, showConfirmButton: false });
-            // Refresh main table and reset target history cache so it re-fetches updated logs
-            setDocHistories(prev => { const c = { ...prev }; delete c[transaction.document_id]; return c; });
-            fetchData();
+        try {
+            const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
+            if (res.success) {
+                Swal.fire({ title: "Received", icon: "success", timer: 800, showConfirmButton: false });
+                setDocHistories(prev => { const c = { ...prev }; delete c[transaction.document_id]; return c; });
+                fetchData();
+            } else {
+                Swal.fire("Error", res.message || "Failed to mark transaction as Received.", "error");
+            }
+        } catch (err) {
+            Swal.fire("Connection Error", "Could not reach processing server.", "error");
         }
     };
 
     const handleActionClick = (transaction, action) => {
+        let parsedRemarksObj = null;
+        try {
+            if (transaction.remarks && (transaction.remarks.trim().startsWith('{') || transaction.remarks.trim().startsWith('['))) {
+                parsedRemarksObj = JSON.parse(transaction.remarks);
+            }
+        } catch (e) {
+            parsedRemarksObj = null;
+        }
+
         if (action.action_result === 'Proceed') {
+            if (parsedRemarksObj && parsedRemarksObj.routing_chain && parsedRemarksObj.routing_chain.length > 0) {
+                Swal.fire({
+                    title: "Proceed to Next Recipient?",
+                    text: "This document will automatically advance to the next step recipient in sequence.",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonColor: "#820d0d"
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        const nextStep = parsedRemarksObj.routing_chain[0];
+                        const remainingSteps = parsedRemarksObj.routing_chain.slice(1);
+
+                        const nextRemarksPayload = {
+                            user_remarks: nextStep.remarks,
+                            routing_chain: remainingSteps
+                        };
+
+                        const fd = new FormData();
+                        fd.append("tag", "insert");
+                        fd.append("document_id", transaction.document_id);
+                        fd.append("from_user_id", currentUser.id);
+                        fd.append("from_department_id", currentUser.department_id);
+                        fd.append("to_user_id", nextStep.to_user_id);
+
+                        // Safeguard: use nextStep department or fallback to current user's department
+                        fd.append("to_department_id", nextStep.to_department_id || currentUser.department_id);
+
+                        fd.append("instruction_type_id", nextStep.instruction_type_id);
+                        fd.append("action_id", action.id);
+                        fd.append("due_date", transaction.due_date || "");
+                        fd.append("transaction_status", "Pending");
+                        fd.append("remarks", JSON.stringify(nextRemarksPayload));
+
+                        const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
+                        if (res.success) {
+                            Swal.fire("Forwarded", "Document successfully advanced to the next recipient.", "success");
+                            setDocHistories(prev => { const c = { ...prev }; delete c[transaction.document_id]; return c; });
+                            fetchData();
+                        } else {
+                            Swal.fire("Error", "Failed to forward step chain row execution.", "error");
+                        }
+                    }
+                });
+                return;
+            }
+
             setSelectedDocForRouting(transaction);
             setShowRouteModal(true);
             return;
@@ -189,26 +238,65 @@ export default function Transactions() {
             confirmButtonColor: '#820d0d'
         }).then(async (result) => {
             if (result.isConfirmed) {
+                const isFinalAction = action.action_result === 'Complete';
+
+                if (!isFinalAction && parsedRemarksObj && parsedRemarksObj.routing_chain && parsedRemarksObj.routing_chain.length > 0) {
+                    const nextStep = parsedRemarksObj.routing_chain[0];
+                    const remainingSteps = parsedRemarksObj.routing_chain.slice(1);
+
+                    const nextRemarksPayload = {
+                        user_remarks: nextStep.remarks,
+                        routing_chain: remainingSteps
+                    };
+
+                    const fd = new FormData();
+                    fd.append("tag", "insert");
+                    fd.append("document_id", transaction.document_id);
+                    fd.append("from_user_id", currentUser.id);
+                    fd.append("from_department_id", currentUser.department_id);
+                    fd.append("to_user_id", nextStep.to_user_id);
+
+                    // Safeguard: verify chain node assignment department exists
+                    fd.append("to_department_id", nextStep.to_department_id || currentUser.department_id);
+
+                    fd.append("instruction_type_id", nextStep.instruction_type_id);
+                    fd.append("action_id", action.id);
+                    fd.append("due_date", transaction.due_date || "");
+                    fd.append("transaction_status", "Pending");
+                    fd.append("remarks", JSON.stringify(nextRemarksPayload));
+
+                    const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
+                    if (res.success) {
+                        Swal.fire("Advanced", "Action captured; document shifted to next node workflow step.", "success");
+                        setDocHistories(prev => { const c = { ...prev }; delete c[transaction.document_id]; return c; });
+                        fetchData();
+                        return;
+                    }
+                }
+
                 const fd = new FormData();
                 fd.append("tag", "insert");
                 fd.append("document_id", transaction.document_id);
                 fd.append("from_user_id", currentUser.id);
                 fd.append("from_department_id", currentUser.department_id);
                 fd.append("to_user_id", transaction.from_user_id);
-                fd.append("to_department_id", transaction.from_department_id);
+
+                // CRITICAL FIX: Safeguard department variable mapping when routing_chain is empty []
+                fd.append("to_department_id", transaction.from_department_id || currentUser.department_id);
+
                 fd.append("instruction_type_id", transaction.instruction_type_id);
                 fd.append("action_id", action.id);
-                fd.append("due_date", transaction.due_date);
-                fd.append("transaction_status", action.action_result === 'Complete' ? 'Completed' : 'Pending');
-                fd.append("remarks", `Action: ${action.action_name}`);
+                fd.append("due_date", transaction.due_date || "");
+                fd.append("transaction_status", isFinalAction ? 'Completed' : 'Pending');
+                fd.append("remarks", `Action: ${action.action_name}. ${parsedRemarksObj ? (parsedRemarksObj.user_remarks || '') : (transaction.remarks || '')}`);
 
                 const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
 
-                if (action.action_result === 'Complete') {
+                if (isFinalAction) {
                     const docFd = new FormData();
                     docFd.append("tag", "update_status");
                     docFd.append("id", transaction.document_id);
-                    docFd.append("document_status", 3);
+                    docFd.append("document_status", 4);
                     await fetch(`${API_URL}/document.php`, { method: "POST", body: docFd });
                 }
 
@@ -308,7 +396,6 @@ export default function Transactions() {
                                                     ) : currentHistory.length === 0 ? (
                                                         <div className="p-3 text-muted text-center">No structural details found for this document lifecycle.</div>
                                                     ) : currentHistory.map((hist) => {
-                                                        // Fallbacks to handle naming differences between both endpoints cleanly
                                                         const sender = hist.from_user_name || hist.from_user_fullname;
                                                         const receiver = hist.to_user_name || hist.to_user_fullname;
 
@@ -326,7 +413,19 @@ export default function Transactions() {
                                                                         {receiver ? ` sent to ${receiver}` : ''}
                                                                         {hist.action_name ? ` (${hist.action_name})` : ""}
                                                                     </div>
-                                                                    {hist.remarks && <div className="hist-remarks">{hist.remarks}</div>}
+                                                                    {hist.remarks && (
+                                                                        <div className="hist-remarks">
+                                                                            {(() => {
+                                                                                try {
+                                                                                    if (hist.remarks.trim().startsWith('{') || hist.remarks.trim().startsWith('[')) {
+                                                                                        const parsed = JSON.parse(hist.remarks);
+                                                                                        return parsed.user_remarks || "No step remarks provided.";
+                                                                                    }
+                                                                                } catch (e) { }
+                                                                                return hist.remarks;
+                                                                            })()}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         );
