@@ -40,7 +40,6 @@
 .dashboard-card {
   height: auto;
   min-height: unset;
-  max-width:1200px !important;
 }
 
 .dashboard-stat-card {
@@ -112,55 +111,26 @@
   line-height: 1.5;
 }
 
-/* FULL-WIDTH RECENT ACTIVITY */
+/* MAIN CONTENT BELOW KPI */
 
-.dashboard-recent-card {
-  width: 100%;
-  display: block;
-}
-
-.activity-row-grid {
+.dashboard-content-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.activity-row-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 18px;
-  background: rgba(248, 248, 248, 0.85);
-  border: 1px solid rgba(137, 133, 128, 0.14);
-}
-
-.activity-row-item p {
-  margin: 0;
-  font-size: 14px;
-  color: #4b5563;
-  line-height: 1.5;
-}
-
-.activity-row-item strong {
-  display: block;
-  color: #111827;
-  margin-bottom: 4px;
-}
-
-.activity-row-item span {
-  display: block;
-}
-
-/* LOWER CARDS GRID */
-
-.dashboard-lower-grid {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) 360px;
   gap: 18px;
   align-items: start;
+}
+
+.dashboard-main-column,
+.dashboard-side-column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dashboard-side-column {
+  width: 100%;
 }
 
 /* CARD HEADER */
@@ -187,69 +157,6 @@
   margin: 0;
   font-size: 22px;
   color: #1f2937;
-}
-
-/* ICONS */
-
-.activity-feed-icon,
-.document-group-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(130, 13, 13, 0.08);
-  color: #820d0d;
-  flex-shrink: 0;
-}
-
-.activity-feed-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 14px;
-}
-
-.document-group-icon {
-  width: 58px;
-  height: 58px;
-  border-radius: 18px;
-  font-size: 22px;
-}
-
-/* PAGINATION */
-
-.dashboard-pagination {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.dashboard-pagination button {
-  border: 1px solid rgba(137, 133, 128, 0.25);
-  background: #ffffff;
-  color: #374151;
-  border-radius: 10px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.dashboard-pagination button:hover:not(:disabled) {
-  background: rgba(130, 13, 13, 0.04);
-  border-color: rgba(130, 13, 13, 0.2);
-  color: #820d0d;
-}
-
-.dashboard-pagination button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.dashboard-pagination span {
-  font-size: 13px;
-  font-weight: 700;
-  color: #6b7280;
 }
 
 /* TABLE */
@@ -366,6 +273,18 @@
   border-color: rgba(130, 13, 13, 0.12);
 }
 
+.document-group-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(130, 13, 13, 0.08);
+  color: #820d0d;
+  font-size: 22px;
+}
+
 .document-group-content {
   min-width: 0;
 }
@@ -400,6 +319,45 @@
   color: #8c8c8c;
 }
 
+/* ACTIVITY FEED */
+
+.activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.activity-feed-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(137, 133, 128, 0.12);
+}
+
+.activity-feed-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.activity-feed-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(130, 13, 13, 0.08);
+  color: #820d0d;
+  flex-shrink: 0;
+}
+
+.activity-feed-item p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4b5563;
+}
 
 /* RESPONSIVE */
 
@@ -408,19 +366,17 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .dashboard-lower-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .activity-row-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .dashboard-content-grid {
+    grid-template-columns: minmax(0, 1fr) 320px;
   }
 }
 
-@media (max-width: 768px) {
-  .dashboard-stats-grid,
-  .dashboard-lower-grid,
-  .activity-row-grid {
+@media (max-width: 640px) {
+  .dashboard-content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-stats-grid {
     grid-template-columns: 1fr;
   }
 
@@ -436,11 +392,6 @@
 
   .document-group-total {
     text-align: left;
-  }
-
-  .dashboard-pagination {
-    justify-content: center;
-    flex-wrap: wrap;
   }
 
   .dashboard-table thead {

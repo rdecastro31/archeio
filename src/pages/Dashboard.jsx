@@ -5,7 +5,6 @@ import {
   FiAlertTriangle,
   FiSend,
   FiInbox,
-  FiCheckCircle,
   FiFileText,
 } from 'react-icons/fi'
 import '../styles/dashboard.css'
@@ -26,6 +25,9 @@ export default function Dashboard() {
   const [recentActivity, setRecentActivity] = useState([])
   const [activeDocuments, setActiveDocuments] = useState([])
   const [loading, setLoading] = useState(true)
+  const [activityPage, setActivityPage] = useState(1)
+
+  const activityLimit = 8
 
   const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
   const userId = storedUser.id || storedUser.userid
@@ -108,6 +110,13 @@ export default function Dashboard() {
     })
   }
 
+  const totalActivityPages = Math.ceil(recentActivity.length / activityLimit)
+
+  const paginatedActivity = recentActivity.slice(
+    (activityPage - 1) * activityLimit,
+    activityPage * activityLimit
+  )
+
   if (loading) {
     return (
       <div className="dashboard-page">
@@ -132,148 +141,198 @@ export default function Dashboard() {
         ))}
       </section>
 
-      <section className="dashboard-content-grid">
-        <div className="dashboard-main-column">
-          <div className="dashboard-card">
-            <div className="dashboard-card-header">
-              <div>
-                <span className="card-kicker">Work Queue</span>
-                <h3>My Pending Actions</h3>
-              </div>
-            </div>
-
-            <div className="dashboard-table-wrap">
-              <table className="dashboard-table">
-                <thead>
-                  <tr>
-                    <th>Document No.</th>
-                    <th>Title</th>
-                    <th>From</th>
-                    <th>Instruction</th>
-                    <th>Status</th>
-                    <th>Due Date</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {pendingActions.length > 0 ? (
-                    pendingActions.map((item) => (
-                      <tr key={item.transaction_id}>
-                        <td>{item.document_no || '-'}</td>
-                        <td>{item.title || '-'}</td>
-                        <td>{item.from_user || item.from_department || '-'}</td>
-                        <td>{item.instruction_name || '-'}</td>
-                        <td>
-                          <span className="status-pill">
-                            {item.document_status_name || '-'}
-                          </span>
-                        </td>
-                        <td>{formatDate(item.due_date)}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6">No pending actions found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="dashboard-card">
-            <div className="dashboard-card-header">
-              <div>
-                <span className="card-kicker">Current Responsibility</span>
-                <h3>My Active Documents</h3>
-              </div>
-            </div>
-
-            <div className="document-group-list">
-              {activeDocuments.length > 0 ? (
-                activeDocuments.map((doc) => (
-                  <div className="document-group-item" key={doc.id}>
-                    <div className="document-group-icon">
-                      <FiFileText />
-                    </div>
-
-                    <div className="document-group-content">
-                      <h4>{doc.document_no || '-'}</h4>
-                      <p>{doc.title || '-'}</p>
-                    </div>
-
-                    <div className="document-group-total">
-                      <strong>{doc.document_status_name || '-'}</strong>
-                      <span>{formatDate(doc.due_date)}</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p>No active documents found.</p>
-              )}
-            </div>
+      <section className="dashboard-card dashboard-recent-card">
+        <div className="dashboard-card-header">
+          <div>
+            <span className="card-kicker">Recent Activity</span>
+            <h3>Latest Updates</h3>
           </div>
         </div>
 
-        <aside className="dashboard-side-column">
-          <div className="dashboard-card">
-            <div className="dashboard-card-header">
-              <div>
-                <span className="card-kicker">Deadline Watch</span>
-                <h3>Due Soon / Overdue</h3>
-              </div>
-            </div>
+        <div className="dashboard-table-wrap">
+          <table className="dashboard-table">
+            <thead>
+              <tr>
+                <th>Document No.</th>
+                <th>Title</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Instruction</th>
+                <th>Action</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
 
-            <div className="summary-list">
-              {dueSoonOverdue.length > 0 ? (
-                dueSoonOverdue.map((item) => (
-                  <div className="summary-row" key={item.id}>
-                    <span>
-                      {item.document_no} - {item.title}
-                    </span>
-
-                    <strong>
-                      {item.days_remaining < 0
-                        ? `${Math.abs(item.days_remaining)} days overdue`
-                        : `${item.days_remaining} days left`}
-                    </strong>
-                  </div>
+            <tbody>
+              {paginatedActivity.length > 0 ? (
+                paginatedActivity.map((item) => (
+                  <tr key={item.transaction_id}>
+                    <td>{item.document_no || '-'}</td>
+                    <td>{item.title || '-'}</td>
+                    <td>{item.from_user || item.from_department || '-'}</td>
+                    <td>{item.to_user || item.to_department || '-'}</td>
+                    <td>{item.instruction_name || '-'}</td>
+                    <td>{item.action_name || '-'}</td>
+                    <td>
+                      <span className="status-pill">
+                        {item.transaction_status ||
+                          item.document_status_name ||
+                          '-'}
+                      </span>
+                    </td>
+                    <td>
+                      {formatDate(
+                        item.acted_at ||
+                          item.date_created ||
+                          item.transaction_date
+                      )}
+                    </td>
+                  </tr>
                 ))
               ) : (
-                <p>No due or overdue documents.</p>
+                <tr>
+                  <td colSpan="8">No recent activity found.</td>
+                </tr>
               )}
+            </tbody>
+          </table>
+        </div>
+
+        {totalActivityPages > 1 && (
+          <div className="dashboard-pagination">
+            <button
+              type="button"
+              disabled={activityPage === 1}
+              onClick={() => setActivityPage((prev) => prev - 1)}
+            >
+              Previous
+            </button>
+
+            <span>
+              Page {activityPage} of {totalActivityPages}
+            </span>
+
+            <button
+              type="button"
+              disabled={activityPage === totalActivityPages}
+              onClick={() => setActivityPage((prev) => prev + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </section>
+
+      <section className="dashboard-lower-grid">
+        <div className="dashboard-card">
+          <div className="dashboard-card-header">
+            <div>
+              <span className="card-kicker">Work Queue</span>
+              <h3>My Pending Actions</h3>
             </div>
           </div>
 
-          <div className="dashboard-card">
-            <div className="dashboard-card-header">
-              <div>
-                <span className="card-kicker">Recent Activity</span>
-                <h3>Latest Updates</h3>
-              </div>
-            </div>
+          <div className="dashboard-table-wrap">
+            <table className="dashboard-table">
+              <thead>
+                <tr>
+                  <th>Document No.</th>
+                  <th>Title</th>
+                  <th>From</th>
+                  <th>Instruction</th>
+                  <th>Status</th>
+                  <th>Due Date</th>
+                </tr>
+              </thead>
 
-            <div className="activity-feed">
-              {recentActivity.length > 0 ? (
-                recentActivity.map((item) => (
-                  <div className="activity-feed-item" key={item.transaction_id}>
-                    <div className="activity-feed-icon">
-                      <FiCheckCircle />
-                    </div>
+              <tbody>
+                {pendingActions.length > 0 ? (
+                  pendingActions.map((item) => (
+                    <tr key={item.transaction_id}>
+                      <td>{item.document_no || '-'}</td>
+                      <td>{item.title || '-'}</td>
+                      <td>{item.from_user || item.from_department || '-'}</td>
+                      <td>{item.instruction_name || '-'}</td>
+                      <td>
+                        <span className="status-pill">
+                          {item.document_status_name || '-'}
+                        </span>
+                      </td>
+                      <td>{formatDate(item.due_date)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6">No pending actions found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-                    <p>
-                      <strong>{item.document_no || '-'}</strong> —{' '}
-                      {item.action_name || item.instruction_name || 'Updated'}{' '}
-                      {item.to_user ? `to ${item.to_user}` : ''}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p>No recent activity found.</p>
-              )}
+        <div className="dashboard-card">
+          <div className="dashboard-card-header">
+            <div>
+              <span className="card-kicker">Deadline Watch</span>
+              <h3>Due Soon / Overdue</h3>
             </div>
           </div>
-        </aside>
+
+          <div className="summary-list">
+            {dueSoonOverdue.length > 0 ? (
+              dueSoonOverdue.map((item) => (
+                <div className="summary-row" key={item.id}>
+                  <span>
+                    {item.document_no} - {item.title}
+                  </span>
+
+                  <strong>
+                    {item.days_remaining < 0
+                      ? `${Math.abs(item.days_remaining)} days overdue`
+                      : `${item.days_remaining} days left`}
+                  </strong>
+                </div>
+              ))
+            ) : (
+              <p>No due or overdue documents.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="dashboard-card">
+          <div className="dashboard-card-header">
+            <div>
+              <span className="card-kicker">Current Responsibility</span>
+              <h3>My Active Documents</h3>
+            </div>
+          </div>
+
+          <div className="document-group-list">
+            {activeDocuments.length > 0 ? (
+              activeDocuments.map((doc) => (
+                <div className="document-group-item" key={doc.id}>
+                  <div className="document-group-icon">
+                    <FiFileText />
+                  </div>
+
+                  <div className="document-group-content">
+                    <h4>{doc.document_no || '-'}</h4>
+                    <p>{doc.title || '-'}</p>
+                  </div>
+
+                  <div className="document-group-total">
+                    <strong>{doc.document_status_name || '-'}</strong>
+                    <span>{formatDate(doc.due_date)}</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>No active documents found.</p>
+            )}
+          </div>
+        </div>
       </section>
     </div>
   )
