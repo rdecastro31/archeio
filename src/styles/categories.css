@@ -388,6 +388,20 @@ button.secondary-btn:hover {
   min-width: 95px;
 }
 
+.cancel-btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #f9fafb;
+}
+
 @keyframes modalFadeIn {
   from {
     opacity: 0;

@@ -11,7 +11,7 @@ export default function AddTypesModal({
    // 1. Intercept the form submission
   const handleSubmit = (e) => {
     e.preventDefault(); // 👈 This explicitly stops the browser hard reload
-    onSubmit();         // 👈 Fires your handleCreateFolder function safely
+    onSubmit(e);         // 👈 Fires your handleCreateFolder function safely
   };
 
   return (
