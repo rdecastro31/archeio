@@ -36,7 +36,7 @@ export default function Workspace() {
         <div className="workspace-container">
             {/* 1. Header (Common for both) */}
             <div className="page-header">
-                <h1 className="page-title">My Workspace</h1>
+                <h1 className="page-title">My Drive</h1>
             </div>
 
             {/* 2. RECENTLY OPENED SECTION (Google Drive Style) */}

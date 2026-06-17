@@ -532,7 +532,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                         <div className="breadcrumb-trail">
                             {currentPath !== "Archive" && (
                                 <>
-                                    <span onClick={() => navigateTo(null)} className="breadcrumb-link">My Drive</span>
+                                    <span onClick={() => navigateTo(null)} className="breadcrumb-link">My Folders</span>
                                     {currentPath.split("/").filter(Boolean).map((name, i, arr) => (
                                         <React.Fragment key={i}>
                                             <FiChevronRight className="breadcrumb-sep" />
@@ -582,7 +582,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                         <div>
                             <h1 className="page-title">Drive</h1>
                             <div className="breadcrumb-trail">
-                                <span onClick={() => navigateTo(null)} className="breadcrumb-link">My Drive</span>
+                                <span onClick={() => navigateTo(null)} className="breadcrumb-link">Files and Folders</span>
                                 {currentPath.split("/").filter(Boolean).map((name, i, arr) => (
                                     <React.Fragment key={i}>
                                         <FiChevronRight className="breadcrumb-sep" />
