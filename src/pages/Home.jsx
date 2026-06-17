@@ -65,7 +65,7 @@ export default function Home({ logo }) {
         </div>
 
         <div className="hero-dashboard">
-          <div className="dashboard-card">
+          <div className="home-dashboard-card">
             <div className="dashboard-header">
               <div>
                 <span>Document Intelligence</span>

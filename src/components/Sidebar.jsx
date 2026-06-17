@@ -83,14 +83,15 @@ export default function Sidebar({ isOpen, onClose, logo }) {
           <span>{isSuperAdmin ? "Document Dashboard" : "Dashboard"}</span>
         </NavLink>
 
-        <NavLink to="/workspace" className="nav-item" onClick={onClose}>
-          <FiFileText />
-          <span>Drive</span>
-        </NavLink>
-
         <NavLink to="/documents" className="nav-item" onClick={onClose}>
           <FiServer />
           <span>Workspace</span>
+        </NavLink>
+
+        <NavLink to="/workspace" className="nav-item" onClick={onClose}>
+          <FiFileText />
+          <span>Drive</span>
+
         </NavLink>
 
         <NavLink to="/transactions" className="nav-item" onClick={onClose}>
