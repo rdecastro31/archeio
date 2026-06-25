@@ -11,6 +11,7 @@ import {
 } from "react-icons/fi";
 import { API_URL } from "../shared/constants";
 import { useOutletContext } from "react-router-dom";
+import { PDFDocument, rgb } from 'pdf-lib';
 import Swal from "sweetalert2";
 import "../styles/transactions.css";
 import FileViewerModal from './../modals/ViewFileModal';
@@ -109,7 +110,9 @@ export default function Transactions() {
         }
     }, [currentUser.id]);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     const fetchDocumentHistory = async (documentId) => {
         setHistoryLoading(prev => ({ ...prev, [documentId]: true }));
@@ -122,11 +125,14 @@ export default function Transactions() {
             if (res.success && res.history) {
                 const sortedHistory = res.history.sort((a, b) => parseInt(b.id) - parseInt(a.id));
                 setDocHistories(prev => ({ ...prev, [documentId]: sortedHistory }));
+                return sortedHistory;
             } else {
                 setDocHistories(prev => ({ ...prev, [documentId]: [] }));
+                return [];
             }
         } catch (error) {
             console.error("Failed to fetch historical steps:", error);
+            return [];
         } finally {
             setHistoryLoading(prev => ({ ...prev, [documentId]: false }));
         }
@@ -152,13 +158,14 @@ export default function Transactions() {
         fd.append("instruction_type_id", transaction.instruction_type_id);
         fd.append("due_date", transaction.due_date || "");
         fd.append("transaction_status", "Received");
-        fd.append("remarks", transaction.remarks || "Document physically received.");
+        // Keep the exact JSON string in remarks intact when receiving the row
+        fd.append("remarks", transaction.remarks || "");
 
         try {
             const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
             if (res.success) {
                 Swal.fire({ title: "Received", icon: "success", timer: 800, showConfirmButton: false });
-                setDocHistories(prev => { const c = { ...prev }; delete c[transaction.document_id]; return c; });
+                fetchDocumentHistory(transaction.document_id);
                 fetchData();
             } else {
                 Swal.fire("Error", res.message || "Failed to mark transaction as Received.", "error");
@@ -179,6 +186,70 @@ export default function Transactions() {
         }
 
         if (action.action_result === 'Proceed') {
+
+            const processDigitalSigningWorkflow = async () => {
+                try {
+                    Swal.fire({
+                        title: 'Stamping Digital Signature...',
+                        text: 'Please hold while your verified signature is appended directly into the document structure.',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    let activeHistoryTrail = docHistories[transaction.document_id];
+                    if (!activeHistoryTrail) {
+                        activeHistoryTrail = await fetchDocumentHistory(transaction.document_id);
+                    }
+
+                    console.log("RAW HISTORY TRAIL FROM API:", activeHistoryTrail[0].remarks);
+
+                    let latestDocumentTransactionRemark = JSON.parse(activeHistoryTrail[0].remarks)
+
+                    // --- READ DIRECTLY FROM THE LATEST TRANSACTION REMARKS ---
+                    let signatureCountIndex = latestDocumentTransactionRemark.routing_chain.length + 1;
+
+                    console.log("Calculated current signature stamp placement index:", signatureCountIndex);
+
+                    const currentFileTarget = `${API_URL}/storage/user_${transaction.originating_user_id}/${transaction.storage_file_path}/${transaction.storage_file_name}`;
+
+                    const signatureUrlSource = currentUser.signature_path
+                        ? `${API_URL}/${currentUser.signature_path}`
+                        : "/default_stamp.png";
+
+                    const textualStampLabel = `Digitally Certified By:\n${currentUser.fullname || 'Authorized User'}`;
+
+                    const signedBlob = await appendSignatureToPdf(
+                        currentFileTarget,
+                        signatureUrlSource,
+                        textualStampLabel,
+                        signatureCountIndex
+                    );
+
+                    const uploadFormData = new FormData();
+                    uploadFormData.append("tag", "addFileAndLinkToDocument");
+                    uploadFormData.append("userid", transaction.originating_user_id);
+                    uploadFormData.append("document_id", transaction.document_id);
+                    uploadFormData.append("path", "Documents");
+                    uploadFormData.append("file", signedBlob, transaction.storage_file_name || "signed_document.pdf");
+
+                    const uploadResponse = await fetch(`${API_URL}/filestorage.php`, {
+                        method: "POST",
+                        body: uploadFormData
+                    }).then(r => r.json());
+
+                    if (!uploadResponse.success) {
+                        throw new Error(uploadResponse.message || "Failed to commit binary file revision.");
+                    }
+
+                    Swal.close();
+                    return true;
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire("Signing Aborted", `Execution interrupted: ${err.message}`, "error");
+                    return false;
+                }
+            };
+
             if (parsedRemarksObj && parsedRemarksObj.routing_chain && parsedRemarksObj.routing_chain.length > 0) {
                 Swal.fire({
                     title: "Proceed to Next Recipient?",
@@ -188,6 +259,10 @@ export default function Transactions() {
                     confirmButtonColor: "#820d0d"
                 }).then(async (result) => {
                     if (result.isConfirmed) {
+
+                        const signedOk = await processDigitalSigningWorkflow();
+                        if (!signedOk) return;
+
                         const nextStep = parsedRemarksObj.routing_chain[0];
                         const remainingSteps = parsedRemarksObj.routing_chain.slice(1);
 
@@ -202,10 +277,7 @@ export default function Transactions() {
                         fd.append("from_user_id", currentUser.id);
                         fd.append("from_department_id", currentUser.department_id);
                         fd.append("to_user_id", nextStep.to_user_id);
-
-                        // Safeguard: use nextStep department or fallback to current user's department
                         fd.append("to_department_id", nextStep.to_department_id || currentUser.department_id);
-
                         fd.append("instruction_type_id", nextStep.instruction_type_id);
                         fd.append("action_id", action.id);
                         fd.append("due_date", transaction.due_date || "");
@@ -215,7 +287,7 @@ export default function Transactions() {
                         const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
                         if (res.success) {
                             Swal.fire("Forwarded", "Document successfully advanced to the next recipient.", "success");
-                            setDocHistories(prev => { const c = { ...prev }; delete c[transaction.document_id]; return c; });
+                            fetchDocumentHistory(transaction.document_id);
                             fetchData();
                         } else {
                             Swal.fire("Error", "Failed to forward step chain row execution.", "error");
@@ -223,11 +295,61 @@ export default function Transactions() {
                     }
                 });
                 return;
-            }
+            } else {
+                Swal.fire({
+                    title: "What would you like to do?",
+                    text: "There are no remaining automated steps in the chain. You can choose to finalize this document workflow or manually route it to another recipient.",
+                    icon: "question",
+                    showCancelButton: true,
+                    showDenyButton: true,
+                    confirmButtonColor: "#820d0d",
+                    denyButtonColor: "#3085d6",
+                    confirmButtonText: "Complete Document",
+                    denyButtonText: "Route Document",
+                    cancelButtonText: "Cancel",
+                    allowOutsideClick: false
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
 
-            setSelectedDocForRouting(transaction);
-            setShowRouteModal(true);
-            return;
+                        const signedOk = await processDigitalSigningWorkflow();
+                        if (!signedOk) return;
+
+                        const fd = new FormData();
+                        fd.append("tag", "insert");
+                        fd.append("document_id", transaction.document_id);
+                        fd.append("from_user_id", currentUser.id);
+                        fd.append("from_department_id", currentUser.department_id);
+                        fd.append("to_user_id", transaction.from_user_id);
+                        fd.append("to_department_id", transaction.from_department_id || currentUser.department_id);
+                        fd.append("instruction_type_id", transaction.instruction_type_id);
+                        fd.append("action_id", action.id);
+                        fd.append("due_date", transaction.due_date || "");
+                        fd.append("transaction_status", "Completed");
+                        fd.append("remarks", `Action: Completed document workflow. ${parsedRemarksObj ? (parsedRemarksObj.user_remarks || '') : (transaction.remarks || '')}`);
+
+                        const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
+
+                        const docFd = new FormData();
+                        docFd.append("tag", "update_status");
+                        docFd.append("id", transaction.document_id);
+                        docFd.append("document_status", 4);
+                        await fetch(`${API_URL}/document.php`, { method: "POST", body: docFd });
+
+                        if (res.success) {
+                            Swal.fire("Success", "Document workflow completed successfully.", "success");
+                            fetchDocumentHistory(transaction.document_id);
+                            fetchData();
+                        } else {
+                            Swal.fire("Error", "Failed to complete transaction.", "error");
+                        }
+
+                    } else if (result.isDenied) {
+                        setSelectedDocForRouting(transaction);
+                        setShowRouteModal(true);
+                    }
+                });
+                return;
+            }
         }
 
         Swal.fire({
@@ -255,10 +377,7 @@ export default function Transactions() {
                     fd.append("from_user_id", currentUser.id);
                     fd.append("from_department_id", currentUser.department_id);
                     fd.append("to_user_id", nextStep.to_user_id);
-
-                    // Safeguard: verify chain node assignment department exists
                     fd.append("to_department_id", nextStep.to_department_id || currentUser.department_id);
-
                     fd.append("instruction_type_id", nextStep.instruction_type_id);
                     fd.append("action_id", action.id);
                     fd.append("due_date", transaction.due_date || "");
@@ -268,7 +387,7 @@ export default function Transactions() {
                     const res = await fetch(`${API_URL}/document_transaction.php`, { method: "POST", body: fd }).then(r => r.json());
                     if (res.success) {
                         Swal.fire("Advanced", "Action captured; document shifted to next node workflow step.", "success");
-                        setDocHistories(prev => { const c = { ...prev }; delete c[transaction.document_id]; return c; });
+                        fetchDocumentHistory(transaction.document_id);
                         fetchData();
                         return;
                     }
@@ -280,10 +399,7 @@ export default function Transactions() {
                 fd.append("from_user_id", currentUser.id);
                 fd.append("from_department_id", currentUser.department_id);
                 fd.append("to_user_id", transaction.from_user_id);
-
-                // CRITICAL FIX: Safeguard department variable mapping when routing_chain is empty []
                 fd.append("to_department_id", transaction.from_department_id || currentUser.department_id);
-
                 fd.append("instruction_type_id", transaction.instruction_type_id);
                 fd.append("action_id", action.id);
                 fd.append("due_date", transaction.due_date || "");
@@ -302,12 +418,103 @@ export default function Transactions() {
 
                 if (res.success) {
                     Swal.fire("Success", "Action processed.", "success");
-                    setDocHistories(prev => { const c = { ...prev }; delete c[transaction.document_id]; return c; });
+                    fetchDocumentHistory(transaction.document_id);
                     fetchData();
                 }
             }
         });
     };
+
+    /**
+     * DYNAMIC HORIZONTAL SHIFTING SIGNATURE RENDERING SUITE 
+     * Starts at bottom right, shifts systematically leftward, and wraps rows upward when it runs out of space.
+     */
+    async function appendSignatureToPdf(pdfUrl, signatureImgUrl, defaultTextStamp = "Digitally Signed", signatureIndex = 0) {
+        const arrayBuffer = await fetch(pdfUrl).then(res => {
+            if (!res.ok) throw new Error(`HTTP network error! status: ${res.status}`);
+            return res.arrayBuffer();
+        });
+
+        const pdfDoc = await PDFDocument.load(arrayBuffer);
+        const helveticaFont = await pdfDoc.embedFont('Helvetica-Bold');
+
+        const pages = pdfDoc.getPages();
+        const lastPage = pages[pages.length - 1];
+        const { width, height } = lastPage.getSize();
+
+        const containerWidth = 85;
+        const containerHeight = 85;
+        const pageMargin = 30;
+
+        // Space step increments between individual stamps
+        const horizontalShiftStep = containerWidth + 40;
+
+        // Determine how many items fit on a single line safely
+        const itemsPerRow = Math.floor((width - (pageMargin * 2)) / horizontalShiftStep);
+
+        let finalComputedX = pageMargin;
+        let finalComputedY = pageMargin + 35;
+
+        if (itemsPerRow > 0) {
+            const currentComputedRow = Math.floor(signatureIndex / itemsPerRow);
+            const currentComputedColumn = signatureIndex % itemsPerRow;
+
+            // Shift positions right-to-left dynamically using column tracking blocks
+            finalComputedX = width - containerWidth - pageMargin - (currentComputedColumn * horizontalShiftStep);
+            finalComputedY = (pageMargin + 35) + (currentComputedRow * 140);
+        }
+
+        try {
+            if (!signatureImgUrl) throw new Error("No image target context resolved.");
+
+            const imgBuffer = await fetch(signatureImgUrl).then(res => res.arrayBuffer());
+            const isPng = signatureImgUrl.toLowerCase().endsWith('.png') || signatureImgUrl.startsWith('data:image/png');
+
+            const embeddedImage = isPng ? await pdfDoc.embedPng(imgBuffer) : await pdfDoc.embedJpg(imgBuffer);
+
+            lastPage.drawImage(embeddedImage, {
+                x: finalComputedX,
+                y: finalComputedY,
+                width: containerWidth,
+                height: containerHeight,
+            });
+
+            const textFontSize = 8;
+            const currentStampDate = new Date().toLocaleDateString();
+
+            const textLines = [
+                "Digitally Certified By:",
+                currentUser.fullname || 'Authorized User',
+                `Date: ${currentStampDate}`
+            ];
+
+            textLines.forEach((line, index) => {
+                const textLineWidth = helveticaFont.widthOfTextAtSize(line, textFontSize);
+                const centeredX = finalComputedX + (containerWidth - textLineWidth) / 2;
+                const adjustedY = finalComputedY - 12 - (index * 10);
+
+                lastPage.drawText(line, {
+                    x: centeredX,
+                    y: adjustedY,
+                    size: textFontSize,
+                    font: helveticaFont,
+                    color: rgb(0.82, 0.18, 0.18),
+                });
+            });
+
+        } catch (e) {
+            console.warn("Falling back to plain text metadata injection:", e.message);
+            lastPage.drawText(`${defaultTextStamp}\nDate: ${new Date().toLocaleDateString()}`, {
+                x: finalComputedX,
+                y: pageMargin + 20,
+                size: 9,
+                lineHeight: 11
+            });
+        }
+
+        const modifiedPdfBytes = await pdfDoc.save();
+        return new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+    }
 
     return (
         <div className="transactions-page">
@@ -355,7 +562,7 @@ export default function Transactions() {
                                                 <span>{t.direction.toUpperCase()}</span>
                                             </div>
                                         </td>
-                                        <td className="doc-cell" onClick={() => { setViewingFile({ name: t.storage_file_name, path: t.storage_file_path }); setShowViewModal(true); }}>
+                                        <td className="doc-cell" onClick={() => { setViewingFile({ name: t.storage_file_name, path: t.storage_file_path, user: t.originating_user_id }); setShowViewModal(true); }}>
                                             <div className="doc-info">
                                                 <span className="doc-no">{t.document_no}</span>
                                                 <span className="doc-title">{t.title}</span>
@@ -370,7 +577,7 @@ export default function Transactions() {
                                         <td><span className="instruction-tag">{t.instruction_name}</span></td>
                                         <td className="text-end">
                                             {isCurrentlyWithMe && t.transaction_status === 'Pending' ? (
-                                                <button className="dynamic-action-btn receive-btn" onClick={() => handleReceive(t)}>Receive</button>
+                                                <button className="dynamic-action-btn" onClick={() => handleReceive(t)}>Receive</button>
                                             ) : isCurrentlyWithMe && t.transaction_status === 'Received' ? (
                                                 <div className="action-buttons-group">
                                                     {(actionsMap[t.instruction_type_id] || []).map(id => (
@@ -448,7 +655,7 @@ export default function Transactions() {
                 onClose={() => setShowRouteModal(false)}
                 document={selectedDocForRouting}
                 onSuccess={() => {
-                    setDocHistories(prev => { const c = { ...prev }; delete c[selectedDocForRouting.document_id]; return c; });
+                    fetchDocumentHistory(selectedDocForRouting.document_id);
                     fetchData();
                 }}
             />
