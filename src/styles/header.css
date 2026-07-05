@@ -7,21 +7,17 @@
   margin-bottom: 18px;
 
   background:
-    linear-gradient(
-      180deg,
-      rgba(252, 252, 252, 0.96),
-      rgba(224, 221, 213, 0.42)
-    ),
+    linear-gradient(180deg, var(--surface), var(--background-alt)),
     radial-gradient(
       circle at top left,
       rgba(130, 13, 13, 0.08),
       transparent 30%
     );
 
-  border: 1px solid rgba(137, 133, 128, 0.22);
+  border: 1px solid var(--border);
   border-radius: 22px;
 
-  box-shadow: 0 14px 35px rgba(101, 101, 101, 0.07);
+  box-shadow: 0 14px 35px var(--shadow-color);
   backdrop-filter: blur(14px);
 
   position: relative;
@@ -40,8 +36,8 @@
   height: 44px;
   border-radius: 14px;
   border: 1px solid rgba(137, 133, 128, 0.22);
-  background: #fcfcfc;
-  color: #2f2f2f;
+  background: var(--button-secondary);
+  color: var(--text-primary);
 
   display: grid;
   place-items: center;
@@ -51,9 +47,9 @@
 }
 
 .menu-toggle-btn:hover {
-  background: rgba(224, 221, 213, 0.34);
-  border-color: rgba(130, 13, 13, 0.22);
-  color: #820d0d;
+  background: var(--button-secondary-hover);
+  border-color: var(--border);
+  color: var(--primary);
 }
 
 .menu-toggle-btn:active {
@@ -64,13 +60,13 @@
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: #2f2f2f;
+  color: var(--text-primary);
 }
 
 .header-left p {
   margin: 4px 0 0;
   font-size: 13px;
-  color: #656565;
+  color: var(--text-secondary);
 }
 
 /* RIGHT SIDE */
@@ -89,8 +85,8 @@
   padding: 12px 14px;
   min-width: 260px;
 
-  background: #fcfcfc;
-  border: 1px solid rgba(137, 133, 128, 0.22);
+  background: var(--background);
+  border: 1px solid var(--border);
   border-radius: 16px;
 
   transition: all 0.2s ease;
@@ -107,7 +103,7 @@
   background: transparent;
   width: 100%;
   font-size: 14px;
-  color: #2f2f2f;
+  color: var(--input-bg);
 }
 
 .search-box input::placeholder {
@@ -139,7 +135,7 @@
 .icon-btn:hover {
   background: rgba(224, 221, 213, 0.34);
   border-color: rgba(130, 13, 13, 0.22);
-  color: #820d0d;
+  color: var(--primary);
 }
 
 .icon-btn:active {
@@ -159,8 +155,8 @@
   padding: 8px 12px;
   border-radius: 16px;
 
-  background: #fcfcfc;
-  border: 1px solid rgba(137, 133, 128, 0.22);
+  background: var(--card);
+  border: 1px solid var(--border);
 
   cursor: pointer;
   user-select: none;
@@ -169,8 +165,8 @@
 
 .profile-box:hover,
 .profile-box.active {
-  background: rgba(224, 221, 213, 0.34);
-  border-color: rgba(130, 13, 13, 0.18);
+  background: var(--card-hover);
+  border-color: var(--border);
 }
 
 .profile-avatar {
@@ -181,10 +177,10 @@
   display: grid;
   place-items: center;
 
-  background: linear-gradient(135deg, #820d0d, #5f0909);
-  color: #fcfcfc;
+  background: var(--gradient-primary);
+  color: var(--text-primary);
 
-  box-shadow: 0 10px 20px rgba(130, 13, 13, 0.2);
+  box-shadow: 0 10px 20px var(--shadow-sm);
 }
 
 .profile-text {
@@ -194,17 +190,17 @@
 
 .profile-text strong {
   font-size: 13px;
-  color: #2f2f2f;
+  color: var(--text-primary);
   line-height: 1.2;
 }
 
 .profile-text span {
   font-size: 11px;
-  color: #898580;
+  color: var(--text-secondary);
 }
 
 .dropdown-arrow {
-  color: #898580;
+  color: hsl(33, 4%, 52%);
   font-size: 14px;
   transition: transform 0.2s ease;
   margin-left: 4px;
@@ -212,7 +208,7 @@
 
 .dropdown-arrow.open {
   transform: rotate(180deg);
-  color: #820d0d;
+  color: var(--text-primary);
 }
 
 /* PROFILE DROPDOWN MENU CARD */
@@ -221,8 +217,8 @@
   top: calc(100% + 8px);
   right: 0;
   min-width: 200px;
-  background: #fcfcfc;
-  border: 1px solid rgba(137, 133, 128, 0.22);
+  background: var(--card);
+  border: 1px solid var(--border-light);
   border-radius: 16px;
   box-shadow: 0 10px 25px rgba(101, 101, 101, 0.12);
   padding: 6px;
@@ -256,7 +252,7 @@
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 500;
-  color: #2f2f2f;
+  color: var(--text-primary);
   border-radius: 10px;
   cursor: pointer;
   text-align: left;
@@ -265,41 +261,41 @@
 
 .dropdown-item svg {
   font-size: 16px;
-  color: #898580;
+  color: var(--text-secondary);
   transition: color 0.15s ease;
 }
 
 .dropdown-item:hover {
-  background: rgba(224, 221, 213, 0.34);
-  color: #820d0d;
+  background: var(--card-hover);
+  color: var(--text-primary);
 }
 
 .dropdown-item:hover svg {
-  color: #820d0d;
+  color: var(--primary-hover);
 }
 
 .dropdown-divider {
   border: 0;
   height: 1px;
-  background: rgba(137, 133, 128, 0.15);
+  background: var(--shadow-color);
   margin: 4px 6px;
 }
 
 /* Distinct hover color for logout if preferred */
 .dropdown-item.logout:hover {
-  background: rgba(130, 13, 13, 0.08);
-  color: #820d0d;
+  background: var(--error-bg);
+  color: var(--text-primary);
 }
 
 .dropdown-item.logout:hover svg {
-  color: #820d0d;
+  color: var(--text-primary);
 }
 
 /* PASSWORD MODAL STYLES */
 .change-password-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(47, 38, 51, 0.55);
+  background: var(--shadow-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -311,10 +307,10 @@
   position: relative;
   width: 100%;
   max-width: 460px;
-  background: #fffaf7;
+  background: var(--card);
   border-radius: 24px;
-  border: 1px solid #eadfd8;
-  box-shadow: 0 20px 60px rgba(75, 36, 56, 0.2);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px var(--shadow-color);
   padding: 34px;
 }
 
@@ -323,8 +319,8 @@
   top: 18px;
   right: 18px;
   border: none;
-  background: #f1e7e1;
-  color: #4b2438;
+  background: var(--button-secondary);
+  color: var(--primary);
   width: 36px;
   height: 36px;
   border-radius: 12px;
@@ -333,13 +329,13 @@
 
 .change-password-header h3 {
   margin: 0;
-  color: #321827;
+  color: var(--text-primary);
   font-size: 24px;
 }
 
 .change-password-header p {
   margin: 10px 0 24px;
-  color: #6f6470;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -352,7 +348,7 @@
 .change-password-group label {
   display: block;
   margin-bottom: 8px;
-  color: #321827;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 700;
 }
@@ -361,11 +357,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #fbf7f4;
-  border: 1px solid #eadfd8;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
   border-radius: 14px;
   padding: 0 14px;
-  color: #4b2438;
+  color: var(--text-primary);
 }
 
 .change-password-input input {
@@ -374,25 +370,29 @@
   outline: none;
   background: transparent;
   padding: 14px 0;
-  color: #2f2633;
+  color: var(--text-primary);
 }
 
 .change-password-input button {
   border: none;
   background: transparent;
-  color: #4b2438;
+  color: var(--text-primary);
   cursor: pointer;
   display: flex;
 }
 
 .change-password-submit {
   border: none;
-  background: #4b2438;
-  color: #fff;
+  background: var(--button-primary);
+  color: var(--text-primary);
   padding: 14px 20px;
   border-radius: 14px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.change-password-submit:hover {
+  background: var(--button-primary-hover);
 }
 
 /* RESPONSIVE */

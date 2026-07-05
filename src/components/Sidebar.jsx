@@ -20,12 +20,13 @@ import {
 } from "react-icons/fi";
 
 import "../styles/sidebar.css";
-import archeioLogo from "../assets/archeiologo.png";
+import lihamLandscapeLogo from "../assets/liham-ls-logo.png";
 
 export default function Sidebar({ isOpen, onClose, logo }) {
   const [masterOpen, setMasterOpen] = useState(false);
 
-  const currentLogo = logo || archeioLogo;
+  const currentLogo = logo || lihamLandscapeLogo;
+  // const currentLogo = lihamLandscapeLogo;
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const userlevel = user?.userlevel || "";

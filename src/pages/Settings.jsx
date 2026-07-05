@@ -18,12 +18,13 @@ export default function Settings() {
 
     // Branding State
     const [branding, setBranding] = useState({
-        primaryColor: "#820d0d", // Your current theme color
+        primaryColor: "#d4af37", // Default set to Luxury Gold
         appName: "ArcheIO",
         logoPreview: null
     });
 
     const colors = [
+        { name: "Luxury Gold", value: "#d4af37" }, // Added and positioned at the top
         { name: "Classic Red", value: "#820d0d" },
         { name: "Ocean Blue", value: "#1a73e8" },
         { name: "Deep Teal", value: "#00695c" },
@@ -243,11 +244,11 @@ export default function Settings() {
                             <div className="settings-grid">
                                 <div className="settings-group">
                                     <label>Full Name</label>
-                                    <input type="text" placeholder="Full Name" className="form-input" value={user?.fullname} read-only/>
+                                    <input type="text" placeholder="Full Name" className="form-input" value={user?.fullname} read-only />
                                 </div>
                                 <div className="settings-group">
                                     <label>Email Address</label>
-                                    <input type="email" placeholder="allan@example.com" className="form-input" value={user?.email} read-only/>
+                                    <input type="email" placeholder="allan@example.com" className="form-input" value={user?.email} read-only />
                                 </div>
                             </div>
                         </div>

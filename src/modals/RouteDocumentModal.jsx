@@ -125,17 +125,61 @@ export default function RouteDocumentModal({ show, onClose, document, onSuccess 
       ...base,
       padding: '2px',
       borderRadius: '8px',
-      borderColor: '#cbd5e1',
-      '&:hover': { borderColor: '#820d0d' }
+      backgroundColor: 'var(--input-bg)',
+      borderColor: 'var(--input-border)',
+      color: 'var(--text-primary)',
+      boxShadow: 'none',
+      '&:hover': {
+        borderColor: 'var(--input-border-focus)',
+        backgroundColor: 'var(--input-hover)'
+      },
+      '&:focus-within': {
+        borderColor: 'var(--input-border-focus)',
+        backgroundColor: 'var(--input-focus)',
+        boxShadow: '0 0 0 3px var(--focus-ring)'
+      }
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: 'var(--text-primary)'
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: 'var(--placeholder)'
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: 'var(--card)',
+      border: '1px solid var(--border-light)',
+      borderRadius: '10px',
+      boxShadow: 'var(--shadow-md)',
+      zIndex: 9999
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? 'var(--primary)'
+        : state.isFocused
+          ? 'var(--surface-hover)'
+          : 'transparent',
+      color: state.isSelected
+        ? 'var(--text-inverse)'
+        : 'var(--text-secondary)',
+      cursor: 'pointer',
+      '&:active': {
+        backgroundColor: 'var(--primary)'
+      }
     }),
     groupHeading: (base) => ({
       ...base,
-      color: '#820d0d',
-      fontWeight: 'bold',
+      color: 'var(--primary)', /* Luxury gold header emphasis */
+      fontWeight: '700',
       textTransform: 'uppercase',
       fontSize: '0.75rem',
-      backgroundColor: '#f8fafc',
-      padding: '5px 10px'
+      letterSpacing: '0.05em',
+      backgroundColor: 'var(--surface)', /* Matte background grouping line wrapper */
+      padding: '6px 12px',
+      margin: '0 0 4px 0'
     })
   };
 

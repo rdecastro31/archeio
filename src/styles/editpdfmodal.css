@@ -1,18 +1,21 @@
-/* PDF Editor Modal Layout */
+/* ==========================================================================
+   PDF Editor Modal Layout
+   ========================================================================== */
 .pdf-edit-modal {
-  background: #1e293b;
+  background: var(--card);
   width: 90vw;
   height: 90vh;
   display: flex;
   flex-direction: column;
   border-radius: 12px;
-  color: white;
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
 }
 
 .pdf-editor-container {
   flex: 1;
   overflow: auto;
-  background: #0f172a;
+  background: var(--background);
   display: flex;
   justify-content: center;
   padding: 40px;
@@ -21,12 +24,13 @@
 /* This is the key: it must be relative so annotations stay on the page */
 .pdf-page-wrapper {
   position: relative;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   height: fit-content;
 }
 
-/* Annotation Styling */
-/* Update the existing pdf-annotation class */
+/* ==========================================================================
+   Annotation Layer Controls
+   ========================================================================== */
 .pdf-annotation {
   position: absolute;
   display: inline-block;
@@ -41,12 +45,15 @@
   white-space: nowrap;
 }
 
+/* Bounding box focus state themed with your primary gold token accent */
 .pdf-annotation.active {
-  border: 1px dashed #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
+  border: 1px dashed var(--primary);
+  background: var(--badge-primary-bg);
 }
 
-/* Floating Toolbar Styling */
+/* ==========================================================================
+   Floating Toolbar Panel Styling
+   ========================================================================== */
 .annotation-toolbar {
   position: absolute;
   top: -55px; /* Adjust as needed */
@@ -54,11 +61,11 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  background: #1e293b;
+  background: var(--surface);
   padding: 4px 8px; /* Fixed padding */
   border-radius: 6px;
-  border: 1px solid #334155;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
   z-index: 100;
 
   /* Critical: Reset font size and line height so it doesn't inherit from the parent */
@@ -78,25 +85,25 @@
   background: transparent; /* Remove default button gray */
   border: none;
   border-radius: 4px;
-  color: #94a3b8; /* Muted slate color */
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .tool-btn:hover {
-  background: #334155;
-  color: #f8fafc;
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .tool-btn.active {
-  color: #3b82f6; /* Blue for active state */
-  background: rgba(59, 130, 246, 0.15);
+  color: var(--primary); /* Gold color for active state */
+  background: var(--badge-primary-bg);
 }
 
 .divider {
   width: 1px;
   height: 18px;
-  background: #334155;
+  background: var(--border-light);
   margin: 0 4px;
 }
 
@@ -108,14 +115,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: var(--text-muted);
   border-radius: 4px;
   transition: all 0.2s ease;
 }
 
 .color-btn:hover {
-  background: #334155;
-  color: #f8fafc;
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .color-btn input {
@@ -126,6 +133,9 @@
   cursor: pointer;
 }
 
+/* ==========================================================================
+   Global Action Modifiers
+   ========================================================================== */
 .header-actions {
   display: flex;
   gap: 12px;
@@ -133,17 +143,19 @@
 }
 
 .modal-close-btn {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: var(--error-bg);
+  color: var(--error);
   border: 1px solid rgba(239, 68, 68, 0.2);
   padding: 8px;
   border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
+  transition: all 0.2s ease;
 }
 
 .modal-close-btn:hover {
-  background: #ef4444;
-  color: white;
+  background: var(--error);
+  color: var(--text-inverse);
+  border-color: var(--error);
 }

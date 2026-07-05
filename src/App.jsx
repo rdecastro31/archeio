@@ -29,9 +29,10 @@ import PlagiarismChecker from './pages/PlagiarismChecker'
 import Roles from './pages/Roles'
 
 function App() {
+  // Sync default state with your luxury gold theme tokens from layout.css
   const [systemSettings, setSystemSettings] = useState({
-    logo: logoImage, //default logo
-    primaryColor: '#820d0d'
+    logo: logoImage,
+    primaryColor: '#d4af37' // Matches var(--primary)
   });
 
   useEffect(() => {
@@ -39,23 +40,37 @@ function App() {
       .then(res => res.json())
       .then(result => {
         if (result.success) {
-          const newLogo = result.data.logo_url ? `${API_URL}/${result.data.logo_url}` : logoUrl;
+          // Fallback to the layout's gold if database doesn't have a color yet
+          const fetchedColor = result.data.primary_color || '#d4af37';
+          const newLogo = result.data.logo_url ? `${API_URL}/${result.data.logo_url}` : logoImage;
+
           setSystemSettings({
             logo: newLogo,
-            primaryColor: result.data.primary_color || '#820d0d'
+            primaryColor: fetchedColor
           });
 
-          // Apply the theme color globally to CSS variables
-          // document.documentElement.style.setProperty('--primary-color', result.data.primary_color);
-        }
-      });
-  }, []);
+          const root = document.documentElement;
 
+          // Dynamically overwrite layout.css variables with the DB values
+          root.style.setProperty('--primary', fetchedColor);
+
+          // Automatically derive the hover, active, gradient, and focus tokens based on the DB color
+          root.style.setProperty('--primary-hover', `color-mix(in srgb, ${fetchedColor} 85%, black)`);
+          root.style.setProperty('--primary-active', `color-mix(in srgb, ${fetchedColor} 70%, black)`);
+          root.style.setProperty('--focus-ring', `color-mix(in srgb, ${fetchedColor} 45%, transparent)`);
+
+          root.style.setProperty(
+            '--gradient-primary',
+            `linear-gradient(135deg, color-mix(in srgb, ${fetchedColor} 80%, white) 0%, ${fetchedColor} 45%, color-mix(in srgb, ${fetchedColor} 70%, black) 100%)`
+          );
+        }
+      })
+      .catch(err => console.error("Error loading system settings:", err));
+  }, []);
 
   return (
     <BrowserRouter>
       <Routes>
-
         {/* Public Routes */}
         <Route path="/" element={<Home logo={systemSettings.logo} />} />
         <Route path="/login" element={<Login logo={systemSettings.logo} />} />
@@ -84,10 +99,9 @@ function App() {
             <Route path="/plagiarism-checker" element={<PlagiarismChecker />} />
           </Route>
         </Route>
-
       </Routes>
     </BrowserRouter>
   )
 }
 
-export default App 
+export default App;

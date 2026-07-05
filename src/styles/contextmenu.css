@@ -2,10 +2,10 @@
 .context-menu {
   position: fixed;
   z-index: 10000;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+  box-shadow: var(--shadow-md);
   padding: 6px;
   min-width: 180px;
   /* Simple fade in animation */
@@ -30,32 +30,42 @@
   padding: 10px 14px;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-secondary);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .context-menu-item:hover {
-  background: #f3f4f6;
-  color: #111827;
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .context-menu-item svg {
   font-size: 1.1rem;
-  color: #6b7280;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.context-menu-item:hover svg {
+  color: var(--accent); /* Subtle touch of gold on icon hover */
 }
 
 .context-menu-item.text-danger {
-  color: #dc2626;
+  color: var(--error);
 }
 
 .context-menu-item.text-danger:hover {
-  background: #fef2f2;
+  background: var(--error-bg);
+  color: var(--text-primary);
+}
+
+.context-menu-item.text-danger:hover svg {
+  color: var(--error);
 }
 
 .context-menu-divider {
   height: 1px;
-  background: #e5e7eb;
+  background: var(--border-light);
   margin: 6px 4px;
 }

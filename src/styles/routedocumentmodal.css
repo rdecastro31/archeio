@@ -1,11 +1,13 @@
-/* Modal Overlay with Blur */
+/* ==========================================================================
+   Modal Overlay with Blur
+   ========================================================================== */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--backdrop);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -16,49 +18,53 @@
 
 /* Modal Container */
 .modal-content.medium-modal {
-  background: white;
+  background: var(--card);
   width: 100%;
   max-width: 650px;
   border-radius: 16px;
-  box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
   position: relative;
 }
 
-/* Header Styling */
+/* ==========================================================================
+   Header Styling
+   ========================================================================== */
 .modal-header {
   padding: 24px;
   display: flex;
   align-items: center;
   gap: 16px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--card);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .modal-close-btn {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: var(--error-bg);
+  color: var(--error);
   border: 1px solid rgba(239, 68, 68, 0.2);
   padding: 8px;
   border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
+  transition: all 0.2s ease;
 }
 
 .modal-close-btn:hover {
-  background: #ef4444;
-  color: white;
+  background: var(--error);
+  color: var(--text-inverse);
+  border-color: var(--error);
 }
 
 .header-icon-container {
   width: 48px;
   height: 48px;
-  background: #fee2e2;
-  color: #820d0d;
+  background: var(--badge-primary-bg);
+  color: var(--primary);
   border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,39 +72,43 @@
 }
 
 .header-text {
-  text-align: center;
+  flex: 1;
 }
 
 .header-text h3 {
   margin: 0;
   font-size: 1.25rem;
-  color: #1e293b;
+  color: var(--text-primary);
   font-weight: 700;
 }
 
 .header-text p {
   margin: 2px 0 0;
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
-/* Document Preview Banner */
+/* ==========================================================================
+   Document Preview Banner
+   ========================================================================== */
 .doc-preview-banner {
-  background: #eff6ff;
-  color: #1e40af;
+  background: var(--badge-info-bg);
+  color: var(--info);
   padding: 12px 24px;
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: 0.9rem;
-  border-bottom: 1px solid #dbeafe;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .doc-preview-banner strong {
-  color: #1e3a8a;
+  color: var(--text-primary);
 }
 
-/* Form Layout */
+/* ==========================================================================
+   Form Layout & Inputs
+   ========================================================================== */
 .modal-form {
   padding: 24px;
 }
@@ -125,32 +135,42 @@
 .form-group label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-/* Input Styling */
 .form-input-styled {
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--input-border);
   font-size: 0.95rem;
-  color: #1e293b;
+  color: var(--text-primary);
   transition: all 0.2s;
-  background-color: #ffffff;
+  background-color: var(--input-bg);
+}
+
+.form-input-styled:hover {
+  background-color: var(--input-hover);
 }
 
 .form-input-styled:focus {
   outline: none;
-  border-color: #820d0d;
-  box-shadow: 0 0 0 3px rgba(130, 13, 13, 0.1);
+  border-color: var(--input-border-focus);
+  background-color: var(--input-focus);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .form-input-styled:disabled {
-  background-color: #f1f5f9;
+  background-color: var(--surface);
+  color: var(--text-disabled);
   cursor: not-allowed;
+  border-color: var(--border-light);
+}
+
+.form-input-styled::placeholder {
+  color: var(--placeholder);
 }
 
 .textarea-fixed {
@@ -158,19 +178,21 @@
   resize: none;
 }
 
-/* Action Buttons */
+/* ==========================================================================
+   Action Buttons
+   ========================================================================== */
 .modal-actions-horizontal {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 10px;
   padding-top: 20px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--border-light);
 }
 
 .primary-btn {
-  background: #820d0d;
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
   border: none;
   padding: 10px 24px;
   border-radius: 8px;
@@ -182,14 +204,20 @@
 }
 
 .primary-btn:hover:not(:disabled) {
-  background: #a11111;
+  opacity: 0.9;
   transform: translateY(-1px);
 }
 
+.primary-btn:disabled {
+  background: var(--surface);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
 .secondary-btn {
-  background: white;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-strong);
   padding: 10px 24px;
   border-radius: 8px;
   font-weight: 600;
@@ -198,11 +226,14 @@
 }
 
 .secondary-btn:hover {
-  background: #f8fafc;
-  color: #1e293b;
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
 }
 
-/* Animations */
+/* ==========================================================================
+   Animations & Components
+   ========================================================================== */
 .animate-slide-up {
   animation: slideUp 0.3s ease-out;
 }
@@ -224,7 +255,7 @@
   height: 18px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  border-top-color: white;
+  border-top-color: var(--text-inverse);
   animation: spin 0.8s linear infinite;
   margin-right: 10px;
 }

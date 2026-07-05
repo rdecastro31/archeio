@@ -15,7 +15,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #820d0d;
+  color: var(--primary);
 }
 .doc-no {
   font-size: 0.75rem;
