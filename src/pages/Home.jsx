@@ -1,15 +1,15 @@
 import { Link } from "react-router-dom";
 import "../styles/home.css";
-import archeioLogo from "../assets/archeiologo.png";
+import logoImage from "../assets/liham-ls-logo.png";
 
 export default function Home({ logo }) {
-  const currentLogo = logo || archeioLogo;
+  const currentLogo = logo || logoImage;
 
   return (
     <div className="landing-page">
       <header className="landing-header">
         <div className="brand">
-          <img src={currentLogo} alt="ArcheIO Logo" />
+          <img src={currentLogo} alt="Liham Logo" />
         </div>
 
         <nav className="landing-nav">
@@ -35,7 +35,7 @@ export default function Home({ logo }) {
           </h1>
 
           <p>
-            ArcheIO helps organizations file, route, approve, archive, and
+            Liham helps organizations file, route, approve, archive, and
             review documents faster through OCR-powered search, intelligent
             document review, and secure role-based workflows.
           </p>

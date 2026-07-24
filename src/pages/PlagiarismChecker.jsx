@@ -539,7 +539,7 @@ export default function PlagiarismChecker() {
               </div>
 
               <p>
-                Please keep this page open while ArcheIO waits for the
+                Please keep this page open while Liham waits for the
                 webhook result.
               </p>
             </div>
@@ -576,7 +576,7 @@ export default function PlagiarismChecker() {
 
             <div>
               <strong>2</strong>
-              <span>ArcheIO submits the file to Copyleaks</span>
+              <span>Liham submits the file to Copyleaks</span>
             </div>
 
             <div>
@@ -586,7 +586,7 @@ export default function PlagiarismChecker() {
 
             <div>
               <strong>4</strong>
-              <span>Webhook updates the result and ArcheIO displays the report</span>
+              <span>Webhook updates the result and Liham displays the report</span>
             </div>
           </div>
         </div>

@@ -19,7 +19,7 @@ export default function Settings() {
     // Branding State
     const [branding, setBranding] = useState({
         primaryColor: "#d4af37", // Default set to Luxury Gold
-        appName: "ArcheIO",
+        appName: "Liham",
         logoPreview: null
     });
 
@@ -159,7 +159,7 @@ export default function Settings() {
                             <div className="section-header-simple">
                                 <div>
                                     <h2 className="section-subtitle">Branding & Appearance</h2>
-                                    <p className="text-muted">Customize how ArcheIO looks for your organization.</p>
+                                    <p className="text-muted">Customize how Liham looks for your organization.</p>
                                 </div>
                                 <div className="action-buttons">
                                     <button className="secondary-btn">
@@ -180,7 +180,7 @@ export default function Settings() {
                                             {branding.logoPreview ? (
                                                 <img src={branding.logoPreview} alt="Logo" />
                                             ) : (
-                                                <div className="logo-placeholder">ArcheIO</div>
+                                                <div className="logo-placeholder">LIHAM</div>
                                             )}
                                         </div>
                                         <input

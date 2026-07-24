@@ -197,7 +197,6 @@ export default function Types() {
   }
 
   const handleCreateType = async (e) => {
-    e.preventDefault()
 
     const typeName = String(formData.type_name || "").trim()
     const shortName = String(formData.short_name || "").trim()

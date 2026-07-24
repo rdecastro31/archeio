@@ -346,7 +346,7 @@ export default function AIDetection() {
 
             <div>
               <strong>2</strong>
-              <span>ArcheIO extracts readable text</span>
+              <span>Liham extracts readable text</span>
             </div>
 
             <div>

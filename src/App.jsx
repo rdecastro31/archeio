@@ -15,7 +15,7 @@ import Workspace from './pages/Workspace'
 import Storage from './pages/Storage'
 import Users from './pages/Users'
 import Settings from './pages/Settings'
-import logoImage from './assets/archeiologo.png';
+import logoImage from "./assets/liham-ls-logo.png";
 import { useEffect, useState } from 'react'
 import { API_URL } from './shared/constants'
 import Instructions from './pages/Instructions'
@@ -69,7 +69,7 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/liham">
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home logo={systemSettings.logo} />} />

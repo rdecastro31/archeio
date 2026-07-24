@@ -534,7 +534,7 @@ export default function AIDocumentChecker() {
         <div>
           <h1 className="page-title">AI & Plagiarism Checker</h1>
           <p className="page-subtitle">
-            Upload one document and ArcheIO will run both AI detection and
+            Upload one document and Liham will run both AI detection and
             plagiarism checking.
           </p>
         </div>
@@ -647,12 +647,12 @@ export default function AIDocumentChecker() {
 
             <div>
               <strong>2</strong>
-              <span>ArcheIO sends the file to AI Detection</span>
+              <span>Liham sends the file to AI Detection</span>
             </div>
 
             <div>
               <strong>3</strong>
-              <span>ArcheIO also submits it to Plagiarism Checker</span>
+              <span>Liham also submits it to Plagiarism Checker</span>
             </div>
 
             <div>

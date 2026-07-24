@@ -121,9 +121,7 @@ export default function Departments() {
     setShowEditModal(false)
   }
 
-  const handleCreateDepartment = async (e) => {
-    e.preventDefault()
-
+  const handleCreateDepartment = async () => {
     const departmentName = String(formData.department_name || "").trim()
     const description = String(formData.description || "").trim()
     const status = String(formData.status || "Active")
@@ -145,7 +143,7 @@ export default function Departments() {
       fd.append("description", description)
       fd.append("status", status)
       fd.append("userid", user.id)
-      
+
 
       const response = await axios.post(`${API_URL}/department.php`, fd)
 
@@ -344,8 +342,10 @@ export default function Departments() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="empty-state">
-                    Loading departments...
+                  <td colSpan={5} className="empty-state-cell">
+                    <div className="empty-state-content">
+                      No departments found.
+                    </div>
                   </td>
                 </tr>
               ) : filteredDepartments.length > 0 ? (
@@ -359,8 +359,8 @@ export default function Departments() {
                     <td>
                       <span
                         className={`status-badge ${department.status === "Active"
-                            ? "status-active"
-                            : "status-inactive"
+                          ? "status-active"
+                          : "status-inactive"
                           }`}
                       >
                         {department.status || "Inactive"}
@@ -389,8 +389,10 @@ export default function Departments() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="empty-state">
-                    No departments found.
+                  <td colSpan={5} className="empty-state-cell">
+                    <div className="empty-state-content">
+                      No departments found.
+                    </div>
                   </td>
                 </tr>
               )}

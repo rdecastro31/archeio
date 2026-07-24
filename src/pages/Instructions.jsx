@@ -102,7 +102,6 @@ export default function Instructions() {
 
     // --- Action & Mapping Logic ---
     const handleCreateAction = async (e) => {
-        e.preventDefault();
         const fd = new FormData();
         Object.keys(actionFormData).forEach(key => fd.append(key, actionFormData[key]));
         fd.append("tag", "insert");

@@ -164,14 +164,32 @@
      GRADIENTS
      ========================================================== */
 
-  --gradient-primary: linear-gradient(
-    135deg,
-    #f4d35e 0%,
-    #d4af37 45%,
-    #a67c00 100%
-  );
+  --gradient-primary: linear-gradient(135deg,
+      #f4d35e 0%,
+      #d4af37 45%,
+      #a67c00 100%);
 
   --gradient-dark: linear-gradient(180deg, #181a1f 100%, #0b0b0d 0%);
+
+  /* ==========================================================
+   SWEETALERT2 TOAST THEME OVERRIDES
+   ========================================================== */
+  .custom-gold-toast {
+    border: 1px solid var(--border) !important;
+    box-shadow: var(--shadow-md) !important;
+    cursor: pointer !important;
+    border-radius: 8px !important;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .custom-gold-toast:hover {
+    border-color: var(--primary) !important;
+    transform: translateY(-2px);
+  }
+
+  .custom-toast-progress {
+    background: var(--primary) !important;
+  }
 }
 
 html,
@@ -183,16 +201,12 @@ body,
 
 body {
   background:
-    radial-gradient(
-      circle at top left,
+    radial-gradient(circle at top left,
       rgba(79, 141, 255, 0.08),
-      transparent 24%
-    ),
-    radial-gradient(
-      circle at bottom right,
+      transparent 24%),
+    radial-gradient(circle at bottom right,
       rgba(71, 195, 167, 0.08),
-      transparent 24%
-    ),
+      transparent 24%),
     var(--layout-bg);
   color: var(--text-primary);
   font-family: "Inter", "Segoe UI", sans-serif;
@@ -227,7 +241,7 @@ body {
 }
 
 /* prevent footer overlap by giving normal document flow */
-.page-content > * {
+.page-content>* {
   width: 100%;
 }
 
@@ -250,6 +264,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
