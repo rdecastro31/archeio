@@ -89,7 +89,7 @@ export default function Login({ logo }) {
       if (result.success === 1) {
         setResetMessage(
           result.message ||
-            "Password reset successful. Please check your email for your temporary password."
+          "Password reset successful. Please check your email for your temporary password."
         );
         setResetEmail("");
       } else {
@@ -131,26 +131,26 @@ export default function Login({ logo }) {
         localStorage.setItem("token", result.data.email);
         localStorage.setItem("user", JSON.stringify(result.data));
 
-       const loggedUser = result.data || {};
+        const loggedUser = result.data || {};
 
-const roleName = String(
-  loggedUser.role_name || loggedUser.userlevel || ""
-).trim();
+        const roleName = String(
+          loggedUser.role_name || loggedUser.userlevel || ""
+        ).trim();
 
-const permissions = Array.isArray(loggedUser.permissions)
-  ? loggedUser.permissions
-  : [];
+        const permissions = Array.isArray(loggedUser.permissions)
+          ? loggedUser.permissions
+          : [];
 
-const isSuperAdmin =
-  roleName === "Super Admin" ||
-  roleName === "SuperAdmin" ||
-  permissions.includes("DashboardAdmin.View");
+        const isSuperAdmin =
+          roleName === "Super Admin" ||
+          roleName === "SuperAdmin" ||
+          permissions.includes("DashboardAdmin.View");
 
-if (isSuperAdmin) {
-  navigate("/admin-dashboard");
-} else {
-  navigate("/dashboard");
-}
+        if (isSuperAdmin) {
+          navigate("/admin-dashboard");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         setError(result.message || "Invalid email or password.");
       }

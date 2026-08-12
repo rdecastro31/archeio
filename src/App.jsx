@@ -27,35 +27,57 @@ import AIDocumentChecker from './pages/AIDocumentChecker'
 import AIDetection from './pages/AIDetection'
 import PlagiarismChecker from './pages/PlagiarismChecker'
 import Roles from './pages/Roles'
+import StorageAuditLogs from './pages/StorageAuditLogs'
 
 function App() {
+  // Sync default state with your luxury gold theme tokens and default theme
   const [systemSettings, setSystemSettings] = useState({
-    logo: logoImage, //default logo
-    primaryColor: '#820d0d'
+    logo: logoImage,
+    primaryColor: '#820d0d', // Matches var(--primary)
+    theme: 'dark'            // Default theme fallback
   });
 
   useEffect(() => {
     fetch(`${API_URL}/settings.php`)
       .then(res => res.json())
       .then(result => {
-        if (result.success) {
-          const newLogo = result.data.logo_url ? `${API_URL}/${result.data.logo_url}` : logoUrl;
+        if (result.success && result.data) {
+          // Fallback values if database doesn't have them yet
+          const fetchedColor = result.data.primary_color || '#d4af37';
+          const newLogo = result.data.logo_url ? `${API_URL}/${result.data.logo_url}` : logoImage;
+          const fetchedTheme = result.data.theme || 'dark';
+
           setSystemSettings({
             logo: newLogo,
-            primaryColor: result.data.primary_color || '#820d0d'
+            primaryColor: fetchedColor,
+            theme: fetchedTheme
           });
 
-          // Apply the theme color globally to CSS variables
-          // document.documentElement.style.setProperty('--primary-color', result.data.primary_color);
-        }
-      });
-  }, []);
+          const root = document.documentElement;
 
+          // Set the data-theme attribute on root element for CSS light/dark variables
+          root.setAttribute('data-theme', fetchedTheme);
+
+          // Dynamically overwrite layout.css variables with the DB values
+          root.style.setProperty('--primary', fetchedColor);
+
+          // Automatically derive hover, active, gradient, and focus tokens based on the DB color
+          root.style.setProperty('--primary-hover', `color-mix(in srgb, ${fetchedColor} 85%, black)`);
+          root.style.setProperty('--primary-active', `color-mix(in srgb, ${fetchedColor} 70%, black)`);
+          root.style.setProperty('--focus-ring', `color-mix(in srgb, ${fetchedColor} 45%, transparent)`);
+
+          root.style.setProperty(
+            '--gradient-primary',
+            `linear-gradient(135deg, color-mix(in srgb, ${fetchedColor} 80%, white) 0%, ${fetchedColor} 45%, color-mix(in srgb, ${fetchedColor} 70%, black) 100%)`
+          );
+        }
+      })
+      .catch(err => console.error("Error loading system settings:", err));
+  }, []);
 
   return (
     <BrowserRouter>
       <Routes>
-
         {/* Public Routes */}
         <Route path="/" element={<Home logo={systemSettings.logo} />} />
         <Route path="/login" element={<Login logo={systemSettings.logo} />} />
@@ -82,12 +104,12 @@ function App() {
             <Route path="/ai-document-checker" element={<AIDocumentChecker />} />
             <Route path="/ai-detection" element={<AIDetection />} />
             <Route path="/plagiarism-checker" element={<PlagiarismChecker />} />
+            <Route path="/storage-audit-logs" element={<StorageAuditLogs />} />
           </Route>
         </Route>
-
       </Routes>
     </BrowserRouter>
   )
 }
 
-export default App 
+export default App;

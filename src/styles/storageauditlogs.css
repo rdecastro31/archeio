@@ -1,0 +1,170 @@
+.audit-container {
+    padding: 4px 2px;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.audit-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.filters-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-select-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--input-bg, #111317);
+    border: 1px solid var(--input-border, #343a45);
+    border-radius: 8px;
+    padding: 0 10px;
+}
+
+.filter-select-group select {
+    border: none;
+    background: transparent;
+    padding: 8px 4px;
+    font-size: 0.85rem;
+    color: var(--text-primary, #f8f8f5);
+    outline: none;
+    cursor: pointer;
+}
+
+/* Ensure dropdown options respect theme background and text colors */
+.filter-select-group select option {
+    background-color: var(--card, #1b1e24);
+    color: var(--text-primary, #f8f8f5);
+}
+
+.filter-icon {
+    color: var(--text-muted, #8b919c);
+}
+
+.date-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-muted, #8b919c);
+}
+
+.date-filter-group input[type="date"] {
+    border: 1px solid var(--input-border, #343a45);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.82rem;
+    color: var(--text-primary, #f8f8f5);
+    background: var(--input-bg, #111317);
+    outline: none;
+    color-scheme: dark light;
+}
+
+.refresh-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border, #343a45);
+    background: var(--button-secondary, #262a33);
+    cursor: pointer;
+    color: var(--button-secondary-text, #f8f8f5);
+    transition: background 0.2s;
+}
+
+.refresh-btn:hover {
+    background: var(--button-secondary-hover, #323845);
+}
+
+/* Action Badges Styling */
+.action-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.action-upload_file {
+    background: var(--badge-info-bg, rgba(59, 130, 246, 0.15));
+    color: var(--info, #3b82f6);
+}
+
+.action-create_folder {
+    background: var(--badge-warning-bg, rgba(245, 158, 11, 0.15));
+    color: var(--warning, #f59e0b);
+}
+
+.action-move_rename {
+    background: var(--badge-primary-bg, rgba(212, 175, 55, 0.15));
+    color: var(--badge-primary-text, #f4d35e);
+}
+
+.action-delete_file {
+    background: var(--badge-error-bg, rgba(239, 68, 68, 0.15));
+    color: var(--error, #ef4444);
+}
+
+.action-access_item {
+    background: var(--badge-success-bg, rgba(34, 197, 94, 0.15));
+    color: var(--success, #22c55e);
+}
+
+.action-version_archive {
+    background: var(--badge-warning-bg, rgba(245, 158, 11, 0.15));
+    color: var(--accent, #f4d35e);
+}
+
+.action-ocr_error {
+    background: var(--badge-error-bg, rgba(239, 68, 68, 0.15));
+    color: var(--error, #ef4444);
+}
+
+.file-id-subtext {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted, #8b919c);
+    margin-top: 2px;
+}
+
+.details-text {
+    font-size: 0.85rem;
+    color: var(--text-primary, #f8f8f5);
+    font-family: monospace;
+    max-width: 300px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ip-text {
+    font-size: 0.82rem;
+    color: var(--text-secondary, #c6cbd4);
+    font-family: monospace;
+}
+
+.details-text.clickable-details {
+    cursor: pointer;
+    transition: color 0.15s ease-in-out;
+}
+
+.details-text.clickable-details:hover {
+    color: var(--link, #e0bc4d);
+    text-decoration: underline;
+}
+
+.dept-subtext {
+    font-size: 0.75rem;
+    color: var(--text-muted, #8b919c);
+    display: block;
+}

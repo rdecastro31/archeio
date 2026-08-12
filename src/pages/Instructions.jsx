@@ -102,7 +102,6 @@ export default function Instructions() {
 
     // --- Action & Mapping Logic ---
     const handleCreateAction = async (e) => {
-        e.preventDefault();
         const fd = new FormData();
         Object.keys(actionFormData).forEach(key => fd.append(key, actionFormData[key]));
         fd.append("tag", "insert");
@@ -384,7 +383,7 @@ export default function Instructions() {
                                                 {action.action_result}
                                             </span>
                                         </td>
-                                        <td className="text-muted">{action.description}</td>
+                                        <td>{action.description}</td>
                                         <td className="text-end">
                                             <button className="icon-btn delete" onClick={() => handleDeleteAction(action.id)}>
                                                 <FiTrash2 />

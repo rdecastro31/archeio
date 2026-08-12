@@ -5,7 +5,7 @@
 body {
   margin: 0;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: #fcfcfc;
+  background: var(--background);
 }
 
 .login-page {
@@ -15,17 +15,13 @@ body {
   justify-content: center;
   padding: 32px;
   background:
-    radial-gradient(
-      circle at top left,
-      rgba(130, 13, 13, 0.07),
-      transparent 26%
-    ),
+    radial-gradient(circle at top left, var(--surface-alt), transparent 26%),
     radial-gradient(
       circle at bottom right,
-      rgba(137, 133, 128, 0.16),
+      var(--surface-alt),
       transparent 28%
     ),
-    linear-gradient(180deg, #fcfcfc 0%, #e0ddd5 100%);
+    var(--gradient-dark);
 }
 
 .login-wrapper {
@@ -34,11 +30,11 @@ body {
   min-height: 620px;
   display: grid;
   grid-template-columns: 1fr 460px;
-  background: #fcfcfc;
-  border: 1px solid rgba(137, 133, 128, 0.24);
+  background: var(--card);
+  border: 1px solid var(--border-light);
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 24px 70px rgba(101, 101, 101, 0.16);
+  box-shadow: var(--shadow-lg);
 }
 
 .login-brand-panel {
@@ -47,13 +43,9 @@ body {
   display: flex;
   align-items: center;
   background:
-    radial-gradient(
-      circle at 18% 18%,
-      rgba(130, 13, 13, 0.09),
-      transparent 34%
-    ),
-    linear-gradient(135deg, #fcfcfc 0%, #e0ddd5 100%);
-  border-right: 1px solid rgba(137, 133, 128, 0.2);
+    radial-gradient(circle at 18% 18%, var(--card), transparent 34%),
+    var(--gradient-dark);
+  border-right: 1px solid var(--border-light);
 }
 
 .brand-overlay {
@@ -70,8 +62,8 @@ body {
   padding: 8px 14px;
   margin-bottom: 22px;
   border-radius: 999px;
-  background: rgba(130, 13, 13, 0.08);
-  color: #820d0d;
+  background: var(--badge-primary-bg);
+  color: var(--badge-primary-text);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.3px;
@@ -82,14 +74,14 @@ body {
   font-size: 44px;
   line-height: 1.1;
   font-weight: 700;
-  color: #2f2f2f;
+  color: var(--text-primary);
 }
 
 .brand-content p {
   margin: 0;
   font-size: 16px;
   line-height: 1.8;
-  color: #656565;
+  color: var(--text-secondary);
 }
 
 .brand-features {
@@ -102,7 +94,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #656565;
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
 }
@@ -111,7 +103,7 @@ body {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #898580;
+  background: var(--text-muted);
   flex-shrink: 0;
 }
 
@@ -120,7 +112,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 48px;
-  background: #fcfcfc;
+  background: var(--card-hover);
 }
 
 .login-form-box {
@@ -136,13 +128,13 @@ body {
   margin: 0 0 8px;
   font-size: 30px;
   font-weight: 700;
-  color: #2f2f2f;
+  color: var(--text-primary);
 }
 
 .login-header p {
   margin: 0;
   font-size: 14px;
-  color: #656565;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -161,7 +153,7 @@ body {
 .input-group label {
   font-size: 13px;
   font-weight: 600;
-  color: #656565;
+  color: var(--text-primary);
 }
 
 .input-wrapper {
@@ -174,29 +166,34 @@ body {
   position: absolute;
   left: 14px;
   font-size: 18px;
-  color: #898580;
+  color: var(--text-muted);
 }
 
 .input-wrapper input {
   width: 100%;
   height: 52px;
-  border: 1px solid rgba(137, 133, 128, 0.35);
+  border: 1px solid var(--input-border);
   border-radius: 14px;
   padding: 0 44px 0 44px;
   font-size: 14px;
-  color: #2f2f2f;
-  background: #fcfcfc;
+  color: var(--text-primary);
+  background: var(--input-bg);
   outline: none;
   transition: all 0.2s ease;
 }
 
 .input-wrapper input::placeholder {
-  color: #898580;
+  color: var(--placeholder);
+}
+
+.input-wrapper input:hover {
+  background: var(--input-hover);
 }
 
 .input-wrapper input:focus {
-  border-color: rgba(130, 13, 13, 0.48);
-  box-shadow: 0 0 0 4px rgba(130, 13, 13, 0.08);
+  border-color: var(--input-border-focus);
+  background: var(--input-focus);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 
 .password-toggle {
@@ -204,7 +201,7 @@ body {
   right: 14px;
   border: none;
   background: transparent;
-  color: #898580;
+  color: var(--text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -214,7 +211,7 @@ body {
 }
 
 .password-toggle:hover {
-  color: #656565;
+  color: var(--text-secondary);
 }
 
 .login-options {
@@ -229,18 +226,18 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #656565;
+  color: var(--text-secondary);
   cursor: pointer;
 }
 
 .remember-me input {
-  accent-color: #820d0d;
+  accent-color: var(--accent);
 }
 
 .forgot-btn {
   border: none;
   background: none;
-  color: #820d0d;
+  color: var(--link);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -248,17 +245,17 @@ body {
 }
 
 .forgot-btn:hover {
-  color: #650909;
+  color: var(--link-hover);
   text-decoration: underline;
 }
 
 .login-btn {
   height: 52px;
   margin-top: 6px;
-  border: 1px solid #820d0d;
+  border: 1px solid var(--button-primary);
   border-radius: 14px;
-  background: #820d0d;
-  color: #fcfcfc;
+  background: var(--button-primary);
+  color: var(--button-primary-text);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -267,13 +264,18 @@ body {
   justify-content: center;
   gap: 10px;
   transition: all 0.2s ease;
-  box-shadow: 0 14px 28px rgba(130, 13, 13, 0.18);
+  box-shadow: var(--shadow-sm);
 }
 
 .login-btn:hover {
-  background: #650909;
-  border-color: #650909;
+  background: var(--button-primary-hover);
+  border-color: var(--button-primary-hover);
   transform: translateY(-1px);
+}
+
+.login-btn:active {
+  background: var(--button-primary-active);
+  border-color: var(--button-primary-active);
 }
 
 .login-footer {
@@ -284,14 +286,14 @@ body {
 .login-footer p {
   margin: 0;
   font-size: 12px;
-  color: #898580;
+  color: var(--text-muted);
   line-height: 1.5;
 }
 
 .reset-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(47, 38, 51, 0.55);
+  background: var(--backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -303,10 +305,10 @@ body {
   position: relative;
   width: 100%;
   max-width: 460px;
-  background: #fffaf7;
+  background: var(--card);
   border-radius: 24px;
-  border: 1px solid #eadfd8;
-  box-shadow: 0 20px 60px rgba(75, 36, 56, 0.2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
   padding: 34px;
 }
 
@@ -315,8 +317,8 @@ body {
   top: 18px;
   right: 18px;
   border: none;
-  background: #f1e7e1;
-  color: #4b2438;
+  background: var(--button-secondary);
+  color: var(--button-secondary-text);
   width: 36px;
   height: 36px;
   border-radius: 12px;
@@ -324,18 +326,27 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.reset-modal-close:hover {
+  background: var(--button-secondary-hover);
+}
+
+.reset-modal-close:active {
+  background: var(--button-secondary-active);
 }
 
 .reset-modal-header h3 {
   margin: 0;
-  color: #321827;
+  color: var(--text-primary);
   font-size: 24px;
   font-weight: 700;
 }
 
 .reset-modal-header p {
   margin: 10px 0 24px;
-  color: #6f6470;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -350,10 +361,11 @@ body {
   margin-bottom: 18px;
   padding: 14px 16px;
   border-radius: 14px;
-  background: #e8f7ee;
-  color: #146c43;
+  background: var(--success-bg);
+  color: var(--success);
   font-size: 14px;
   font-weight: 600;
+  border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 @media (max-width: 992px) {
@@ -404,26 +416,30 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(130, 13, 13, 0.05); /* Very soft brand red */
-  border: 1px solid rgba(130, 13, 13, 0.2);
+  background: var(--error-bg);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   padding: 12px 16px;
   border-radius: 12px;
   margin-bottom: 20px;
-  color: #820d0d;
+  color: var(--text-primary);
   font-size: 13.5px;
   font-weight: 500;
   animation: slideDown 0.3s ease-out;
 }
 
 .error-icon {
+  color: var(--error);
   font-size: 18px;
   flex-shrink: 0;
 }
 
-/* Optional: Subtle border error for inputs */
 .input-wrapper.input-error input {
-  border-color: rgba(130, 13, 13, 0.4);
-  background: rgba(130, 13, 13, 0.01);
+  border-color: var(--error);
+  background: var(--input-bg);
+}
+
+.input-wrapper.input-error input:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25);
 }
 
 @keyframes slideDown {

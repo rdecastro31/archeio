@@ -1,5 +1,5 @@
 .viewer-modal {
-  background: white;
+  background: var(--card);
   width: 90%;
   max-width: 1000px;
   height: 90vh;
@@ -7,6 +7,8 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-lg);
   animation: modalIn 0.3s ease-out;
 }
 
@@ -15,16 +17,17 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .viewer-body {
   flex: 1;
-  background: #f8fafc;
+  background: var(--background-alt);
   border-radius: 8px;
   padding: 20px;
   margin-top: 15px;
   overflow: hidden;
+  border: 1px solid var(--border-light);
 }
 
 .header-actions {
@@ -40,7 +43,7 @@
   justify-content: center;
   height: 100%;
   gap: 15px;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 /* Force-hide the outline sidebar container and its toggle buttons if they linger */

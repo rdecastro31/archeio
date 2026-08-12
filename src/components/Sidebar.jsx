@@ -185,6 +185,13 @@ export default function Sidebar({ isOpen, onClose, logo }) {
           </div>
         )}
 
+        {isSuperAdmin && (
+          <NavLink to="/storage-audit-logs" className="nav-item" onClick={onClose}>
+            <FiGrid />
+            <span>File Audit Logs</span>
+          </NavLink>
+        )}
+
         {canManageUsers && (
           <NavLink to="/users" className="nav-item" onClick={onClose}>
             <FiUsers />

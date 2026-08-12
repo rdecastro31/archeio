@@ -57,7 +57,6 @@ export default function DocumentStatuses() {
     }
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
         const user = JSON.parse(localStorage.getItem("user"))
         const fd = new FormData()
         fd.append("tag", isEditing ? "update" : "insert")

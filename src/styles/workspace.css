@@ -3,24 +3,24 @@
   padding: 2rem;
   max-width: 1600px;
   margin: 0 auto;
-  background-color: #f9fbfd; /* Very light neutral background */
+  background-color: var(--background);
   min-height: 100vh;
 }
 
 /* --- Suggested / Recently Opened Section --- */
 .suggested-wrapper {
-  background: #ffffff;
-  border: 1px solid #e3e8ee;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .section-subtitle {
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
   margin-bottom: 1.25rem;
   display: flex;
   align-items: center;
@@ -38,18 +38,18 @@
   display: flex;
   align-items: center;
   padding: 1rem;
-  background: #ffffff;
-  border: 1px solid #e3e8ee;
+  background: var(--card);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .suggested-card:hover {
-  border-color: #cbd5e1;
-  background-color: #f8fafc;
+  border-color: var(--border-strong);
+  background-color: var(--card-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
 }
 
 .suggested-icon {
@@ -58,7 +58,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f1f5f9;
+  background: var(--surface-alt);
+  color: var(--primary); /* Gold accent color for icons */
   border-radius: 8px;
   margin-right: 14px;
   flex-shrink: 0;
@@ -73,7 +74,7 @@
 .suggested-name {
   font-weight: 500;
   font-size: 0.9rem;
-  color: #334155;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -81,7 +82,7 @@
 
 .text-muted {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -92,21 +93,22 @@
 
 /* Override storage.css defaults if they are too bulky */
 .storage-embedded .table-card {
-  border: 1px solid #e3e8ee;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--table-border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 
 /* --- High-Contrast Utilities --- */
 .text-blue {
-  color: #2563eb; /* Stronger accessible blue */
+  color: var(--info); /* Maps to the theme's info blue */
 }
 
 .text-warning {
-  color: #f59e0b; /* Golden star color */
+  color: var(--warning); /* Maps to the theme's warning gold */
 }
 
 .swal2-container {
-    z-index: 99999 !important;
+  z-index: 99999 !important;
 }
 
 /* --- Responsive Adjustments --- */

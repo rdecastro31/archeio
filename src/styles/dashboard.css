@@ -22,41 +22,29 @@
   padding: 22px;
   border-radius: 24px;
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.98),
-      rgba(247, 245, 241, 0.92)
-    );
-
-  border: 1px solid rgba(137, 133, 128, 0.16);
-
-  box-shadow:
-    0 10px 30px rgba(15, 23, 42, 0.05),
-    0 2px 6px rgba(15, 23, 42, 0.04);
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
 
   transition: all 0.25s ease;
 }
 
 .dashboard-stat-card:hover {
   transform: translateY(-3px);
-
-  box-shadow:
-    0 16px 34px rgba(15, 23, 42, 0.08),
-    0 4px 10px rgba(15, 23, 42, 0.05);
-
-  border-color: rgba(130, 13, 13, 0.18);
+  background: var(--card-hover);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
 }
 
 .dashboard-stat-card::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -40px;
   right: -40px;
   width: 110px;
   height: 110px;
   border-radius: 50%;
-  background: rgba(130, 13, 13, 0.04);
+  background: rgba(214, 175, 55, 0.03); /* Subtle gold accent glow */
 }
 
 .dashboard-stat-top {
@@ -76,18 +64,17 @@
   align-items: center;
   justify-content: center;
 
-  background: rgba(130, 13, 13, 0.08);
-  color: #820d0d;
+  background: var(--badge-primary-bg);
+  color: var(--primary);
 
   font-size: 22px;
-
   flex-shrink: 0;
 }
 
 .dashboard-stat-top span {
   font-size: 12px;
   font-weight: 700;
-  color: #8c8c8c;
+  color: var(--text-muted);
   text-align: right;
 }
 
@@ -96,13 +83,13 @@
   font-size: 34px;
   line-height: 1;
   font-weight: 800;
-  color: #1f2937;
+  color: var(--text-primary);
 }
 
 .dashboard-stat-card p {
   margin: 0;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -120,18 +107,9 @@
   padding: 22px;
   border-radius: 24px;
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.98),
-      rgba(247, 245, 241, 0.92)
-    );
-
-  border: 1px solid rgba(137, 133, 128, 0.16);
-
-  box-shadow:
-    0 10px 30px rgba(15, 23, 42, 0.05),
-    0 2px 6px rgba(15, 23, 42, 0.04);
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
 }
 
 .dashboard-card-large {
@@ -153,7 +131,7 @@
   font-size: 11px;
   font-weight: 800;
 
-  color: #820d0d;
+  color: var(--primary);
 
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -162,7 +140,7 @@
 .dashboard-card-header h3 {
   margin: 0;
   font-size: 22px;
-  color: #1f2937;
+  color: var(--text-primary);
 }
 
 /* =========================================================
@@ -185,21 +163,26 @@
   font-size: 13px;
   font-weight: 700;
 
-  color: #6b7280;
+  color: var(--text-muted);
   text-align: left;
 
-  border-bottom: 1px solid rgba(137, 133, 128, 0.18);
+  background-color: var(--table-header);
+  border-bottom: 1px solid var(--table-border);
 
   white-space: nowrap;
+}
+
+.dashboard-table tbody tr {
+  background-color: var(--table-row);
 }
 
 .dashboard-table tbody td {
   padding: 16px;
 
   font-size: 14px;
-  color: #374151;
+  color: var(--text-secondary);
 
-  border-bottom: 1px solid rgba(137, 133, 128, 0.12);
+  border-bottom: 1px solid var(--table-border);
 
   vertical-align: middle;
 }
@@ -209,7 +192,7 @@
 }
 
 .dashboard-table tbody tr:hover {
-  background: rgba(130, 13, 13, 0.03);
+  background: var(--table-row-hover);
 }
 
 /* =========================================================
@@ -222,12 +205,10 @@
   justify-content: center;
 
   padding: 7px 12px;
-
   border-radius: 999px;
 
-  background: rgba(130, 13, 13, 0.08);
-
-  color: #820d0d;
+  background: var(--badge-primary-bg);
+  color: var(--badge-primary-text);
 
   font-size: 12px;
   font-weight: 700;
@@ -250,28 +231,27 @@
   gap: 14px;
 
   padding: 15px 16px;
-
   border-radius: 18px;
 
-  background: rgba(248, 248, 248, 0.85);
-
-  border: 1px solid rgba(137, 133, 128, 0.14);
+  background: var(--surface);
+  border: 1px solid var(--border-light);
 
   transition: all 0.2s ease;
 }
 
 .summary-row:hover {
-  background: rgba(130, 13, 13, 0.03);
+  background: var(--surface-hover);
+  border-color: var(--border);
 }
 
 .summary-row span {
   font-size: 14px;
-  color: #4b5563;
+  color: var(--text-secondary);
 }
 
 .summary-row strong {
   font-size: 14px;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 /* =========================================================
@@ -291,34 +271,30 @@
   align-items: center;
 
   padding: 16px;
-
   border-radius: 20px;
 
-  background: rgba(250, 250, 250, 0.9);
-
-  border: 1px solid rgba(137, 133, 128, 0.14);
+  background: var(--surface);
+  border: 1px solid var(--border-light);
 
   transition: all 0.2s ease;
 }
 
 .document-group-item:hover {
-  background: rgba(130, 13, 13, 0.03);
-  border-color: rgba(130, 13, 13, 0.12);
+  background: var(--surface-hover);
+  border-color: var(--primary-hover);
 }
 
 .document-group-icon {
   width: 58px;
   height: 58px;
-
   border-radius: 18px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  background: rgba(130, 13, 13, 0.08);
-
-  color: #820d0d;
+  background: var(--badge-primary-bg);
+  color: var(--primary);
 
   font-size: 22px;
 }
@@ -326,13 +302,13 @@
 .document-group-content h4 {
   margin: 0 0 6px;
   font-size: 15px;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .document-group-content p {
   margin: 0;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-muted);
   line-height: 1.5;
 }
 
@@ -345,12 +321,12 @@
   margin-bottom: 5px;
 
   font-size: 14px;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .document-group-total span {
   font-size: 12px;
-  color: #8c8c8c;
+  color: var(--text-muted);
 }
 
 /* =========================================================
@@ -369,8 +345,7 @@
   gap: 12px;
 
   padding-bottom: 14px;
-
-  border-bottom: 1px solid rgba(137, 133, 128, 0.12);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .activity-feed-item:last-child {
@@ -381,16 +356,14 @@
 .activity-feed-icon {
   width: 36px;
   height: 36px;
-
   border-radius: 14px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  background: rgba(130, 13, 13, 0.08);
-
-  color: #820d0d;
+  background: var(--badge-primary-bg);
+  color: var(--primary);
 
   flex-shrink: 0;
 }
@@ -401,7 +374,7 @@
   font-size: 14px;
   line-height: 1.6;
 
-  color: #4b5563;
+  color: var(--text-secondary);
 }
 
 /* =========================================================
@@ -409,7 +382,7 @@
 ========================================================= */
 
 .dashboard-card p {
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 /* =========================================================
@@ -466,11 +439,13 @@
     margin-bottom: 14px;
     padding: 14px;
     border-radius: 18px;
-    background: rgba(248, 248, 248, 0.85);
+    background: var(--surface-alt);
+    border: 1px solid var(--border-light);
   }
 
   .dashboard-table td {
     padding: 8px 0;
     border: none;
+    color: var(--text-secondary);
   }
 }

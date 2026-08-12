@@ -30,14 +30,15 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
     const [showFolderModal, setShowFolderModal] = useState(false);
     const [folderFormData, setFolderFormData] = useState({ name: "" });
     const [searchTerm, setSearchTerm] = useState("");
+    const [searchDuration, setSearchDuration] = useState(null);
     const [viewMode, setViewMode] = useState("grid");
     const fileInputRef = useRef(null);
 
-    // Viewer State[cite: 3]
+    // Viewer State
     const [viewFile, setViewFile] = useState(null);
     const [showViewer, setShowViewer] = useState(false);
 
-    // PDF Editor State[cite: 5]
+    // PDF Editor State
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedEditFile, setSelectedEditFile] = useState(null);
 
@@ -51,6 +52,14 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         y: 0,
         targetItem: null
     });
+
+    // --- Helper function to format duration to MM:SS ---
+    const formatDuration = (ms) => {
+        const totalSeconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    };
 
     // --- API Helper ---
     const callApi = async (formData) => {
@@ -99,10 +108,20 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
             didOpen: () => Swal.showLoading()
         });
 
+        const startTime = performance.now();
         const data = await callApi(fd);
+        const endTime = performance.now();
+        const durationFormatted = formatDuration(endTime - startTime);
+
         if (data.success) {
             fetchStorage();
-            Swal.fire("Success", "New version saved and archived successfully!", "success");
+            await Swal.fire({
+                title: "Success",
+                text: `New version saved in ${durationFormatted} (mm:ss)!`,
+                icon: "success",
+                showConfirmButton: true,
+                confirmButtonText: "OK"
+            });
         } else {
             Swal.fire("Error", data.msg || "Failed to save version", "error");
         }
@@ -111,6 +130,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
     // --- Search Logic ---
     useEffect(() => {
         if (!searchTerm.trim()) {
+            setSearchDuration(null);
             if (items.length > 0 && items[0].isSearchResult) {
                 fetchStorage();
             }
@@ -131,7 +151,11 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         fd.append("userid", USER_ID);
         fd.append("query", searchTerm);
 
+        const startTime = performance.now();
         const data = await callApi(fd);
+        const endTime = performance.now();
+        const durationFormatted = formatDuration(endTime - startTime);
+
         if (data.success) {
             const searchResults = data.results.map((res, index) => ({
                 id: `search-${index}`,
@@ -144,39 +168,35 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                 isSearchResult: true
             }));
             setItems(searchResults);
+            setSearchDuration(durationFormatted);
         }
         setLoading(false);
     };
 
     const handleCreateFolder = async () => {
-        // 1. Validation
         if (!folderFormData.name.trim()) {
             Swal.fire("Error", "Please enter a folder name", "error");
             return;
         }
 
-        // 2. Show Loading
         Swal.fire({
             title: 'Creating folder...',
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
 
-        // 3. Prepare FormData with the correct tag from your PHP file
         const fd = new FormData();
-        fd.append("tag", "createFolder"); // Matches filestorage.php:30
+        fd.append("tag", "createFolder");
         fd.append("userid", USER_ID);
-        fd.append("foldername", folderFormData.name); // Matches filestorage.php:31[cite: 5]
+        fd.append("foldername", folderFormData.name);
         fd.append("path", currentPath);
 
-        // 4. API Call
         const data = await callApi(fd);
 
-        // 5. Response Handling
         if (data.success) {
             setFolderFormData({ name: "" });
             setShowFolderModal(false);
-            fetchStorage(); // Refresh the list to see the new folder
+            fetchStorage();
             Swal.fire({
                 title: "Success",
                 text: "Folder created successfully!",
@@ -254,7 +274,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         const file = e.target.files[0];
         if (!file) return;
 
-        // 1. Show the Loading SweetAlert immediately
         Swal.fire({
             title: 'Uploading file...',
             text: 'Please wait while your document is being processed.',
@@ -270,17 +289,19 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         fd.append("path", currentPath);
         fd.append("file", file);
 
-        // 2. Call the API
+        const startTime = performance.now();
         const data = await callApi(fd);
+        const endTime = performance.now();
+        const durationFormatted = formatDuration(endTime - startTime);
 
-        // 3. Handle the result
         if (data.success) {
             fetchStorage();
-            Swal.fire({
+            await Swal.fire({
                 title: "Success",
-                text: data.msg || "File uploaded successfully!",
+                text: `File uploaded in ${durationFormatted} (mm:ss).`,
                 icon: "success",
-                timer: 2000
+                showConfirmButton: true,
+                confirmButtonText: "OK"
             });
         } else {
             Swal.fire("Error", data.msg || "Upload failed", "error");
@@ -290,7 +311,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
     };
 
     const handleArchive = async (item) => {
-        // 1. Show confirmation dialog
         const res = await Swal.fire({
             title: `Archive ${item.name}?`,
             text: "This item will be moved to the archive folder.",
@@ -302,15 +322,13 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         });
 
         if (res.isConfirmed) {
-            // 2. Prepare the FormData
             const fd = new FormData();
-            fd.append("tag", "archiveItem"); // Ensure your backend handles this tag
+            fd.append("tag", "archiveItem");
             fd.append("userid", USER_ID);
             fd.append("path", currentPath);
             fd.append("itemname", item.name);
-            fd.append("itemtype", item.type); // Useful if backend needs to distinguish file vs folder
+            fd.append("itemtype", item.type);
 
-            // 3. Call the API and refresh
             const data = await callApi(fd);
             if (data.success) {
                 fetchStorage();
@@ -335,11 +353,11 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
             fd.append("tag", "restoreItem");
             fd.append("userid", USER_ID);
             fd.append("itemname", item.name);
-            fd.append("targetPath", "/"); // Or item.previousPath if you stored it
+            fd.append("targetPath", "/");
 
             const data = await callApi(fd);
             if (data.success) {
-                fetchStorage(); // Refresh the list
+                fetchStorage();
                 Swal.fire('Restored!', 'Item is back in your main files.', 'success');
             }
         }
@@ -406,7 +424,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         const isFile = item.type === 'file';
         const filePath = item.path || currentPath;
 
-        // --- Reusable Menu Actions ---
         const getViewOption = () => ({
             label: "View",
             icon: <FiSearch />,
@@ -432,16 +449,11 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
             onClick: () => { /* Handle download */ }
         });
 
-
-        // --- Context-Based Menu Construction ---
-
-        // 1. Archive Path
         if (currentPath === "Archive") {
             const archiveOptions = [
                 { label: "Restore", icon: <FiRefreshCw />, onClick: () => handleRestore(item) }
             ];
 
-            // Add View option in between if it's a file
             if (isFile) {
                 archiveOptions.push(getViewOption());
             }
@@ -454,9 +466,8 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
             return archiveOptions;
         }
 
-        // 2. Documents Path
         if (currentPath === "Documents") {
-            if (!isFile) return []; // Documents only shows options if it's a file
+            if (!isFile) return [];
             return [
                 getViewOption(),
                 getHistoryOption(),
@@ -464,7 +475,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
             ];
         }
 
-        // 3. Fallback / Default Path (Else)
         const options = [];
 
         if (isFile) {
@@ -562,7 +572,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                             </>
                         )}
 
-                        {/* The Archive Button */}
                         {currentPath === "Archive" ? (
                             <button className="secondary-btn" onClick={() => navigateTo(null)}>
                                 <FiArrowLeft /><span>Back to Root</span>
@@ -601,9 +610,17 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                     </div>
                 )}
                 <div className="table-toolbar">
-                    <div className="search-box">
-                        <FiSearch className="search-icon-main" />
-                        <input type="text" placeholder="Search document content..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    <div className="d-flex align-items-center gap-3">
+                        <div className="search-box">
+                            <FiSearch className="search-icon-main" />
+                            <input type="text" placeholder="Search document content..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                        </div>
+                        {searchTerm.trim() && searchDuration && !loading && (
+                            <div className="search-duration-info">
+                                <FiClock size={14} />
+                                <span>Result loaded in <strong>{searchDuration}</strong></span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="view-switcher">
@@ -670,8 +687,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                                     {item.type === 'folder' ? <FiFolder className="primary-text" /> : <FiFile />}
                                                     <div>
                                                         <div className="lh-base">{item.name}</div>
-
-                                                        {/* Metadata - will wrap underneath the name, but to the right of the icon */}
                                                         {item.isSearchResult && (
                                                             <div className="search-metadata text-muted mt-1">
                                                                 <small className="d-block">Page {item.page}:</small>
@@ -693,7 +708,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                             </table>
                         </div>
                     ) : (
-                        /* GRID / THUMBNAIL VIEW */
                         <div className="file-grid">
                             {filteredItems.map((item) => (
                                 <div
@@ -702,7 +716,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                     onDoubleClick={() => item.type === 'folder' && navigateTo(item.name)}
                                     onContextMenu={(e) => (item.type !== 'folder' || item.name !== "Documents") && handleContextMenu(e, item)}
                                 >
-                                    {/* 1. HEADER: Small icon and Name side-by-side */}
                                     <div className="preview-card-header">
                                         <div className="header-left">
                                             {item.type === 'folder' ? (
@@ -723,7 +736,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                         )}
                                     </div>
 
-                                    {/* 2. BODY: Large preview area or Search Metadata */}
                                     <div className="preview-card-body">
                                         {item.isSearchResult ? (
                                             <div className="grid-search-metadata p-2 w-100">
@@ -734,16 +746,13 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                             </div>
                                         ) : (
                                             <div className="preview-placeholder">
-                                                {/* Show a large version of the icon as a placeholder if no thumbnail */}
                                                 {item.type === 'folder' ? <FiFolder size={40} /> : <FiFile size={40} />}
                                             </div>
                                         )}
                                     </div>
 
-                                    {/* 3. FOOTER: Optional activity or owner info */}
                                     <div className="preview-card-footer">
                                         <div className="user-avatar-small">
-                                            {/* <img src={item.ownerAvatar || "/default-avatar.png"} alt="owner" /> */}
                                             <FiUser />
                                         </div>
                                         <span className="activity-text">
@@ -758,10 +767,9 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
             </div>
 
             <ContextMenu x={contextMenu.x} y={contextMenu.y} show={contextMenu.show} options={menuOptions} onClose={closeContextMenu} />
-            
+
             <CreateFolderModal show={showFolderModal} onClose={() => setShowFolderModal(false)} formData={folderFormData} setFormData={setFolderFormData} onSubmit={handleCreateFolder} />
 
-            {/* Modal Components */}
             <FileViewerModal show={showViewer} onClose={() => setShowViewer(false)} file={viewFile} />
             <EditPDFModal show={showEditModal} onClose={() => setShowEditModal(false)} file={selectedEditFile} onSave={handleSaveEditedPDF} />
 

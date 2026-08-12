@@ -7,20 +7,25 @@
   justify-content: center;
 
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78)),
-    radial-gradient(circle at bottom right, rgba(71,195,167,0.06), transparent 30%);
+    radial-gradient(
+      circle at bottom right,
+      rgba(214, 175, 55, 0.04),
+      transparent 30%
+    ),
+    var(--gradient-dark);
 
-  border: 1px solid #e5ebf2;
+  border: 1px solid var(--border-light);
   border-radius: 20px;
 
-  box-shadow: 0 12px 30px rgba(19, 34, 49, 0.05);
+  box-shadow: var(--shadow-sm);
   backdrop-filter: blur(12px);
 
   position: relative;
   overflow: hidden;
+  transition: box-shadow 0.2s ease;
 }
 
-/* subtle accent line (Mapbox-like feel) */
+/* Luxury gold accent line */
 .app-footer::before {
   content: "";
   position: absolute;
@@ -29,7 +34,7 @@
   right: 20px;
   height: 2px;
 
-  background: linear-gradient(90deg, #4f8dff, #47c3a7);
+  background: var(--gradient-primary);
   opacity: 0.6;
   border-radius: 999px;
 }
@@ -37,14 +42,14 @@
 .app-footer p {
   margin: 0;
   font-size: 13px;
-  color: #6f7f90;
+  color: var(--text-muted);
   letter-spacing: 0.2px;
   text-align: center;
 }
 
 /* hover (optional subtle interaction) */
 .app-footer:hover {
-  box-shadow: 0 16px 40px rgba(19, 34, 49, 0.06);
+  box-shadow: var(--shadow-md);
 }
 
 /* RESPONSIVE */

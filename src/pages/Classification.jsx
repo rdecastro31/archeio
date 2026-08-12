@@ -92,7 +92,6 @@ export default function Classifications() {
   }
 
   const handleCreateClassification = async (e) => {
-    e.preventDefault()
 
     if (!formData.classification_name.trim()) {
       alert("Classification name is required.")

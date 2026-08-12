@@ -85,13 +85,13 @@ export default function Categories() {
     try {
       setLoading(true)
 
-   
+
 
       const fd = new FormData()
       fd.append("tag", "getall")
 
       const response = await axios.post(`${API_URL}/category.php`, fd)
-      console.log(response.data)  
+      console.log(response.data)
 
       if (Number(response.data.success) === 1) {
         setCategories(response.data.data || [])
@@ -125,8 +125,6 @@ export default function Categories() {
   }
 
   const handleCreateCategory = async (e) => {
-    e.preventDefault()
-
     const categoryName = String(formData.category_name || "").trim()
     const description = String(formData.description || "").trim()
     const status = String(formData.status || "Active")
