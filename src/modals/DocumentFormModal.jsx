@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiX, FiUpload, FiFile, FiCheckCircle, FiInfo } from "react-icons/fi";
+import { FiX, FiUpload, FiFile, FiCheckCircle } from "react-icons/fi";
 import Swal from "sweetalert2";
 import { API_URL } from "../shared/constants";
 import { useOutletContext } from "react-router-dom";
@@ -44,18 +44,22 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
 
     if (!show) return null;
 
+    // Helper function to format milliseconds to "mm:ss" (or "mm:ss.ms")
+    const formatDuration = (ms) => {
+        const totalSeconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    };
+
     const uploadFile = async () => {
-        if (!selectedFile) return document?.storage_file_id || null;
+        if (!selectedFile) return { fileId: document?.storage_file_id || null, durationFormatted: null };
 
-        // 1. Safely pull the correct document number
         const baseName = formData.document_no || (document ? document.document_no : `DOC-${Date.now()}`);
-
-        // 2. Safe extension extraction
         const hasExtension = selectedFile.name.includes('.');
         const extension = hasExtension ? selectedFile.name.split('.').pop() : '';
         const finalFileName = extension ? `${baseName}.${extension}` : baseName;
 
-        // 3. Instantiate a new File object with the updated name
         const renamedFile = new File([selectedFile], finalFileName, { type: selectedFile.type });
 
         const fileFd = new FormData();
@@ -64,13 +68,22 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
         fileFd.append("path", "Documents");
         fileFd.append("userid", currentUser?.id);
 
+        const startTime = performance.now();
+
         try {
             const response = await fetch(`${API_URL}/filestorage.php`, { method: "POST", body: fileFd });
             const data = await response.json();
-            console.log(data);
-            return data.success ? data.file_id : null;
+
+            const endTime = performance.now();
+            const durationMs = endTime - startTime;
+            const durationFormatted = formatDuration(durationMs);
+
+            return {
+                fileId: data.success ? data.file_id : null,
+                durationFormatted
+            };
         } catch (error) {
-            return null;
+            return { fileId: null, durationFormatted: null };
         }
     };
 
@@ -78,19 +91,18 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
         e.preventDefault();
         setIsProcessing(true);
         try {
-            const fileId = await uploadFile();
-            console.log(fileId);
+            const { fileId, durationFormatted } = await uploadFile();
+
             const docFd = new FormData();
             docFd.append("tag", document ? "update" : "insert");
             if (document) docFd.append("id", document.id);
             Object.keys(formData).forEach(key => docFd.append(key, formData[key]));
             docFd.append("storage_file_id", fileId || "");
-            // Assuming selectedTransTypeId is the ID you are currently working with
-            const selectedType = transTypes.find(type => parseInt(type.id) === parseInt(formData.transaction_type_id));
 
-            // Access the duration
+            const selectedType = transTypes.find(type => parseInt(type.id) === parseInt(formData.transaction_type_id));
             const duration = setDueDate(selectedType ? selectedType.processing_duration : 0);
-            docFd.append("due_date", duration)
+            docFd.append("due_date", duration);
+
             if (!document) {
                 docFd.append("current_holder_id", currentUser?.id);
                 docFd.append("created_by", currentUser?.id);
@@ -100,7 +112,19 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
             const result = await response.json();
 
             if (result.success) {
-                Swal.fire({ icon: 'success', title: 'Saved', timer: 1500, showConfirmButton: false });
+                // Compose text message conditionally depending on whether a file was uploaded
+                const uploadMessage = durationFormatted
+                    ? `File uploaded in ${durationFormatted}.`
+                    : "Document saved successfully.";
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Saved Successfully',
+                    text: uploadMessage,
+                    showConfirmButton: true, // Requires user to manually click OK to close
+                    confirmButtonText: 'OK'
+                });
+
                 onSuccess();
                 onClose();
             } else {
@@ -116,11 +140,8 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
     const setDueDate = (daysForDue) => {
         const todayDate = new Date();
         todayDate.setDate(todayDate.getDate() + daysForDue);
-
-        // Format to YYYY-MM-DD
-
         return todayDate.toISOString().slice(0, 19).replace('T', ' ');
-    }
+    };
 
     return (
         <div className="modal-overlay">
@@ -185,7 +206,6 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
                                         <div className="file-placeholder-compact">
                                             <FiUpload />
                                             <span>Upload Attachment</span>
-                                            {/* Added a small helper text to fill vertical space if needed */}
                                             <small style={{ fontSize: '0.75rem', opacity: 0.8 }}>PDF, DOCX, or Images</small>
                                         </div>
                                     )}

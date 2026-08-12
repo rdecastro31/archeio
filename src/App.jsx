@@ -27,34 +27,41 @@ import AIDocumentChecker from './pages/AIDocumentChecker'
 import AIDetection from './pages/AIDetection'
 import PlagiarismChecker from './pages/PlagiarismChecker'
 import Roles from './pages/Roles'
+import StorageAuditLogs from './pages/StorageAuditLogs'
 
 function App() {
-  // Sync default state with your luxury gold theme tokens from layout.css
+  // Sync default state with your luxury gold theme tokens and default theme
   const [systemSettings, setSystemSettings] = useState({
     logo: logoImage,
-    primaryColor: '#d4af37' // Matches var(--primary)
+    primaryColor: '#d4af37', // Matches var(--primary)
+    theme: 'dark'            // Default theme fallback
   });
 
   useEffect(() => {
     fetch(`${API_URL}/settings.php`)
       .then(res => res.json())
       .then(result => {
-        if (result.success) {
-          // Fallback to the layout's gold if database doesn't have a color yet
+        if (result.success && result.data) {
+          // Fallback values if database doesn't have them yet
           const fetchedColor = result.data.primary_color || '#d4af37';
           const newLogo = result.data.logo_url ? `${API_URL}/${result.data.logo_url}` : logoImage;
+          const fetchedTheme = result.data.theme || 'dark';
 
           setSystemSettings({
             logo: newLogo,
-            primaryColor: fetchedColor
+            primaryColor: fetchedColor,
+            theme: fetchedTheme
           });
 
           const root = document.documentElement;
 
+          // Set the data-theme attribute on root element for CSS light/dark variables
+          root.setAttribute('data-theme', fetchedTheme);
+
           // Dynamically overwrite layout.css variables with the DB values
           root.style.setProperty('--primary', fetchedColor);
 
-          // Automatically derive the hover, active, gradient, and focus tokens based on the DB color
+          // Automatically derive hover, active, gradient, and focus tokens based on the DB color
           root.style.setProperty('--primary-hover', `color-mix(in srgb, ${fetchedColor} 85%, black)`);
           root.style.setProperty('--primary-active', `color-mix(in srgb, ${fetchedColor} 70%, black)`);
           root.style.setProperty('--focus-ring', `color-mix(in srgb, ${fetchedColor} 45%, transparent)`);
@@ -97,6 +104,7 @@ function App() {
             <Route path="/ai-document-checker" element={<AIDocumentChecker />} />
             <Route path="/ai-detection" element={<AIDetection />} />
             <Route path="/plagiarism-checker" element={<PlagiarismChecker />} />
+            <Route path="/storage-audit-logs" element={<StorageAuditLogs />} />
           </Route>
         </Route>
       </Routes>

@@ -268,6 +268,44 @@
   color: var(--placeholder);
 }
 
+/* --- Search Duration Badge --- */
+/* --- Search Duration Badge --- */
+.search-duration-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.search-duration-info strong {
+  color: var(--badge-primary-text);
+  font-weight: 700;
+}
+
+.search-duration-info svg {
+  color: var(--primary);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .view-switcher {
   display: flex;
   background: var(--surface-alt);
@@ -501,6 +539,7 @@
 
 .empty-state-content {
   text-align: center;
+  flex-direction: column;
   max-width: 300px;
 }
 
