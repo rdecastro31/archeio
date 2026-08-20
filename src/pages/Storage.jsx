@@ -21,6 +21,76 @@ import { FileEdit } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import VersionHistoryModal from "../modals/VersionHistoryModal";
 
+// --- Confidence Config Helper ---
+const getConfidenceConfig = (confidence) => {
+    if (confidence === null || confidence === undefined) {
+        return {
+            label: "Unavailable",
+            bg: "#f1f5f9",
+            color: "#475569",
+            border: "#cbd5e1",
+            dot: "#94a3b8"
+        };
+    }
+
+    const score = Number(confidence);
+
+    if (score >= 95) {
+        return {
+            label: `${score.toFixed(0)}% Very Reliable`,
+            bg: "#ecfdf5",
+            color: "#047857",
+            border: "#a7f3d0",
+            dot: "#059669"
+        };
+    }
+    if (score >= 84) {
+        return {
+            label: `${score.toFixed(0)}% Good`,
+            bg: "#f0fdf4",
+            color: "#15803d",
+            border: "#bbf7d0",
+            dot: "#16a34a"
+        };
+    }
+    if (score >= 60) {
+        return {
+            label: `${score.toFixed(0)}% Review Needed`,
+            bg: "#fffbeb",
+            color: "#b45309",
+            border: "#fde68a",
+            dot: "#d97706"
+        };
+    }
+    return {
+        label: `${score.toFixed(0)}% Low Confidence`,
+        bg: "#fef2f2",
+        color: "#b91c1c",
+        border: "#fecaca",
+        dot: "#dc2626"
+    };
+};
+
+// Component for rendering badge
+const ConfidenceBadge = ({ confidence }) => {
+    const config = getConfidenceConfig(confidence);
+
+    return (
+        <span
+            className="ocr-confidence-badge"
+            title={`OCR Confidence: ${confidence !== null ? confidence + '%' : 'Unavailable'}`}
+            style={{
+                backgroundColor: config.bg,
+                color: config.color,
+                borderColor: config.border
+            }}
+        >
+            <span className="ocr-badge-dot" style={{ backgroundColor: config.dot }} />
+            {config.label}
+        </span>
+    );
+};
+
 export default function Storage({ hideHeader = false, isEmbedded = false, onFetchSuggested = (() => { }) }) {
     const { user } = useOutletContext();
     const USER_ID = user?.id;
@@ -53,15 +123,28 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         targetItem: null
     });
 
-    // --- Helper function to format duration to MM:SS ---
-    const formatDuration = (ms) => {
-        const totalSeconds = Math.floor(ms / 1000);
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    const formatDuration = (ms, decimals = 2) => {
+        const seconds = ms / 1000;
+        const minutes = seconds / 60;
+        const hours = minutes / 60;
+        const days = hours / 24;
+
+        if (days >= 1) {
+            return `${days.toFixed(decimals)} day(s)`;
+        }
+        if (hours >= 1) {
+            return `${hours.toFixed(decimals)} hr(s)`;
+        }
+        if (minutes >= 1) {
+            return `${minutes.toFixed(decimals)} min(s)`;
+        }
+        if (seconds >= 1) {
+            return `${seconds.toFixed(decimals)} sec(s)`;
+        }
+
+        return `${ms.toFixed(decimals)} ms`;
     };
 
-    // --- API Helper ---
     const callApi = async (formData) => {
         try {
             const response = await fetch(`${API_URL}/filestorage.php`, {
@@ -75,7 +158,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         }
     };
 
-    // --- Fetch Items ---
     const fetchStorage = useCallback(async () => {
         setLoading(true);
         const fd = new FormData();
@@ -94,7 +176,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         fetchStorage();
     }, [fetchStorage]);
 
-    // --- PDF Edit Save Handler ---
     const handleSaveEditedPDF = async (editedFile) => {
         const fd = new FormData();
         fd.append("tag", "addFile");
@@ -117,7 +198,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
             fetchStorage();
             await Swal.fire({
                 title: "Success",
-                text: `New version saved in ${durationFormatted} (mm:ss)!`,
+                text: `New version saved in ${durationFormatted}!`,
                 icon: "success",
                 showConfirmButton: true,
                 confirmButtonText: "OK"
@@ -127,7 +208,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         }
     };
 
-    // --- Search Logic ---
     useEffect(() => {
         if (!searchTerm.trim()) {
             setSearchDuration(null);
@@ -165,6 +245,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                 page: res.page_number,
                 line: res.line_number,
                 contentSnippet: res.line_text,
+                confidence: res.confidence ?? null,
                 isSearchResult: true
             }));
             setItems(searchResults);
@@ -208,7 +289,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         }
     };
 
-    // --- Item Handlers ---
     const trackAccess = async (item) => {
         const fd = new FormData();
         fd.append("tag", "trackAccess");
@@ -244,32 +324,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         }
     };
 
-    const handleViewHistory = async (item) => {
-        const fd = new FormData();
-        fd.append("tag", "getFileHistory");
-        fd.append("userid", USER_ID);
-        fd.append("filename", item.name);
-        fd.append("path", currentPath);
-
-        const data = await callApi(fd);
-        if (data.success && data.history.length > 0) {
-            const historyList = data.history.map(h =>
-                `<div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #eee; padding-bottom:4px;">
-                    <span>${h.name}</span>
-                    <small style="color:#666">${h.date}</small>
-                </div>`
-            ).join('');
-
-            Swal.fire({
-                title: `History: ${item.name}`,
-                html: `<div style="text-align:left; max-height:300px; overflow-y:auto;">${historyList}</div>`,
-                icon: 'info'
-            });
-        } else {
-            Swal.fire("No History", "No previous versions found.", "info");
-        }
-    };
-
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -278,9 +332,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
             title: 'Uploading file...',
             text: 'Please wait while your document is being processed.',
             allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
+            didOpen: () => Swal.showLoading()
         });
 
         const fd = new FormData();
@@ -298,7 +350,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
             fetchStorage();
             await Swal.fire({
                 title: "Success",
-                text: `File uploaded in ${durationFormatted} (mm:ss).`,
+                text: `File uploaded in ${durationFormatted}.`,
                 icon: "success",
                 showConfirmButton: true,
                 confirmButtonText: "OK"
@@ -392,7 +444,6 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         }
     };
 
-    // --- Context Menu ---
     const handleContextMenu = (e, item, isButtonClick = false) => {
         e.preventDefault();
         e.stopPropagation();
@@ -446,7 +497,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
         const getDownloadOption = () => ({
             label: "Download",
             icon: <FiDownload />,
-            onClick: () => { /* Handle download */ }
+            onClick: () => { }
         });
 
         if (currentPath === "Archive") {
@@ -552,11 +603,8 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                 </>
                             )}
                             {currentPath === "Archive" && (
-                                <>
-                                    <span className="breadcrumb-link">Archive</span>
-                                </>
+                                <span className="breadcrumb-link">Archive</span>
                             )}
-
                         </div>
                     </div>
                     <div className="action-buttons">
@@ -640,6 +688,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                         </button>
                     </div>
                 </div>
+
                 {(() => {
                     const filteredItems = items.filter(i =>
                         i.name.toLowerCase().includes(searchTerm.toLowerCase()) || i.isSearchResult
@@ -671,6 +720,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                 <thead>
                                     <tr>
                                         <th>Name</th>
+                                        <th>Confidence</th>
                                         <th>Type</th>
                                         <th className="text-end">Actions</th>
                                     </tr>
@@ -695,6 +745,13 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                                         )}
                                                     </div>
                                                 </div>
+                                            </td>
+                                            <td>
+                                                {item.type === 'file' ? (
+                                                    <ConfidenceBadge confidence={item.confidence} />
+                                                ) : (
+                                                    <span className="text-muted small">--</span>
+                                                )}
                                             </td>
                                             <td>{item.type}</td>
                                             <td className="d-flex justify-content-end">
@@ -736,7 +793,7 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                         )}
                                     </div>
 
-                                    <div className="preview-card-body">
+                                    <div className="preview-card-body position-relative">
                                         {item.isSearchResult ? (
                                             <div className="grid-search-metadata p-2 w-100">
                                                 <small className="badge-page d-block mb-1 text-primary">Page {item.page}</small>
@@ -747,6 +804,13 @@ export default function Storage({ hideHeader = false, isEmbedded = false, onFetc
                                         ) : (
                                             <div className="preview-placeholder">
                                                 {item.type === 'folder' ? <FiFolder size={40} /> : <FiFile size={40} />}
+                                            </div>
+                                        )}
+
+                                        {/* Bottom-left confidence badge for file items */}
+                                        {item.type === 'file' && (
+                                            <div className="badge-bottom-left-container">
+                                                <ConfidenceBadge confidence={item.confidence} />
                                             </div>
                                         )}
                                     </div>

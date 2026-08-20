@@ -45,11 +45,26 @@ export default function DocumentFormModal({ show, onClose, document, docTypes, t
     if (!show) return null;
 
     // Helper function to format milliseconds to "mm:ss" (or "mm:ss.ms")
-    const formatDuration = (ms) => {
-        const totalSeconds = Math.floor(ms / 1000);
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    const formatDuration = (ms, decimals = 2) => {
+        const seconds = ms / 1000;
+        const minutes = seconds / 60;
+        const hours = minutes / 60;
+        const days = hours / 24;
+
+        if (days >= 1) {
+            return `${days.toFixed(decimals)} day(s)`;
+        }
+        if (hours >= 1) {
+            return `${hours.toFixed(decimals)} hr(s)`;
+        }
+        if (minutes >= 1) {
+            return `${minutes.toFixed(decimals)} min(s)`;
+        }
+        if (seconds >= 1) {
+            return `${seconds.toFixed(decimals)} sec(s)`;
+        }
+
+        return `${ms.toFixed(decimals)} ms`;
     };
 
     const uploadFile = async () => {

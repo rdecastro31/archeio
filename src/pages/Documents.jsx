@@ -8,6 +8,75 @@ import "../styles/documents.css";
 import RouteDocumentModal from "../modals/RouteDocumentModal";
 import { useOutletContext } from "react-router-dom";
 
+// --- Confidence Badge Helpers ---
+const getConfidenceConfig = (confidence) => {
+    if (confidence === null || confidence === undefined) {
+        return {
+            label: "Unavailable",
+            bg: "#f1f5f9",
+            color: "#475569",
+            border: "#cbd5e1",
+            dot: "#94a3b8"
+        };
+    }
+
+    const score = Number(confidence);
+
+    if (score >= 95) {
+        return {
+            label: `${score.toFixed(0)}% Very Reliable`,
+            bg: "#ecfdf5",
+            color: "#047857",
+            border: "#a7f3d0",
+            dot: "#059669"
+        };
+    }
+    if (score >= 84) {
+        return {
+            label: `${score.toFixed(0)}% Good`,
+            bg: "#f0fdf4",
+            color: "#15803d",
+            border: "#bbf7d0",
+            dot: "#16a34a"
+        };
+    }
+    if (score >= 60) {
+        return {
+            label: `${score.toFixed(0)}% Review Needed`,
+            bg: "#fffbeb",
+            color: "#b45309",
+            border: "#fde68a",
+            dot: "#d97706"
+        };
+    }
+    return {
+        label: `${score.toFixed(0)}% Low Confidence`,
+        bg: "#fef2f2",
+        color: "#b91c1c",
+        border: "#fecaca",
+        dot: "#dc2626"
+    };
+};
+
+const ConfidenceBadge = ({ confidence }) => {
+    const config = getConfidenceConfig(confidence);
+
+    return (
+        <span
+            className="ocr-confidence-badge"
+            title={`OCR Confidence: ${confidence !== null && confidence !== undefined ? confidence + '%' : 'Unavailable'}`}
+            style={{
+                backgroundColor: config.bg,
+                color: config.color,
+                borderColor: config.border
+            }}
+        >
+            <span className="ocr-badge-dot" style={{ backgroundColor: config.dot }} />
+            {config.label}
+        </span>
+    );
+};
+
 export default function Documents() {
     const { user } = useOutletContext();
     const USER_ID = user?.id || null;
@@ -53,7 +122,7 @@ export default function Documents() {
         if (typeData.success) setDocTypes(typeData.data);
         if (transData.success) setTransTypes(transData.data);
         setLoading(false);
-    }, []);
+    }, [USER_ID]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -151,6 +220,7 @@ export default function Documents() {
                             <tr>
                                 <th>Document Info</th>
                                 <th>Type & Dept</th>
+                                <th>Confidence</th>
                                 <th>Status</th>
                                 <th>Created</th>
                                 <th className="text-end">Actions</th>
@@ -158,7 +228,7 @@ export default function Documents() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="5" className="text-center">Loading documents...</td></tr>
+                                <tr><td colSpan="6" className="text-center">Loading documents...</td></tr>
                             ) : filteredDocs.map(doc => (
                                 <tr key={doc.id}>
                                     <td>
@@ -175,6 +245,13 @@ export default function Documents() {
                                             <span className="type-text">{doc.type_name || 'Uncategorized'}</span>
                                             <span className="dept-subtext">{doc.department_name || 'General'}</span>
                                         </div>
+                                    </td>
+                                    <td>
+                                        {doc.filename ? (
+                                            <ConfidenceBadge confidence={doc.confidence} />
+                                        ) : (
+                                            <span className="text-muted small">--</span>
+                                        )}
                                     </td>
                                     <td>
                                         <span className={`status-badge status-${doc.document_status_name?.toLowerCase().replace(' ', '-')}`}>
@@ -210,7 +287,6 @@ export default function Documents() {
                                                 </>
                                             )}
 
-                                            {/* Show Archive Button when status is exactly Completed or Cancelled */}
                                             {(doc.document_status_name === 'Completed' || doc.document_status_name === 'Cancelled') && (
                                                 <button
                                                     className="icon-btn archive"
